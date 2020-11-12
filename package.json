@@ -1,0 +1,16 @@
+{
+  "name": "mani-centralized",
+  "version": "0.0.1",
+  "description": "A centralized (AWS based) implementation of SuMSy ledgers",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "SuMSy",
+    "mani",
+    "currency"
+  ],
+  "author": "Thomas Goorden <tg@eenwereldmetlef.be>",
+  "license": "ISC"
+}
