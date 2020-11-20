@@ -1,3 +1,6 @@
+
+[Technical documentation](usage.md)
+
 # mani pona - a centralized SuMSy implementation
 
 "mani pona" (always written in lower case) is an implementation of the "Sustainable Money System". This repository contains a centralized implementation, although the ledgers are designed with a potential decentralized implementation and migration in mind.

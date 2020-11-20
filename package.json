@@ -1,16 +1,40 @@
 {
-  "name": "mani-centralized",
+  "name": "mani-pona",
   "version": "0.0.1",
   "description": "A centralized (AWS based) implementation of SuMSy ledgers",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "keywords": [
-    "SuMSy",
+    "sumsy",
     "mani",
-    "currency"
+    "currency",
+    "client",
+    "payments"
   ],
   "author": "Thomas Goorden <tg@eenwereldmetlef.be>",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "jest": "^26.6.3",
+    "@babel/core": "^7.12.3",
+    "@babel/preset-env": "^7.12.1",
+    "babel-jest": "^26.6.3",
+    "source-map-support": "^0.5.19"
+  },
+  "dependencies": {
+    "lodash": "^4.17.20"
+  },
+  "jest": {
+    "moduleDirectories": [
+      "node_modules",
+      "src"
+    ],
+    "moduleFileExtensions": [
+      "js"
+    ],
+    "transform": {
+      "^.+\\.(js|jsx|ts|tsx)$": "babel-jest"
+    }
+  }
 }
