@@ -1,5 +1,5 @@
 import { _ } from 'lodash'
-import ManiError from '../ManiError'
+import ManiError from './ManiError'
 
 const mockNotifications = [
   {
@@ -46,7 +46,7 @@ class MockClient {
         resolve(this._transactions)
       }),
       create: ({ peerId, amount }) => new Promise((resolve, reject) => {
-        if (peerId !== 'mock') {
+        if (this.fail === 'unknown_id') {
           reject(new ManiError(`Unknown peerId ${peerId}`))
         } else if (!_.isNumber(amount)) {
           reject(new ManiError('Unsupported: no amount specified'))

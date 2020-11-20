@@ -1,4 +1,5 @@
-import MockClient from 'mock/client'
+import MockClient from 'MockClient'
+import ManiClient from 'ManiClient'
 import ManiError from 'ManiError'
 
-export { MockClient, ManiError }
+export { ManiClient, MockClient, ManiError }

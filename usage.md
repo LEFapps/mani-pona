@@ -12,16 +12,37 @@ Make sure this package sits in your `node_modules` folder.
 ## Import and start the client
 
 ```js
-const { ManiClient } = require('mani-pona').client
+const { ManiClient } = require('mani-pona')
 
 const maniClient = new ManiClient({credentials,endpoint})
 
+// Immediately after startup, any (new) notifications should be checked
 const notifications = maniClient.notifications
     .all()
     .then(notifications => {
       // notifications is an array of messages, like the application of demurrage or a new income payment
     })
 ```
+
+### Using the mock client
+
+Instead of using the "real" client, you can use the MockClient during development.
+
+While you don't need to pass credentials into the Mock Client, it is possible to pass arguments in the constructor to _intentionally_ make the Mock Client fail certain operations. This is helpful when developing error handling.
+
+The MockClient will behave as predictably as possible, so its internal state (e.g. balance, list of transactions) will *not* change. All methods should "work" no matter what, except when crucial parameters are missing (and other incorrect usages of the API).
+
+```js
+const { MockClient } = require('mani-pona')
+
+const maniClient = new MockClient({
+  fail: "timeout|unknown_id" // optional, this makes the MockClient fail predictably
+})
+```
+
+Fail options:
+- `timeout`: This makes transactions (creation or listening mode) fail due to a "timeout".
+- `unknown_id`: This makes creating transactions fail due to an "unknown peer id".
 
 ## Making payments (version 1)
 
@@ -60,18 +81,3 @@ maniClient2.transactions
   })
 ```
 
-## Making payments (version 2)
-
-This changes which peer enters the amount:
-
-```js
-maniClient.create({
-  peerId: 'test_D0C8F0D0032C95F667C46469D05C6EACD4461A3E6DC69C537379649C226'
-})
-  .then(notification => {
-    // notifcation
-  })
-  .catch(error => {
-    // e.g. time-outs, etc
-  })
-```

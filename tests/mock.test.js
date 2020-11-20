@@ -10,7 +10,7 @@ describe('mock notifications', () => {
 describe('mock transactions', () => {
   it('should reject unknown peerIds', async () => {
     expect.assertions(1)
-    await expect(new MockClient({}).transactions.create({ peerId: 'foo' })).rejects.toHaveProperty('message', 'Unknown peerId foo')
+    await expect(new MockClient({ fail: 'unknown_id' }).transactions.create({ peerId: 'foo' })).rejects.toHaveProperty('message', 'Unknown peerId foo')
   })
 
   it('should reject transactions without an amount', async () => {
