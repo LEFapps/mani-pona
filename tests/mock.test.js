@@ -1,4 +1,4 @@
-import { MockClient } from '..'
+import { MockClient, MANI } from '..'
 
 describe('mock notifications', () => {
   it('should provide three mocked notifications', async () => {
@@ -29,7 +29,7 @@ describe('mock transactions', () => {
     await expect(new MockClient({}).transactions.create({ peerId: 'mock', amount: 5 })).resolves
       .toEqual(
         { 'message': 'Transaction succesfull',
-          'amount': 5 })
+          'amount': MANI(5) })
   })
 
   it('should wait for a confirmation in listen mode', async () => {
@@ -37,7 +37,7 @@ describe('mock transactions', () => {
     await expect(new MockClient({}).transactions.listen()).resolves
       .toEqual(
         { 'message': 'Please confirm transaction',
-          'amount': 7.5 })
+          'amount': MANI(7.5) })
   })
 
   it('should timeout listen mode', async () => {

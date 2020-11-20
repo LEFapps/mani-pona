@@ -1,30 +1,64 @@
 import { _ } from 'lodash'
 import ManiError from './ManiError'
+import MANI from './currency'
 
 const mockNotifications = [
   {
     type: 'generic',
     msg: 'Ledger has been approved',
+    confirm: _.noop,
+    date: new Date('2020-10-14 08:05:17')
+  },
+  {
+    type: 'demurrage',
+    msg: 'Demurrage aplied',
+    amount: MANI(-7.1),
+    date: new Date('2020-11-03 10:07:38'),
     confirm: _.noop
   },
   {
     type: 'income',
     msg: 'Income received',
-    amount: 100,
+    amount: MANI(100),
+    date: new Date('2020-11-03 10:07:39'),
     confirm: _.noop
+  }
+]
+
+const mockTransactions = [
+  {
+    msg: 'Account created',
+    amount: MANI(100),
+    date: new Date('2020-10-04 08:04:21')
   },
   {
-    type: 'demurrage',
-    msg: 'Demurrage aplied',
-    amount: -12.5,
-    confirm: _.noop
+    msg: 'Coffee and a bagel',
+    amount: MANI(-4),
+    date: new Date('2020-10-07 16:21:35'),
+    peer: ''
+  },
+  {
+    msg: 'Yoga class',
+    amount: MANI(-25),
+    date: new Date('2020-10-10 19:01:53'),
+    peer: ''
+  },
+  {
+    msg: 'Demurrage applied',
+    amount: MANI(-7.1),
+    date: new Date('2020-11-03 10:07:38')
+  },
+  {
+    msg: 'Income received',
+    amount: MANI(100),
+    date: new Date('2020-11-03 10:07:39')
   }
 ]
 
 class MockClient {
   constructor ({ fail }) {
-    this.balance = 1000.0
-    this._transactions = []
+    this.balance = MANI(163.9)
+    this._transactions = mockTransactions
     this._notifications = mockNotifications
     this.fail = fail
     // this.timeout = 30 // ms
@@ -55,7 +89,7 @@ class MockClient {
         } else {
           resolve({
             message: 'Transaction succesfull',
-            amount: amount
+            amount: MANI(amount)
           })
         }
       }),
@@ -65,7 +99,7 @@ class MockClient {
         } else {
           resolve({
             message: 'Please confirm transaction',
-            amount: 7.5
+            amount: MANI(7.5)
           })
         }
       })
@@ -74,9 +108,3 @@ class MockClient {
 }
 
 export default MockClient
-/*
-mockClient ({ notifications }) {
-  // const notif = _.filter(mock_notifications, (n) => { _.includes(notifications, n) })
-  return new MockClient()
-}
-*/

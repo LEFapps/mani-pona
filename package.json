@@ -23,6 +23,7 @@
     "source-map-support": "^0.5.19"
   },
   "dependencies": {
+    "currency.js": "^2.0.3",
     "lodash": "^4.17.20"
   },
   "jest": {

@@ -9,6 +9,16 @@ Make sure this package sits in your `node_modules` folder.
 
 @TODO: Installation via npm.
 
+## Currency usage
+
+mani pona has it's own [currency.js](https://currency.js.org/) definition. All numeric amounts returned by the API are wrapped in this class. It provides rounding, formatting, etc. Any amount passed into a function is automatically wrapped in MANI, which meas you can use integers, floats as well as input besides MANI.
+
+```js
+const { MANI } = require('mani-pona')
+
+MANI(123.45).format() // this will output '123,45 ɱ'
+```
+
 ## Import and start the client
 
 ```js
