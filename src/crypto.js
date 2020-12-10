@@ -42,5 +42,44 @@ class Chest {
     return detachedSignature
   }
 }
+/**
+ * Simplified, asynchronous signature verification that throws Errors when things don't line up. To use:
+ *
+ * `const fingerprint = await Verifier(key).verify(text, signature)`
+ * The Verifier can be reused.
+ *
+ * @param {string} key - An armored OpenPGP (public) key
+ */
+const Verifier = (key) => {
+  let pk
+  return {
+    /**
+     * @param {string} text - The text that was signed
+     * @param {string} signature - The armored and detached OpenPGP signature
+     * @returns {string} the fingerprint of the key
+     * @throws An error if the input (key or signature) is not in a valid format or if the signature doesn't match.
+     */
+    verify: async (text, signature) => {
+      // deferred parsing and caching of pk:
+      if (pk === undefined) {
+        const { err, keys: [parsedkey] } = await openpgp.key.readArmored(key)
+        if (err) {
+          throw err[0]
+        }
+        pk = parsedkey
+      }
+      const { signatures } = await openpgp.verify({
+        message: openpgp.cleartext.fromText(text),
+        signature: await openpgp.signature.readArmored(signature),
+        publicKeys: [pk]
+      })
+      if (signatures[0].valid) {
+        return pk.getFingerprint()
+      } else {
+        throw new Error('The proof signature didn\'t match either this key or the challenge.')
+      }
+    }
+  }
+}
 
-export { Chest }
+export { Chest, Verifier }

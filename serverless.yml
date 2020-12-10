@@ -1,0 +1,40 @@
+service: mani-backend
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  region: eu-west-1
+
+plugins:
+  # - serverless-webpack
+  - serverless-dynamodb-local
+  - serverless-offline 
+
+resources:
+  Resources:
+    ledger:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: manipona
+        AttributeDefinitions:
+          - AttributeName: ledger
+            AttributeType: S
+          - AttributeName: entry
+            AttributeType: S
+        KeySchema:
+          - AttributeName: ledger
+            KeyType: HASH
+          - AttributeName: entry
+            KeyType: RANGE
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+
+custom:
+  dynamodb:
+    start:
+      inMemory: true
+    stages:
+      - test
+      - dev
+

@@ -34,6 +34,7 @@
     "apollo-server-lambda": "^2.19.0",
     "aws-sdk": "^2.799.0",
     "currency.js": "^2.0.3",
+    "dynamo-plus": "^1.5.3",
     "jest-dynalite": "^3.2.3",
     "lodash": "^4.17.20",
     "openpgp": "^4.10.8"

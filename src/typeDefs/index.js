@@ -7,6 +7,8 @@ export default gql`
     hello: String
     "Text to be signed by client to verify key ownership"
     challenge: String!
+    "Find the public key corresponding to this fingerprint"
+    findkey(fingerprint: String!): String!
   }
 
   type Ledger {

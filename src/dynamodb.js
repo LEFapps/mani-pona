@@ -1,4 +1,4 @@
-var AWS = require('aws-sdk')
+const { DynamoPlus } = require('dynamo-plus')
 
 var options = {
   region: 'localhost',
@@ -10,8 +10,4 @@ var isOffline = function () {
   return process.env.IS_OFFLINE
 }
 
-var dynamodb = {
-  doc: isOffline() ? new AWS.DynamoDB.DocumentClient(options) : new AWS.DynamoDB.DocumentClient(),
-  raw: isOffline() ? new AWS.DynamoDB(options) : new AWS.DynamoDB()
-}
-module.exports = dynamodb
+module.exports = isOffline() ? DynamoPlus(options) : DynamoPlus()
