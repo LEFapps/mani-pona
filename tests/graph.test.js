@@ -2,31 +2,23 @@ import typeDefs from '../src/typeDefs'
 import resolvers from '../src/resolvers'
 import { ApolloServer } from 'apollo-server'
 import { createTestClient } from 'apollo-server-testing'
-import { doc as docClient } from '../src/dynamodb'
-import { Chest } from '../src/crypto'
+import { DynamoPlus } from 'dynamo-plus'
+import { KeyLoader, KeyGenerator } from '../src/crypto'
 import { promises as fs, constants as fsConstants } from 'fs'
-
-const server = new ApolloServer({
-  typeDefs,
-  resolvers,
-  context: async ({ req }) => {
-    return {
-      db: docClient,
-      ledger: 'AAAA'
-    }
-  }
-})
-
-const { query, mutate } = createTestClient(server)
 
 const keyFile = './tests/test.keys'
 
 describe('GraphQL', () => {
-  const chest = new Chest()
+  const keys = KeyLoader('./tests/test.keys')
+
+  let server, query, mutate
   // Registration mutation:
   const REGISTER = `
-    mutation ($key: String!, $proof: String!) {
-      register(key: $key, proof: $proof)
+    mutation ($registration: LedgerRegistration!) {
+      register(registration: $registration) {
+        ledger
+        alias
+      }
     }
   `
   // Challenge query:
@@ -39,20 +31,34 @@ describe('GraphQL', () => {
   const oldTextEncoder = global.TextEncoder
   const oldTextDecoder = global.TextDecoder
 
-  beforeAll(async () => {
+  beforeAll(() => {
+    server = new ApolloServer({
+      typeDefs,
+      resolvers,
+      context: async ({ req }) => {
+        return {
+          db: DynamoPlus({
+            region: 'localhost',
+            endpoint: 'http://localhost:8000'
+          }),
+          ledger: 'AAAA'
+        }
+      }
+    });
+    ({ query, mutate } = createTestClient(server))
     const textEncoding = require('text-encoding-utf-8')
     global.TextEncoder = textEncoding.TextEncoder
     global.TextDecoder = textEncoding.TextDecoder
     // read test keys file is it exists
-    await fs.access(keyFile, fsConstants.R_OK).then(() => chest.loadKeysFromFile(keyFile))
-    return chest.init({ name: 'Test', email: 'test@test.com' })
+    // await fs.access(keyFile, fsConstants.R_OK).then(() => chest.loadKeysFromFile(keyFile))
+    // return chest.init({ name: 'Test', email: 'test@test.com' })
   })
 
   afterAll(() => {
     global.TextEncoder = oldTextEncoder
     global.TextDecoder = oldTextDecoder
     // write keys file if it doesn't exist yet
-    return fs.access(keyFile, fsConstants.R_OK).catch(() => chest.writeKeysToFile(keyFile))
+    // return fs.access(keyFile, fsConstants.R_OK).catch(() => chest.writeKeysToFile(keyFile))
   })
   // end bugfix
 
@@ -68,20 +74,16 @@ describe('GraphQL', () => {
     expect(result.data).toEqual({ 'hello': 'Hello, world!' })
   })
 
-  it('should have loaded keys', async () => {
-    expect.assertions(3)
-    expect(chest.initialized).toBe(true)
-    expect(chest.key).toBeDefined()
-    expect(chest.key.publicKeyArmored).toBeDefined()
-  })
-
   it('should reject bad proof during registration', async () => {
     expect.assertions(4)
     const BAD_KEY = await mutate({
       mutation: REGISTER,
       variables: {
-        key: 'NOT A KEY',
-        proof: 'foobar'
+        registration: {
+          publicKey: 'NOT A KEY',
+          alias: 'Oops',
+          proof: 'foobar'
+        }
       }
     })
     expect(BAD_KEY.errors).toBeDefined()
@@ -90,8 +92,11 @@ describe('GraphQL', () => {
     const BAD_PROOF = await mutate({
       mutation: REGISTER,
       variables: {
-        key: chest.key.publicKeyArmored,
-        proof: 'foobar'
+        registration: {
+          publicKey: keys.publicKeyArmored,
+          alias: 'Sorry',
+          proof: 'foobar'
+        }
       }
     })
     expect(BAD_PROOF.errors).toBeDefined()
@@ -99,17 +104,42 @@ describe('GraphQL', () => {
   })
 
   it('should register a public key as a new ledger', async () => {
-    expect.assertions(3)
+    const newKeys = await KeyGenerator().generate()
+    const fingerprint = await newKeys.publicKey.fingerprint()
+    const alias = 'Firstname Lastname'
+    expect.assertions(5)
     const { data } = await query({ query: CHALLENGE })
     expect(data).toEqual({ 'challenge': 'This is my key, verify me' })
     const result = await mutate({
       mutation: REGISTER,
       variables: {
-        key: chest.key.publicKeyArmored,
-        proof: await chest.sign(data.challenge)
+        registration: {
+          publicKey: newKeys.publicKeyArmored,
+          alias,
+          proof: await newKeys.privateKey.sign(data.challenge)
+        }
       }
     })
     expect(result.errors).toBe(undefined)
-    expect(result.data).toEqual({ 'register': chest.fingerprint })
+    expect(result.data).toEqual({ 'register': {
+      ledger: fingerprint,
+      alias
+    } })
+
+    const verification = await query({
+      query: `
+        query findkey ($id: String!) {
+          findkey(id: $id) {
+            alias
+            publicKey
+          }
+        }
+      `,
+      variables: { id: fingerprint } })
+    expect(verification.errors).toBe(undefined)
+    expect(verification.data).toEqual({ 'findkey': {
+      alias,
+      publicKey: newKeys.publicKeyArmored
+    } })
   })
 })

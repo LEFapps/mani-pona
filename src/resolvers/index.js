@@ -23,11 +23,19 @@ export default {
      * signed, resulting in the `proof`. The key is then stored as the start of a new
      * ledger and the `zeroth` transaction is added.
      */
-    register: async (_, { ledger, proof }, { db }) => {
+    register: async (_, { registration }, { db }) => {
       try {
-        const publicKey = await Verifier(ledger.publicKey)
-        await publicKey.verify(challengeGenerator(), proof)
-        ledger.ledger = await publicKey.fingerprint()
+        const { publicKey, alias, proof } = registration
+        const verifier = await Verifier(publicKey)
+        const challenge = challengeGenerator()
+        await verifier.verify(challenge, proof)
+        const ledger = {
+          ledger: await verifier.fingerprint(),
+          alias,
+          publicKey,
+          challenge,
+          proof
+        }
         await Ledger(db).registerKey(ledger)
         // console.log(ledger)
         return ledger

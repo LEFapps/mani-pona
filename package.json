@@ -5,6 +5,7 @@
   "main": "src/client/index.js",
   "scripts": {
     "test": "jest",
+    "test:dynamodb": "sls dynamodb start --migrate",
     "offline": "sls offline start"
   },
   "keywords": [

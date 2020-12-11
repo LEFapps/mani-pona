@@ -23,7 +23,7 @@ Note that, at the moment, centralized mani pona servers are not interoperable. S
 
 ### Using public keys as ID's
 
-A ledger's ID is essentially the hash of a public key. This is not such a strange notion, e.g. in Bitcoin, an ID is equal to a SECP 256K1 (ECC) public key.
+A ledger's ID is essentially the hash of a public key. This is not such a strange notion, e.g. in Bitcoin, an ID is equal to a SECP 256K1 (ECC) public key. Since OpenPGP supplies a "fingerprint" for each (public) key, this is convenient to use.
 
 ## Transactions
 

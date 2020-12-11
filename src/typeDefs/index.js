@@ -10,9 +10,11 @@ export default gql`
     alias: String
   }
 
-  input LedgerInput {
+  input LedgerRegistration {
     "The public key used to create the ledger."
     publicKey: String!
+    "The challenge signed by the private key corresponding to this public key"
+    proof: String!
     "A publically available alias of this ledger."
     alias: String
   }
@@ -28,6 +30,6 @@ export default gql`
 
   type Mutation {
     "Takes a public key and returns its ledger id"
-    register(ledger: LedgerInput!, proof: String!): Ledger
+    register(registration: LedgerRegistration!): Ledger
   }
 `
