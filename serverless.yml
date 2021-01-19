@@ -34,6 +34,7 @@ custom:
   dynamodb:
     start:
       inMemory: true
+      migration: true
     stages:
       - test
       - dev

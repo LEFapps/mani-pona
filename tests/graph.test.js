@@ -1,5 +1,6 @@
 import typeDefs from '../src/typeDefs'
 import resolvers from '../src/resolvers'
+import mani from '../src/client/currency'
 import { ApolloServer } from 'apollo-server'
 import { createTestClient } from 'apollo-server-testing'
 import { DynamoPlus } from 'dynamo-plus'
@@ -14,8 +15,8 @@ describe('GraphQL', () => {
   let server, query, mutate
   // Registration mutation:
   const REGISTER = `
-    mutation ($registration: LedgerRegistration!) {
-      register(registration: $registration) {
+    mutation ($registration: LedgerRegistration!, $transaction: InitialTransaction!) {
+      register(registration: $registration, transaction: $transaction) {
         ledger
         alias
       }
@@ -35,6 +36,19 @@ describe('GraphQL', () => {
     server = new ApolloServer({
       typeDefs,
       resolvers,
+      /*
+      formatError: err => {
+        if (err.originalError) {
+          if (err.originalError.originalError) {
+            console.log(err.originalError.originalError)
+          } else {
+            console.log(err.originalError)
+          }
+        }
+        // console.log(JSON.stringify(err))
+        return err
+      },
+      */
       context: async ({ req }) => {
         return {
           db: DynamoPlus({
@@ -83,6 +97,12 @@ describe('GraphQL', () => {
           publicKey: 'NOT A KEY',
           alias: 'Oops',
           proof: 'foobar'
+        },
+        transaction: {
+          ledger: '',
+          balance: mani(0),
+          date: new Date(),
+          proof: ''
         }
       }
     })
@@ -96,6 +116,12 @@ describe('GraphQL', () => {
           publicKey: keys.publicKeyArmored,
           alias: 'Sorry',
           proof: 'foobar'
+        },
+        transaction: {
+          ledger: '',
+          balance: mani(0),
+          date: new Date(),
+          proof: ''
         }
       }
     })
@@ -110,6 +136,17 @@ describe('GraphQL', () => {
     expect.assertions(5)
     const { data } = await query({ query: CHALLENGE })
     expect(data).toEqual({ 'challenge': 'This is my key, verify me' })
+    const date = new Date()
+    const transaction = {
+      ledger: fingerprint,
+      balance: mani(0),
+      date: new Date(),
+      proof: await newKeys.privateKey.sign({
+        ledger: fingerprint,
+        amount: mani(0),
+        date: date.toISOString()
+      })
+    }
     const result = await mutate({
       mutation: REGISTER,
       variables: {
@@ -117,7 +154,8 @@ describe('GraphQL', () => {
           publicKey: newKeys.publicKeyArmored,
           alias,
           proof: await newKeys.privateKey.sign(data.challenge)
-        }
+        },
+        transaction
       }
     })
     expect(result.errors).toBe(undefined)

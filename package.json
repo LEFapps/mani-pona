@@ -5,7 +5,7 @@
   "main": "src/client/index.js",
   "scripts": {
     "test": "jest",
-    "test:dynamodb": "sls dynamodb start --migrate",
+    "test:dynamodb": "sls dynamodb migrate",
     "offline": "sls offline start"
   },
   "keywords": [
@@ -34,10 +34,12 @@
     "apollo-server": "^2.19.0",
     "apollo-server-lambda": "^2.19.0",
     "aws-sdk": "^2.799.0",
-    "currency.js": "^2.0.3",
+    "currency.js": "git+https://github.com/tgoorden/currency.js.git",
     "dynamo-plus": "^1.5.3",
+    "graphql-scalars": "^1.6.1",
     "jest-dynalite": "^3.2.3",
     "lodash": "^4.17.20",
+    "loglevel": "^1.7.1",
     "openpgp": "^4.10.8"
   }
 }

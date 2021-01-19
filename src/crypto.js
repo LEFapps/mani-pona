@@ -1,5 +1,7 @@
 import * as openpgp from 'openpgp'
 import fs from 'fs'
+import assert from 'assert'
+import _ from 'lodash'
 
 const unpack = async (key) => {
   const { err, keys: [parsedkey] } = await openpgp.key.readArmored(key)
@@ -8,12 +10,18 @@ const unpack = async (key) => {
   }
   return parsedkey
 }
+// reliably sort an objects keys and merge everything into one String
+const sortedObjectString = (obj) => {
+  return Object.keys(obj).sort().reduce((arr, key) => { arr.push(`${key}:${obj[key]}`); return arr }, []).join('|')
+}
 
 const Signer = (key) => {
   let pk
   return {
-    sign: async (text) => {
-      pk = pk === undefined ? await unpack(key) : pk
+    sign: async (input) => {
+      assert(!_.isEmpty(input), 'Missing input')
+      const text = typeof input === 'string' ? input : sortedObjectString(input)
+      pk = pk === undefined ? await unpack(key) : pk // lazy loaded
       const { signature: detachedSignature } = await openpgp.sign({
         message: openpgp.cleartext.fromText(text),
         privateKeys: [pk],
@@ -36,12 +44,13 @@ const Verifier = (key) => {
   let pk
   return {
     /**
-     * @param {string} text - The text that was signed
+     * @param {string|object} text - The text or object that was signed
      * @param {string} signature - The armored and detached OpenPGP signature
      * @returns true is the signature matches
      * @throws An error if the input (key or signature) is not in a valid format or if the signature doesn't match.
      */
-    verify: async (text, signature) => {
+    verify: async (input, signature) => {
+      const text = typeof input === 'string' ? input : sortedObjectString(input)
       pk = pk === undefined ? await unpack(key) : pk
       const { signatures } = await openpgp.verify({
         message: openpgp.cleartext.fromText(text),

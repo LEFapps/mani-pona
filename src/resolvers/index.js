@@ -1,11 +1,41 @@
 import { ApolloError } from 'apollo-server'
+import { GraphQLScalarType } from 'graphql'
+import { Kind } from 'graphql/language'
 import { Verifier } from '../crypto'
+import { LedgerCheck } from '../integrity'
 import { Ledger } from '../dynamodb-ledger'
+import mani from '../client/currency'
+import { DateTimeResolver } from 'graphql-scalars'
+import log from 'loglevel'
 
 // TODO: randomly rotate?
 const challengeGenerator = () => 'This is my key, verify me'
 
 export default {
+  DateTime: DateTimeResolver,
+  Currency: new GraphQLScalarType({
+    name: 'Currency',
+    description: 'Custom scalar type for working consistently with currency-style fractions',
+    serialize (value) {
+      if (value instanceof mani) {
+        return value.format()
+      } else {
+        // note that this is quite permissive and will even allow something like "MANI 10 00,5" as input
+        return mani(value).format()
+      }
+    },
+    parseValue (value) {
+      return mani(value)
+    },
+    parseLiteral (ast) {
+      if (ast.kind !== Kind.STRING || ast.kind !== Kind.INT || ast.kind !== Kind.FLOAT) {
+        throw new TypeError(
+          `Unknown representation of currency ${'value' in ast && ast.value}`
+        )
+      }
+      return mani(ast.value)
+    }
+  }),
   Query: {
     hello: () => 'Hello, world!',
     challenge: challengeGenerator,
@@ -23,12 +53,14 @@ export default {
      * signed, resulting in the `proof`. The key is then stored as the start of a new
      * ledger and the `zeroth` transaction is added.
      */
-    register: async (_, { registration }, { db }) => {
+    register: async (_, { registration, transaction }, { db }) => {
       try {
         const { publicKey, alias, proof } = registration
         const verifier = await Verifier(publicKey)
         const challenge = challengeGenerator()
         await verifier.verify(challenge, proof)
+        const ledgerCheck = LedgerCheck(verifier)
+        await ledgerCheck.initialTransaction(transaction)
         const ledger = {
           ledger: await verifier.fingerprint(),
           alias,
@@ -40,6 +72,7 @@ export default {
         // console.log(ledger)
         return ledger
       } catch (err) {
+        log.error(err)
         throw new ApolloError(err)
       }
     }
