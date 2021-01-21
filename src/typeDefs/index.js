@@ -28,7 +28,7 @@ export default gql`
     "ID of the origin ledger (should be user account)"
     ledger: String!
     "ID of destination ledger"
-    destination: String!
+    destination: String
     amount: Currency!
     previous: String!
     balance: Currency!
@@ -38,10 +38,13 @@ export default gql`
   }
   
   input InitialTransaction {
-    "ID of the origin ledger (should be user account)"
+    "ID of the ledger (will be matched to user account)"
     ledger: String!
+    "Starting balance of the ledger, has to be 0"
     balance: Currency!
+    "The date of creation, has to match the server clock within 2 minutes"
     date: DateTime!
+    "Signature of ledger+balance+date"
     proof: String!
   }
 
@@ -52,10 +55,12 @@ export default gql`
     challenge: String!
     "Find the public key corresponding to this (fingerprint) id"
     findkey(id: String!): Ledger!
+    ""
   }
 
   type Mutation {
     "Takes a public key and returns its ledger id"
     register(registration: LedgerRegistration!, transaction: InitialTransaction!): Ledger
+    balance(): Transaction
   }
 `
