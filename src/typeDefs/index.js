@@ -1,7 +1,8 @@
 import { gql } from 'apollo-server-lambda'
-import { DateTime } from 'graphql-scalars'
+import { mergeTypeDefs } from '@graphql-tools/merge'
+import ledger from './ledger'
 
-export default gql`
+const schema = gql`
   scalar DateTime
 
   scalar Currency 
@@ -24,19 +25,6 @@ export default gql`
     alias: String
   }
   
-  input Transaction {
-    "ID of the origin ledger (should be user account)"
-    ledger: String!
-    "ID of destination ledger"
-    destination: String
-    amount: Currency!
-    previous: String!
-    balance: Currency!
-    date: DateTime!
-    "Proposed chain id"
-    chain: String!
-  }
-  
   input InitialTransaction {
     "ID of the ledger (will be matched to user account)"
     ledger: String!
@@ -55,12 +43,12 @@ export default gql`
     challenge: String!
     "Find the public key corresponding to this (fingerprint) id"
     findkey(id: String!): Ledger!
-    ""
   }
 
   type Mutation {
     "Takes a public key and returns its ledger id"
     register(registration: LedgerRegistration!, transaction: InitialTransaction!): Ledger
-    balance(): Transaction
   }
 `
+
+export default mergeTypeDefs([schema, ledger])

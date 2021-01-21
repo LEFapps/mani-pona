@@ -3,7 +3,7 @@ import { MockClient, MANI } from '..'
 describe('mock notifications', () => {
   it('should provide three mocked notifications', async () => {
     expect.assertions(1)
-    await expect(new MockClient({}).notifications.all()).resolves.toHaveLength(3)
+    await expect(new MockClient({}).notifications.all()).resolves.toHaveLength(4)
   })
 })
 

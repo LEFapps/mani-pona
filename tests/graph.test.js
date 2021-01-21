@@ -5,7 +5,7 @@ import { ApolloServer } from 'apollo-server'
 import { createTestClient } from 'apollo-server-testing'
 import { DynamoPlus } from 'dynamo-plus'
 import { KeyLoader, KeyGenerator } from '../src/crypto'
-import { promises as fs, constants as fsConstants } from 'fs'
+import log from 'loglevel'
 
 const keyFile = './tests/test.keys'
 
@@ -36,19 +36,6 @@ describe('GraphQL', () => {
     server = new ApolloServer({
       typeDefs,
       resolvers,
-      /*
-      formatError: err => {
-        if (err.originalError) {
-          if (err.originalError.originalError) {
-            console.log(err.originalError.originalError)
-          } else {
-            console.log(err.originalError)
-          }
-        }
-        // console.log(JSON.stringify(err))
-        return err
-      },
-      */
       context: async ({ req }) => {
         return {
           db: DynamoPlus({
@@ -78,55 +65,73 @@ describe('GraphQL', () => {
 
   it('should say hello', async () => {
     const SAY_HELLO = `
-  {
-    hello
-  }
-  `
+      {
+        hello
+      }
+    `
     expect.assertions(2)
     const result = await query({ query: SAY_HELLO })
     expect(result.errors).toBe(undefined)
     expect(result.data).toEqual({ 'hello': 'Hello, world!' })
   })
 
-  it('should reject bad proof during registration', async () => {
-    expect.assertions(4)
-    const BAD_KEY = await mutate({
-      mutation: REGISTER,
-      variables: {
-        registration: {
-          publicKey: 'NOT A KEY',
-          alias: 'Oops',
-          proof: 'foobar'
-        },
-        transaction: {
-          ledger: '',
-          balance: mani(0),
-          date: new Date(),
-          proof: ''
-        }
-      }
-    })
-    expect(BAD_KEY.errors).toBeDefined()
-    expect(BAD_KEY.errors[0].message).toEqual('Error: Misformed armored text')
+  describe('Error testing', () => {
+    let mockErrorLog
 
-    const BAD_PROOF = await mutate({
-      mutation: REGISTER,
-      variables: {
-        registration: {
-          publicKey: keys.publicKeyArmored,
-          alias: 'Sorry',
-          proof: 'foobar'
-        },
-        transaction: {
-          ledger: '',
-          balance: mani(0),
-          date: new Date(),
-          proof: ''
-        }
-      }
+    beforeEach(() => {
+      mockErrorLog = jest.fn()
+      jest.spyOn(log, 'error').mockImplementation(mockErrorLog)
     })
-    expect(BAD_PROOF.errors).toBeDefined()
-    expect(BAD_PROOF.errors[0].message).toEqual('Error: Misformed armored text')
+
+    afterEach(() => {
+      jest.spyOn(log, 'error').mockRestore()
+    })
+
+    it('should reject misformed armor during registration', async () => {
+      expect.assertions(3)
+      const BAD_KEY = await mutate({
+        mutation: REGISTER,
+        variables: {
+          registration: {
+            publicKey: 'NOT A KEY',
+            alias: 'Oops',
+            proof: 'foobar'
+          },
+          transaction: {
+            ledger: '',
+            balance: mani(0),
+            date: new Date(),
+            proof: ''
+          }
+        }
+      })
+      expect(BAD_KEY.errors).toBeDefined()
+      expect(BAD_KEY.errors[0].message).toEqual('Error: Misformed armored text')
+      expect(mockErrorLog.mock.calls.length).toBe(1)
+    })
+
+    it('should reject bad proof during registration', async () => {
+      expect.assertions(3)
+      const BAD_PROOF = await mutate({
+        mutation: REGISTER,
+        variables: {
+          registration: {
+            publicKey: keys.publicKeyArmored,
+            alias: 'Sorry',
+            proof: 'foobar'
+          },
+          transaction: {
+            ledger: '',
+            balance: mani(0),
+            date: new Date(),
+            proof: ''
+          }
+        }
+      })
+      expect(BAD_PROOF.errors).toBeDefined()
+      expect(BAD_PROOF.errors[0].message).toEqual('Error: Misformed armored text')
+      expect(mockErrorLog.mock.calls.length).toBe(1)
+    })
   })
 
   it('should register a public key as a new ledger', async () => {
