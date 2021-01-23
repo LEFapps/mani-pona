@@ -43,7 +43,8 @@ import mani from './client/currency'
         ledger: fingerprint,
         amount: mani(0),
         date: date.toISOString()
- */
+        */
+
 const LedgerCheck = (verifier) => {
   return {
     initialTransaction: async (transaction) => {
@@ -52,7 +53,8 @@ const LedgerCheck = (verifier) => {
       // assert(transaction.amount.equals(0), 'Non-zero amount')
       assert(transaction.balance.equals(0), 'Non-zero balance')
       assert(transaction.ledger === fingerprint, 'Wrong ledger ID')
-      // assert(transaction.previous.equals(''), 'Non-empty previous chain code')
+      assert(transaction.previous === '', 'Non-empty previous chain code')
+      assert(transaction.type === 'init', 'Type needs to be init')
       // this may be too problematic to control for as the timestamps are created on the client
       assert(Math.abs(new Date().getTime() - transaction.date.getTime()) < 1000 * 60 * 2, 'Timestamp is off by more than 2 minutes')
       assert(await verifier.verify(

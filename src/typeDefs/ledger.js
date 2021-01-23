@@ -6,19 +6,14 @@ export default gql`
     ledger: String!
     "ID of destination ledger"
     destination: String
-    amount: Currency!
-    previous: String!
+    amount: Currency
+    previous: String
     balance: Currency!
     date: DateTime!
     "Proposed chain id"
-    chain: String!
+    proof: String!
   }
-
-  type Query {
-    "All ledger related queries"
-    ledger(id: String!): LedgerQuery
-  }
-
+  
   type LedgerQuery {
     transactions: TransactionQuery
     # to add: notifications, issuedBuffers, standingOrders, contacts, demurageHistory
@@ -27,5 +22,10 @@ export default gql`
   type TransactionQuery {
     "Most recent transactions"
     all: [Transaction] 
+  }
+
+  type Query {
+    "All ledger related queries"
+    ledger(id: String!): LedgerQuery
   }
 `
