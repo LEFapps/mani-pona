@@ -6,6 +6,7 @@ import { ApolloServer } from 'apollo-server'
 import { createTestClient } from 'apollo-server-testing'
 import { DynamoPlus } from 'dynamo-plus'
 import { KeyLoader, KeyGenerator } from '../src/crypto'
+import fs from 'fs'
 import log from 'loglevel'
 
 // const keyFile = './tests/test.keys'
@@ -218,6 +219,5 @@ describe('GraphQL', () => {
     expect(balance.ledger).toEqual(fingerprint)
     expect(mani(balance.balance)).toEqual(mani(0))
     expect(balance.date.getTime()).toEqual(date.getTime())
-    // console.log(JSON.stringify(transactions.data, 3))
   })
 })

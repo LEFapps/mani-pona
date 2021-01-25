@@ -72,9 +72,10 @@ const Verifier = (key) => {
 
 const KeyWrapper = (key) => {
   return {
-    publicKeyArmored: key.publicKeyArmored,
     publicKey: Verifier(key.publicKeyArmored),
+    publicKeyArmored: key.publicKeyArmored,
     privateKey: Signer(key.privateKeyArmored),
+    privateKeyArmored: key.privateKeyArmored,
     write: async (file) => fs.writeFile(file, JSON.stringify(key))
   }
 }
