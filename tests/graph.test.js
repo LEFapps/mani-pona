@@ -6,7 +6,8 @@ import { ApolloServer } from 'apollo-server'
 import { createTestClient } from 'apollo-server-testing'
 import { DynamoPlus } from 'dynamo-plus'
 import { KeyLoader, KeyGenerator } from '../src/crypto'
-import fs from 'fs'
+import cognitoMock from './cognito.mock'
+// import fs from 'fs'
 import log from 'loglevel'
 
 // const keyFile = './tests/test.keys'
@@ -16,6 +17,7 @@ describe('GraphQL', () => {
   const keys = KeyLoader('./tests/test.keys')
 
   let server, query, mutate, testQuery
+
   // Registration mutation:
   const REGISTER = `
     mutation ($registration: LedgerRegistration!, $transaction: InitialTransaction!) {
@@ -40,13 +42,13 @@ describe('GraphQL', () => {
       debug: true,
       typeDefs,
       resolvers,
-      context: async ({ req }) => {
+      context: async () => {
         return {
           db: DynamoPlus({
             region: 'localhost',
             endpoint: 'http://localhost:8000'
           }),
-          ledger: 'AAAA'
+          ...cognitoMock.context()
         }
       }
     });
@@ -57,7 +59,6 @@ describe('GraphQL', () => {
       const results = await query(args)
       if (results.errors) {
         log.error(JSON.stringify(results.errors, 2))
-        // log.error(results.errors.extensions.exception.stacktrace.join('\n'))
       }
       return results
     }
@@ -146,12 +147,36 @@ describe('GraphQL', () => {
       expect(BAD_PROOF.errors[0].message).toEqual('Error: Misformed armored text')
       expect(mockErrorLog.mock.calls.length).toBe(1)
     })
+
+    it('should deny access to a non-authorized user on a ledger', async () => {
+      expect.assertions(3)
+      cognitoMock.setLedger('foo')
+      const transactions = await query({
+        query: `
+        query ledger($id: String!) {
+          ledger(id: $id) {
+            transactions {
+              all {
+                ledger
+                balance
+                date
+              }
+            }
+          }
+        }
+      `,
+        variables: { id: 'bar' } })
+      expect(transactions.errors).toBeDefined()
+      expect(transactions.errors[0].message).toEqual('Illegal access attempt detected from foo on bar')
+      expect(mockErrorLog.mock.calls.length).toBe(1)
+    })
   })
 
   it('should register a public key as a new ledger', async () => {
     expect.assertions(10)
     const newKeys = await KeyGenerator().generate()
     const fingerprint = await newKeys.publicKey.fingerprint()
+    cognitoMock.setLedger(fingerprint)
     const alias = 'Firstname Lastname'
     const { data } = await query({ query: CHALLENGE })
     expect(data).toEqual({ 'challenge': 'This is my key, verify me' })

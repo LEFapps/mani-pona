@@ -41,7 +41,7 @@ custom:
     start:
       inMemory: true
       migrate: true
-      seed: false
+      seed: true
     seed:
       test:
         sources:

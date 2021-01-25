@@ -56,7 +56,12 @@ export default {
     }
   },
   'LedgerQuery': {
-    'transactions': (id, arg, { db }) => {
+    'transactions': (id, arg, { db, ledger, verified }) => {
+      if (id !== ledger) {
+        const err = `Illegal access attempt detected from ${ledger} on ${id}`
+        log.error(err)
+        throw new ApolloError(err)
+      }
       return id
     }
   },
