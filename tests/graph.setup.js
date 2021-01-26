@@ -58,4 +58,4 @@ const testQuery = async (args) => {
   return results
 }
 
-export { SAY_HELLO, REGISTER, CHALLENGE, server, query, mutate, testQuery }
+export { SAY_HELLO, REGISTER, CHALLENGE, server, query, mutate, testQuery, cognitoMock }

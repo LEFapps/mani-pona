@@ -21,7 +21,9 @@ export default gql`
 
   type TransactionQuery {
     "Most recent transactions"
-    all: [Transaction] 
+    all: [Transaction]
+    "Pending transaction"
+    pending: Transaction
   }
 
   type Query {

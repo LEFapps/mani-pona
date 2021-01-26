@@ -73,6 +73,12 @@ export default {
         log.error(err)
         throw new ApolloError(err)
       }
+    },
+    'pending': async (id, arg, { db }) => {
+
+      // check existing pending transactions
+      // check if demurrage needs to be applied
+      // check if income needs to be added
     }
   },
   Mutation: {

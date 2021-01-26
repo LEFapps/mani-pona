@@ -92,6 +92,14 @@ const Ledger = (db) => {
               ':slash': '/'
             }
           }))).Items
+        },
+        pending: async () => {
+          return db.get(l({
+            Key: {
+              ledger: id,
+              entry: 'pending'
+            }
+          }))
         }
       }
     }
