@@ -1,14 +1,10 @@
-import { jest, describe, expect, it, test, beforeAll, afterAll, beforeEach, afterEach } from '@jest/globals'
-import typeDefs from '../src/typeDefs'
-import resolvers from '../src/resolvers'
+import { jest, describe, expect, it, beforeAll, afterAll, beforeEach, afterEach } from '@jest/globals'
 import mani from '../src/client/currency'
-import { ApolloServer } from 'apollo-server'
-import { createTestClient } from 'apollo-server-testing'
-import { DynamoPlus } from 'dynamo-plus'
 import { KeyLoader, KeyGenerator } from '../src/crypto'
 import cognitoMock from './cognito.mock'
 // import fs from 'fs'
 import log from 'loglevel'
+import { REGISTER, CHALLENGE, query, mutate, testQuery } from './graph.setup'
 
 // const keyFile = './tests/test.keys'
 //
@@ -16,52 +12,11 @@ import log from 'loglevel'
 describe('GraphQL', () => {
   const keys = KeyLoader('./tests/test.keys')
 
-  let server, query, mutate, testQuery
-
-  // Registration mutation:
-  const REGISTER = `
-    mutation ($registration: LedgerRegistration!, $transaction: InitialTransaction!) {
-      register(registration: $registration, transaction: $transaction) {
-        ledger
-        alias
-      }
-    }
-  `
-  // Challenge query:
-  const CHALLENGE = `
-    {
-      challenge
-    }
-  `
   // Bugfix, see: https://github.com/openpgpjs/openpgpjs/issues/1036
   const oldTextEncoder = global.TextEncoder
   const oldTextDecoder = global.TextDecoder
 
   beforeAll(() => {
-    server = new ApolloServer({
-      debug: true,
-      typeDefs,
-      resolvers,
-      context: async () => {
-        return {
-          db: DynamoPlus({
-            region: 'localhost',
-            endpoint: 'http://localhost:8000'
-          }),
-          ...cognitoMock.context()
-        }
-      }
-    });
-    ({ query, mutate } = createTestClient(server))
-    // wrap the regular query in something smarter, only for queries that are
-    // not supposed to fail
-    testQuery = async (args) => {
-      const results = await query(args)
-      if (results.errors) {
-        log.error(JSON.stringify(results.errors, 2))
-      }
-      return results
-    }
     const textEncoding = require('text-encoding-utf-8')
     global.TextEncoder = textEncoding.TextEncoder
     global.TextDecoder = textEncoding.TextDecoder
