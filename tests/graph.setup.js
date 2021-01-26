@@ -1,4 +1,4 @@
-import { ApolloServer } from 'apollo-server'
+import { ApolloServer, gql } from 'apollo-server'
 import { createTestClient } from 'apollo-server-testing'
 import { DynamoPlus } from 'dynamo-plus'
 import typeDefs from '../src/typeDefs'
@@ -6,8 +6,19 @@ import resolvers from '../src/resolvers'
 import cognitoMock from './cognito.mock'
 import log from 'loglevel'
 
+// Bugfix, see: https://github.com/openpgpjs/openpgpjs/issues/1036
+const textEncoding = require('text-encoding-utf-8')
+global.TextEncoder = textEncoding.TextEncoder
+global.TextDecoder = textEncoding.TextDecoder
+
+const SAY_HELLO = gql`
+  {
+    hello
+  }
+`
+
 // Registration mutation:
-const REGISTER = `
+const REGISTER = gql`
   mutation ($registration: LedgerRegistration!, $transaction: InitialTransaction!) {
     register(registration: $registration, transaction: $transaction) {
       ledger
@@ -16,12 +27,11 @@ const REGISTER = `
   }
 `
 // Challenge query:
-const CHALLENGE = `
+const CHALLENGE = gql`
   {
     challenge
   }
 `
-console.log('Creating ApolloServer')
 const server = new ApolloServer({
   debug: true,
   typeDefs,
@@ -48,4 +58,4 @@ const testQuery = async (args) => {
   return results
 }
 
-export { REGISTER, CHALLENGE, server, query, mutate, testQuery }
+export { SAY_HELLO, REGISTER, CHALLENGE, server, query, mutate, testQuery }
