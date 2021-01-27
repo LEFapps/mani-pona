@@ -1,11 +1,13 @@
 import { describe, expect, it } from '@jest/globals'
-import mani from '../src/client/currency'
-import { KeyGenerator } from '../src/crypto'
+import { mani } from '../../src/mani'
+import { KeyGenerator } from '../../src/crypto'
 import cognitoMock from './cognito.mock'
 // import fs from 'fs'
-import { SAY_HELLO, REGISTER, CHALLENGE, query, mutate, testQuery } from './graph.setup'
+import { SAY_HELLO, REGISTER, CHALLENGE, FIND_KEY, ALL_TRANSACTIONS } from './queries'
+import { query, mutate, testQuery } from './setup'
 
 // Bugfix, see: https://github.com/openpgpjs/openpgpjs/issues/1036
+// and https://github.com/facebook/jest/issues/9983
 const textEncoding = require('text-encoding-utf-8')
 global.TextEncoder = textEncoding.TextEncoder
 global.TextDecoder = textEncoding.TextDecoder
@@ -29,7 +31,7 @@ describe('GraphQL registration', () => {
     const date = new Date()
     const transaction = {
       ledger: fingerprint,
-      balance: mani(0),
+      balance: 0,
       date: new Date(),
       proof: await newKeys.privateKey.sign({
         ledger: fingerprint,
@@ -55,14 +57,7 @@ describe('GraphQL registration', () => {
     } })
 
     const verification = await query({
-      query: `
-        query findkey ($id: String!) {
-          findkey(id: $id) {
-            alias
-            publicKey
-          }
-        }
-      `,
+      query: FIND_KEY,
       variables: { id: fingerprint } })
     expect(verification.errors).toBe(undefined)
     expect(verification.data).toEqual({ 'findkey': {
@@ -70,19 +65,7 @@ describe('GraphQL registration', () => {
       publicKey: newKeys.publicKeyArmored
     } })
     const transactions = await testQuery({
-      query: `
-        query ledger($id: String!) {
-          ledger(id: $id) {
-            transactions {
-              all {
-                ledger
-                balance
-                date
-              }
-            }
-          }
-        }
-      `,
+      query: ALL_TRANSACTIONS,
       variables: { id: fingerprint } })
     expect(transactions.errors).toBe(undefined)
     expect(transactions.data.ledger.transactions.all.length).toBe(1)

@@ -10,7 +10,7 @@
 
 import assert from 'assert'
 import _ from 'lodash'
-import mani from './client/currency'
+import { mani } from './mani'
 
 /**
   *

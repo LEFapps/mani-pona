@@ -1,5 +1,6 @@
 import * as openpgp from 'openpgp'
 import fs from 'fs'
+import path from 'path'
 import assert from 'assert'
 import _ from 'lodash'
 
@@ -79,9 +80,20 @@ const KeyWrapper = (key) => {
     write: async (file) => fs.writeFile(file, JSON.stringify(key))
   }
 }
-
+// load from single json file
+/*
 const KeyLoader = (file) => {
   const key = JSON.parse(fs.readFileSync(file))
+  return KeyWrapper(key)
+}
+*/
+
+// load from separate public.key and private.key files
+const KeyLoader = (dir) => {
+  const key = {
+    publicKeyArmored: fs.readFileSync(path.join(dir, 'public.key'), { encoding: 'utf-8' }),
+    privateKeyArmored: fs.readFileSync(path.join(dir, 'private.key'), { encoding: 'utf-8' })
+  }
   return KeyWrapper(key)
 }
 

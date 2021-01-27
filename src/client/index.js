@@ -1,6 +1,6 @@
 import MockClient from './MockClient'
 import ManiClient from './ManiClient'
 import ManiError from './ManiError'
-import MANI from './currency'
+import mani from '../mani'
 
-export { ManiClient, MockClient, ManiError, MANI }
+export { ManiClient, MockClient, ManiError, mani, mani as MANI }

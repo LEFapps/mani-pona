@@ -1,5 +1,5 @@
-import mani from './client/currency'
 import _ from 'lodash'
+import { mani } from './mani'
 
 /**
  * Possible filter methods: EQ | NE | IN | LE | LT | GE | GT | BETWEEN | NOT_NULL | NULL | CONTAINS | NOT_CONTAINS | BEGINS_WITH
@@ -56,6 +56,20 @@ const convert = {
  */
 const Ledger = (db) => {
   return {
+    system: {
+      parameters: async () => {
+        const result = await db.get(l({
+          Key: {
+            ledger: 'system',
+            entry: 'parameters'
+          }
+        }))
+        if (!result.Item) {
+          throw new Error('Missing system parameters')
+        }
+        return result.Item
+      }
+    },
     keys: {
       register: async (ledger) => {
         ledger.entry = 'pk'

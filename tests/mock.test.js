@@ -1,4 +1,6 @@
-import { MockClient, MANI } from '..'
+import { describe, expect, it } from '@jest/globals'
+import { MockClient } from '..'
+import { mani } from '../src/mani'
 
 describe('mock notifications', () => {
   it('should provide three mocked notifications', async () => {
@@ -29,7 +31,7 @@ describe('mock transactions', () => {
     await expect(new MockClient({}).transactions.create({ peerId: 'mock', amount: 5 })).resolves
       .toEqual(
         { 'message': 'Transaction succesfull',
-          'amount': MANI(5) })
+          'amount': mani(5) })
   })
 
   it('should wait for a confirmation in listen mode', async () => {
@@ -37,7 +39,7 @@ describe('mock transactions', () => {
     await expect(new MockClient({}).transactions.listen()).resolves
       .toEqual(
         { 'message': 'Please confirm transaction',
-          'amount': MANI(7.5) })
+          'amount': mani(7.5) })
   })
 
   it('should timeout listen mode', async () => {

@@ -1,6 +1,6 @@
 import { _ } from 'lodash'
 import ManiError from './ManiError'
-import MANI from './currency'
+import { mani } from '../mani'
 
 const frequencies = {
   DAGELIJKS: 'dagelijks',
@@ -12,7 +12,7 @@ const mockStandingOrders = [
   {
     standingOrderId: 0,
     contactId: '',
-    amount: MANI(302.2),
+    amount: mani(302.2),
     endDate: new Date('2021-03-13'),
     frequency: frequencies.MAANDELIJKS,
     msg: 'Een maandelijkse betalingsopdracht'
@@ -20,7 +20,7 @@ const mockStandingOrders = [
   {
     standingOrderId: 1,
     contactId: 3,
-    amount: MANI(50),
+    amount: mani(50),
     endDate: new Date('2021-10-24'),
     frequency: frequencies.WEKELIJKS,
     msg: 'Een maandelijkse betalingsopdracht'
@@ -28,7 +28,7 @@ const mockStandingOrders = [
   {
     standingOrderId: 2,
     contactId: 0,
-    amount: MANI(100.99),
+    amount: mani(100.99),
     endDate: new Date('2021-01-15'),
     frequency: frequencies.DAGELIJKS,
     msg: 'Een maandelijkse betalingsopdracht'
@@ -37,46 +37,46 @@ const mockStandingOrders = [
 
 const mockSystemConfiguration = {
   demurage: {
-    totalDemurage: MANI(-600),
+    totalDemurage: mani(-600),
     tiers: [
       {
         tierId: 0,
-        start: MANI(2000),
-        end: MANI(4000),
+        start: mani(2000),
+        end: mani(4000),
         percentage: 5,
-        contribution: MANI(100)
+        contribution: mani(100)
       },
       {
         tierId: 1,
-        start: MANI(4000),
-        end: MANI(6000),
+        start: mani(4000),
+        end: mani(6000),
         percentage: 10,
-        contribution: MANI(200)
+        contribution: mani(200)
       },
       {
         tierId: 2,
-        start: MANI(6000),
-        end: MANI(8000),
+        start: mani(6000),
+        end: mani(8000),
         percentage: 15,
-        contribution: MANI(300)
+        contribution: mani(300)
       }
     ]
   },
   incomePrediction: {
-    currentPrediction: MANI(2000),
+    currentPrediction: mani(2000),
     predictions: [
-      { month: 1, income: MANI(2020) },
-      { month: 1, income: MANI(1200) },
-      { month: 1, income: MANI(1040) },
-      { month: 1, income: MANI(2530) },
-      { month: 1, income: MANI(1420) },
-      { month: 1, income: MANI(2010) },
-      { month: 1, income: MANI(3010) },
-      { month: 1, income: MANI(1500) },
-      { month: 1, income: MANI(1340) },
-      { month: 1, income: MANI(2200) },
-      { month: 1, income: MANI(2100) },
-      { month: 1, income: MANI(3000) }
+      { month: 1, income: mani(2020) },
+      { month: 1, income: mani(1200) },
+      { month: 1, income: mani(1040) },
+      { month: 1, income: mani(2530) },
+      { month: 1, income: mani(1420) },
+      { month: 1, income: mani(2010) },
+      { month: 1, income: mani(3010) },
+      { month: 1, income: mani(1500) },
+      { month: 1, income: mani(1340) },
+      { month: 1, income: mani(2200) },
+      { month: 1, income: mani(2100) },
+      { month: 1, income: mani(3000) }
     ]
   }
 }
@@ -85,21 +85,21 @@ const mockIssuedBuffers = [
   {
     issuedBufferId: 0,
     contactId: '',
-    amount: MANI(554),
+    amount: mani(554),
     endDate: new Date('2021-01-15')
   },
   {
     issuedBufferId: 2,
     contactId: 0,
     beneficiary: 'Spar Lichtervelde',
-    amount: MANI(6431),
+    amount: mani(6431),
     endDate: new Date('2021-10-24')
   },
   {
     issuedBufferId: 3,
     contactId: 2,
     beneficiary: 'Spar Lichterveldel',
-    amount: MANI(31),
+    amount: mani(31),
     endDate: new Date('2021-03-13')
   }
 ]
@@ -107,12 +107,12 @@ const mockIssuedBuffers = [
 const mockDemurageHistory = [
   {
     demurageId: 0,
-    amount: MANI(-7.1),
+    amount: mani(-7.1),
     date: new Date('2020-11-03')
   },
   {
     demurageId: 1,
-    amount: MANI(-10),
+    amount: mani(-10),
     date: new Date('2020-12-03')
   }
 ]
@@ -122,14 +122,14 @@ const mockTransactions = [
     transactionId: 0,
     contactId: '',
     msg: 'Account aangemaakt',
-    amount: MANI(100),
+    amount: mani(100),
     date: new Date('04 Oct 2020 08:04:21 GMT')
   },
   {
     transactionId: 1,
     contactId: 2,
     msg: 'Koffie en een bagel',
-    amount: MANI(-4),
+    amount: mani(-4),
     date: new Date('07 Oct 2020 16:21:35 GMT'),
     peer: ''
   },
@@ -137,7 +137,7 @@ const mockTransactions = [
     transactionId: 2,
     contactId: 1,
     msg: 'Yoga klas',
-    amount: MANI(-25),
+    amount: mani(-25),
     date: new Date('10 Oct 2020 19:01:53 GMT'),
     peer: ''
   },
@@ -145,21 +145,21 @@ const mockTransactions = [
     transactionId: 3,
     contactId: 3,
     msg: 'Demurrage toegepast',
-    amount: MANI(-7.1),
+    amount: mani(-7.1),
     date: new Date('03 Nov 2020 10:07:38 GMT')
   },
   {
     transactionId: 4,
     contactId: 3,
     msg: 'Demurrage toegepast',
-    amount: MANI(-10),
+    amount: mani(-10),
     date: new Date('03 Dec 2020 10:07:38 GMT')
   },
   {
     transactionId: 5,
     contactId: 0,
     msg: 'Inkomen ontvangen',
-    amount: MANI(100),
+    amount: mani(100),
     date: new Date('03 Nov 2020 10:07:38 GMT')
   }
 ]
@@ -197,21 +197,21 @@ const mockNotifications = [
   {
     type: 'demurrage',
     msg: 'Demurrage aplied',
-    amount: MANI(-7.1),
+    amount: mani(-7.1),
     date: new Date('2020-11-03 10:07:38'),
     confirm: _.noop
   },
   {
     type: 'demurrage',
     msg: 'Demurrage toegepast',
-    amount: MANI(-10),
+    amount: mani(-10),
     date: new Date('03 Dec 2020 10:07:38 GMT'),
     confirm: _.noop
   },
   {
     type: 'income',
     msg: 'Income received',
-    amount: MANI(100),
+    amount: mani(100),
     date: new Date('2020-11-03 10:07:39'),
     confirm: _.noop
   }
@@ -219,7 +219,7 @@ const mockNotifications = [
 
 class MockClient {
   constructor ({ fail }) {
-    this.balance = MANI(163.9)
+    this.balance = mani(163.9)
     this._transactions = mockTransactions
     this._notifications = mockNotifications
     this._standingOrders = mockStandingOrders
@@ -309,7 +309,7 @@ class MockClient {
           } else {
             resolve({
               message: 'Transaction succesfull',
-              amount: MANI(amount)
+              amount: mani(amount)
             })
           }
         }),
@@ -320,7 +320,7 @@ class MockClient {
           } else {
             resolve({
               message: 'Please confirm transaction',
-              amount: MANI(7.5)
+              amount: mani(7.5)
             })
           }
         })

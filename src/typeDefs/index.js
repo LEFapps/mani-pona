@@ -1,9 +1,12 @@
 import { gql } from 'apollo-server-lambda'
 import { mergeTypeDefs } from '@graphql-tools/merge'
 import ledger from './ledger'
+import system from './system'
 
 const schema = gql`
   scalar DateTime
+
+  scalar NonNegativeFloat
 
   scalar Currency 
 
@@ -51,4 +54,4 @@ const schema = gql`
   }
 `
 
-export default mergeTypeDefs([schema, ledger])
+export default mergeTypeDefs([schema, ledger, system])

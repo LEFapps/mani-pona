@@ -1,15 +1,30 @@
-import { ApolloError } from 'apollo-server'
+import { ApolloError, ForbiddenError } from 'apollo-server'
 import { GraphQLScalarType } from 'graphql'
 import { Kind } from 'graphql/language'
+import { DateTimeResolver } from 'graphql-scalars'
+import log from 'loglevel'
 import { Verifier } from '../crypto'
 import { LedgerCheck } from '../integrity'
 import { Ledger } from '../dynamodb-ledger'
-import mani from '../client/currency'
-import { DateTimeResolver } from 'graphql-scalars'
-import log from 'loglevel'
+import { mani, Mani, convertMani } from '../mani'
 
 // TODO: randomly rotate?
 const challengeGenerator = () => 'This is my key, verify me'
+
+/**
+ * Since Apollo Server has its own ideas about error logging, we intercept them early.
+ * This function wraps an asynchronous function that might throw an error.
+ */
+const wrap = (fn) => {
+  return async (...args) => {
+    try {
+      return await fn(...args)
+    } catch (err) {
+      log.error(err)
+      throw new ApolloError(err)
+    }
+  }
+}
 
 export default {
   DateTime: DateTimeResolver,
@@ -18,7 +33,7 @@ export default {
     description: 'Custom scalar type for working consistently with currency-style fractions',
     // value sent to the client
     serialize (value) {
-      if (value instanceof mani) {
+      if (value instanceof Mani) {
         return value.format()
       } else {
         // note that this is quite permissive and will even allow something like "MANI 10 00,5" as input
@@ -42,43 +57,37 @@ export default {
   Query: {
     hello: () => 'Hello, world!',
     challenge: challengeGenerator,
-    findkey: async (_, { id }, { db }) => {
-      try {
-        return await Ledger(db).keys.get(id)
-      } catch (err) {
-        log.error(err)
-        throw new ApolloError(err)
-      }
-    },
+    findkey: wrap(async (_, { id }, { db }) => {
+      return Ledger(db).keys.get(id)
+    }),
     ledger: (_, { id }) => {
       // optional: check if this even exists?
       return id
+    },
+    system: () => {
+      return {}
     }
+  },
+  'System': {
+    'parameters': wrap(async (_, args, { db }) => {
+      return Ledger(db).system.parameters()
+    })
   },
   'LedgerQuery': {
     'transactions': (id, arg, { db, ledger, verified }) => {
       if (id !== ledger) {
         const err = `Illegal access attempt detected from ${ledger} on ${id}`
         log.error(err)
-        throw new ApolloError(err)
+        throw new ForbiddenError(err)
       }
       return id
     }
   },
   'TransactionQuery': {
-    'all': async (id, arg, { db }) => {
-      try {
-        return await Ledger(db).transactions(id).all()
-      } catch (err) {
-        log.error(err)
-        throw new ApolloError(err)
-      }
-    },
+    'all': wrap(async (id, arg, { db }) => {
+      return Ledger(db).transactions(id).all()
+    }),
     'pending': async (id, arg, { db }) => {
-
-      // check existing pending transactions
-      // check if demurrage needs to be applied
-      // check if income needs to be added
     }
   },
   Mutation: {
@@ -87,32 +96,43 @@ export default {
      * signed, resulting in the `proof`. The key is then stored as the start of a new
      * ledger and the `zeroth` transaction is added.
      */
-    register: async (_, { registration, transaction }, { db }) => {
-      try {
-        const { publicKey, alias, proof } = registration
-        const verifier = await Verifier(publicKey)
-        const challenge = challengeGenerator()
-        await verifier.verify(challenge, proof)
-        const ledgerCheck = LedgerCheck(verifier)
-        transaction.type = 'init'
-        transaction.previous = ''
-        await ledgerCheck.initialTransaction(transaction)
-        const fingerprint = await verifier.fingerprint()
-        const ledger = {
-          ledger: fingerprint,
-          alias,
-          publicKey,
-          challenge,
-          proof
-        }
-        await Ledger(db).keys.register(ledger)
-        await Ledger(db).transactions(fingerprint).save(transaction)
-        // console.log(ledger)
-        return ledger
-      } catch (err) {
-        log.error(err)
-        throw new ApolloError(err)
+    register: wrap(async (_, { registration, transaction }, { db }) => {
+      const { publicKey, alias, proof } = registration
+      const verifier = await Verifier(publicKey)
+      const challenge = challengeGenerator()
+      await verifier.verify(challenge, proof)
+      const ledgerCheck = LedgerCheck(verifier)
+      transaction.type = 'init'
+      transaction.previous = ''
+      await ledgerCheck.initialTransaction(transaction)
+      const fingerprint = await verifier.fingerprint()
+      const ledger = {
+        ledger: fingerprint,
+        alias,
+        publicKey,
+        challenge,
+        proof
       }
+      await Ledger(db).keys.register(ledger)
+      await Ledger(db).transactions(fingerprint).save(transaction)
+      // console.log(ledger)
+      return ledger
+    }),
+    jubilee: async (_, { }, { db, userpool, admin, ledger }) => {
+      if (!admin) {
+        log.error(`Illegal access attempt to jubilee by ${ledger}`)
+        throw new ForbiddenError('Unauthorized access')
+      }
+      const output = {
+        ledgers: 0,
+        income: mani(0),
+        demurrage: mani(0)
+      }
+      const resp = await userpool.getUsers() // add pagination token?
+      resp.Users.forEach((user) => {
+
+      })
+      return convertMani(output)
     }
   }
 }

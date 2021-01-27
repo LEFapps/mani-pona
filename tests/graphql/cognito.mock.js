@@ -7,6 +7,7 @@
 const cognito = (function () {
   let ledger = 'foo'
   let verified = false
+  let admin = false
   return {
     setLedger: (id) => {
       ledger = id
@@ -14,10 +15,14 @@ const cognito = (function () {
     setVerified: (b) => {
       verified = b
     },
+    setAdmin: (b) => {
+      admin = b
+    },
     context: (event) => {
       return {
         ledger,
-        verified
+        verified,
+        admin
       }
     }
   }
