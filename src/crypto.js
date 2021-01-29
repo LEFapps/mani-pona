@@ -3,6 +3,7 @@ import fs from 'fs'
 import path from 'path'
 import assert from 'assert'
 import _ from 'lodash'
+import sha1 from 'sha1'
 
 const unpack = async (key) => {
   const { err, keys: [parsedkey] } = await openpgp.key.readArmored(key)
@@ -16,9 +17,8 @@ const sortedObjectString = (obj) => {
   return Object.keys(obj).sort().reduce((arr, key) => { arr.push(`${key}:${obj[key]}`); return arr }, []).join('|')
 }
 
-const Signer = (key) => {
-  let pk
-  return {
+const Signer = (key, pk) => {
+  const signer = {
     sign: async (input) => {
       assert(!_.isEmpty(input), 'Missing input')
       const text = typeof input === 'string' ? input : sortedObjectString(input)
@@ -29,8 +29,17 @@ const Signer = (key) => {
         detached: true
       })
       return detachedSignature
+    },
+    signature: async (input) => {
+      const s = await signer.sign(input)
+      const hash = sha1(s)
+      return {
+        signature: s,
+        hash
+      }
     }
   }
+  return signer
 }
 
 /**
@@ -41,8 +50,7 @@ const Signer = (key) => {
  *
  * @param {string} key - An armored OpenPGP (public) key
  */
-const Verifier = (key) => {
-  let pk
+const Verifier = (key, pk) => {
   return {
     /**
      * @param {string|object} text - The text or object that was signed
@@ -71,11 +79,11 @@ const Verifier = (key) => {
   }
 }
 
-const KeyWrapper = (key) => {
+const KeyWrapper = (key, pk) => {
   return {
-    publicKey: Verifier(key.publicKeyArmored),
+    publicKey: Verifier(key.publicKeyArmored, pk),
     publicKeyArmored: key.publicKeyArmored,
-    privateKey: Signer(key.privateKeyArmored),
+    privateKey: Signer(key.privateKeyArmored, pk),
     privateKeyArmored: key.privateKeyArmored
     // write: async (file) => fs.writeFile(file, JSON.stringify(key))
   }
@@ -104,7 +112,7 @@ const KeyGenerator = (userId = {}) => {
         userIds: [userId],
         rsaBits: 4096
       })
-      return KeyWrapper(key)
+      return KeyWrapper(key, key.key)
     }
   }
 }

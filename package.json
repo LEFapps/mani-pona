@@ -44,6 +44,7 @@
     "jest-dynalite": "^3.2.3",
     "lodash": "^4.17.20",
     "loglevel": "^1.7.1",
-    "openpgp": "^4.10.8"
+    "openpgp": "^4.10.8",
+    "sha1": "^1.1.1"
   }
 }

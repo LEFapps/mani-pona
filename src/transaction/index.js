@@ -1,13 +1,47 @@
-import { forEach, isString, isInteger } from 'lodash'
+import { forEach, isString, isInteger, mapValues } from 'lodash'
 import assert from 'assert'
 import { Mani } from '../mani'
-
+/**
+ * In many ways, this is the heart of the system. Thread carefully.
+ */
 const tools = {
   pad (i) {
     return ('000000000000' + i).slice(-12)
   },
   other (party) { return party === 'ledger' ? 'destination' : 'ledger' },
   path (entry) { return `/${entry.ledger}/${tools.pad(entry.sequence)}/${entry.uid}` },
+  first () {
+    const date = new Date()
+    const entry = {
+      'ledger': 'system',
+      'entry': '/current',
+      'sequence': 0,
+      'date': date,
+      'uid': 'init', // there is nothing before this entry
+      'message': 'tenpo suno pona',
+      'balance': new Mani(0)
+    }
+    entry.payload = `/${entry.date.toISOString()}${tools.path(entry)}/${entry.balance.format()}`
+    return entry
+  },
+  addPrimarySignature (entry, signature) {
+    return {
+      ...entry,
+      next: signature.hash,
+      signature: signature.signature
+    }
+  },
+  toDb (entry) {
+    return mapValues(entry, (value) => {
+      if (value instanceof Mani) {
+        return value.format()
+      }
+      if (value instanceof Date) {
+        return value.toISOString()
+      }
+      return value
+    })
+  },
   next (previous, date) {
     const entry = {
       'ledger': previous.ledger,
@@ -17,7 +51,6 @@ const tools = {
       'date': date,
       'balance': previous.balance // note that is a 'working' balance, so subject to change!
     }
-    entry.payload = `/${entry.ledger}/${tools.pad(entry.sequence)}/${entry.uid}`
     return entry
   },
   continuation (source, target, amount) { // continue from (previous) transactions
