@@ -1,8 +1,9 @@
 import { ApolloServer } from 'apollo-server'
 import { createTestClient } from 'apollo-server-testing'
 import { DynamoPlus } from 'dynamo-plus'
-import typeDefs from '../../src/typeDefs'
-import resolvers from '../../src/resolvers'
+import ledgers from '../../src/dynamodb/'
+import typeDefs from '../../src/graphql/typeDefs'
+import resolvers from '../../src/graphql/resolvers'
 import userpool from '../../src/cognito/userpool'
 import cognitoMock from './cognito.mock'
 import log from 'loglevel'
@@ -18,10 +19,13 @@ const server = new ApolloServer({
   resolvers,
   context: async () => {
     return {
-      db: DynamoPlus({
-        region: 'localhost',
-        endpoint: 'http://localhost:8000'
-      }),
+      ledgers: ledgers(
+        DynamoPlus({
+          region: 'localhost',
+          endpoint: 'http://localhost:8000'
+        }),
+        'manipona'
+      ),
       userpool: userpool('mock-pool'),
       ...cognitoMock.context()
     }
@@ -36,7 +40,7 @@ const wrap = (fn) => {
   return async (args) => {
     const results = await fn(args)
     if (results.errors) {
-      log.error(JSON.stringify(results.errors, 2))
+      log.error(JSON.stringify(results.errors, null, 2))
     }
     return results
   }

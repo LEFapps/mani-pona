@@ -1,0 +1,30 @@
+import { ApolloError } from 'apollo-server'
+import log from 'loglevel'
+
+/**
+ * Since Apollo Server has its own ideas about error logging, we intercept them early.
+ * This function wraps an asynchronous function that might throw an error.
+ */
+const wrap = (fn) => {
+  return async (...args) => {
+    try {
+      return await fn(...args)
+    } catch (err) {
+      log.error('Error while executing async fn', err)
+      throw new ApolloError(err)
+    }
+  }
+}
+
+const wrapSync = (fn) => {
+  return (...args) => {
+    try {
+      return fn(...args)
+    } catch (err) {
+      log.error('Error while executing fn', err)
+      throw new ApolloError(err)
+    }
+  }
+}
+
+export { wrap, wrapSync }

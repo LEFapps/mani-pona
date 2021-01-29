@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import { mani } from './mani'
+import { mani, convertMani } from './mani'
 
 /**
  * Possible filter methods: EQ | NE | IN | LE | LT | GE | GT | BETWEEN | NOT_NULL | NULL | CONTAINS | NOT_CONTAINS | BEGINS_WITH
@@ -23,31 +23,6 @@ const entry = (transaction) => {
 const l = (params) => {
   params.TableName = 'manipona'
   return params
-}
-/**
- * Creates a shallow clone of the obj, with the fn applied to the specified fields, if they exist.
- */
-const convertFields = (obj, fields, fn) => {
-  const result = _.clone(obj)
-  fields.forEach((field) => {
-    if (obj[field]) {
-      result[field] = fn(obj[field])
-    }
-  })
-  return result
-}
-
-const maniFields = ['balance', 'amount']
-
-const convert = {
-  fromDb: (transaction) => {
-    return convertFields(transaction, maniFields, mani)
-  },
-  toDb: (transaction) => {
-    const result = convertFields(transaction, maniFields, m => m.format())
-    result.date = result.date.toISOString()
-    return result
-  }
 }
 
 // const db = (options) => isOffline() ? DynamoPlus(localOptions) : DynamoPlus(options)
@@ -95,7 +70,7 @@ const Ledger = (db) => {
         save: async (transaction) => {
           transaction.entry = entry(transaction)
           return db.put(l({
-            Item: convert.toDb(transaction)
+            Item: convertMani(transaction)
           }))
         },
         all: async () => {
@@ -107,9 +82,38 @@ const Ledger = (db) => {
             }
           }))).Items
         },
+        current: async () => {
+          return db.get(l({
+            Key: {
+              ledger: id,
+              entry: '/current'
+            }
+          }))
+        },
         pending: async () => {
           return db.get(l({
             Key: {
+              ledger: id,
+              entry: 'pending'
+            }
+          }))
+        },
+        make: async (current, transaction) => {
+          // TODO: check integrity?
+          // clobber current transaction:
+          const currentEntry = `/${current.date.toISOString()}/${current.type}/${current.paraph.ledger}`
+          await db.updateItem(l({
+            Key: {
+              ledger: id,
+              entry: '/current'
+            },
+            UpdateExpression: 'set entry = :entry',
+            ExpressionAttributeValues: {
+              ':entry': currentEntry
+            }
+          }))
+          return db.putItem(l({
+            Item: {
               ledger: id,
               entry: 'pending'
             }

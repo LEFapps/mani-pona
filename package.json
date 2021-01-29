@@ -4,7 +4,7 @@
   "description": "A centralized (AWS based) implementation of SuMSy ledgers",
   "main": "src/client/index.js",
   "scripts": {
-    "test": "JEST_CIRCUS=1 jest",
+    "test": "JEST_CIRCUS=1 LEDGER=manipona jest",
     "test:dynamodb": "NODE_ENV=test sls dynamodb start --inMemory",
     "offline": "sls offline start"
   },

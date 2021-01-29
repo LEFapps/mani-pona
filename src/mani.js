@@ -34,28 +34,23 @@ class Mani {
   }
 
   add (value) {
-    this.m.add(wrap(value).m)
-    return this
+    return new Mani(this.m.add(wrap(value).m))
   }
 
   subtract (value) {
-    this.m.subtract(wrap(value).m)
-    return this
+    return new Mani(this.m.subtract(wrap(value).m))
   }
 
   multiply (value) {
-    this.m.multiply(wrap(value).m)
-    return this
+    return new Mani(this.m.multiply(value))
   }
 
   divide (value) {
-    this.m.divide(wrap(value).m)
-    return this
+    return new Mani(this.m.divide(value))
   }
 
   distribute (value) {
-    this.m.distribute(wrap(value).m)
-    return this
+    return new Mani(this.m.distribute(value))
   }
 
   format () {
@@ -64,6 +59,14 @@ class Mani {
 
   equals (value) {
     return this.intValue === wrap(value).intValue
+  }
+
+  clone () {
+    return new Mani(this.value)
+  }
+
+  toString () {
+    return this.m.format()
   }
 }
 

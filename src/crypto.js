@@ -76,8 +76,8 @@ const KeyWrapper = (key) => {
     publicKey: Verifier(key.publicKeyArmored),
     publicKeyArmored: key.publicKeyArmored,
     privateKey: Signer(key.privateKeyArmored),
-    privateKeyArmored: key.privateKeyArmored,
-    write: async (file) => fs.writeFile(file, JSON.stringify(key))
+    privateKeyArmored: key.privateKeyArmored
+    // write: async (file) => fs.writeFile(file, JSON.stringify(key))
   }
 }
 // load from single json file
@@ -109,4 +109,4 @@ const KeyGenerator = (userId = {}) => {
   }
 }
 
-export { Verifier, Signer, KeyLoader, KeyGenerator }
+export { Verifier, Signer, KeyLoader, KeyGenerator, KeyWrapper }

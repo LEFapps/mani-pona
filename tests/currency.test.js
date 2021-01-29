@@ -13,6 +13,14 @@ describe('currency formatting', () => {
     expect(mani(3.33).equals(mani(3.33))).toBe(true)
   })
 
+  it('clones should be equal', () => {
+    expect(mani(5.5).clone()).toEqual(mani(5.5))
+  })
+
+  it('clones should multiply', () => {
+    expect(mani(5.5).multiply(-1)).toEqual(mani(-5.5))
+  })
+
   it('should round to the nearest 0,05 ɱ', () => {
     expect(mani(1.99).format()).toBe('2,00 ɱ')
     expect(mani(1.94).format()).toBe('1,95 ɱ')

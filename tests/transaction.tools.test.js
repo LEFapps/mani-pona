@@ -1,5 +1,4 @@
 import { jest, describe, expect, it, beforeEach } from '@jest/globals'
-import crypto from 'crypto'
 import { tools } from '../src/transaction/'
 import { mani } from '../src/mani'
 
@@ -15,8 +14,6 @@ describe('Transaction tools', () => {
   describe('continued transactions', () => {
     const dateISO = '2021-01-28T00:00:00.000Z'
     const date = new Date(dateISO)
-    // const otherDate = new Date('2021-01-25T00:00:00.000Z')
-    const hash = (str) => crypto.createHash('sha1').update(str).digest('hex') // we use this to fake fingerprints and signatures
     beforeEach(() => {
       jest.spyOn(global.Date, 'now').mockImplementationOnce(() => date.valueOf())
     })

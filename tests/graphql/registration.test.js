@@ -4,7 +4,7 @@ import { KeyGenerator } from '../../src/crypto'
 import cognitoMock from './cognito.mock'
 // import fs from 'fs'
 import { SAY_HELLO, REGISTER, CHALLENGE, FIND_KEY, ALL_TRANSACTIONS } from './queries'
-import { query, mutate, testQuery } from './setup'
+import { query, testMutate, testQuery } from './setup'
 
 // Bugfix, see: https://github.com/openpgpjs/openpgpjs/issues/1036
 // and https://github.com/facebook/jest/issues/9983
@@ -13,57 +13,38 @@ global.TextEncoder = textEncoding.TextEncoder
 global.TextDecoder = textEncoding.TextDecoder
 
 describe('GraphQL registration', () => {
-  it('should say hello', async () => {
-    expect.assertions(2)
-    const result = await query({ query: SAY_HELLO })
-    expect(result.errors).toBe(undefined)
-    expect(result.data).toEqual({ 'hello': 'Hello, world!' })
-  })
-
   it('should register a public key as a new ledger', async () => {
-    expect.assertions(10)
+    expect.assertions(5)
     const newKeys = await KeyGenerator().generate()
     const fingerprint = await newKeys.publicKey.fingerprint()
-    cognitoMock.setLedger(fingerprint)
     const alias = 'Firstname Lastname'
     const { data } = await query({ query: CHALLENGE })
     expect(data).toEqual({ 'challenge': 'This is my key, verify me' })
-    const date = new Date()
-    const transaction = {
-      ledger: fingerprint,
-      balance: 0,
-      date: new Date(),
-      proof: await newKeys.privateKey.sign({
-        ledger: fingerprint,
-        amount: mani(0),
-        date: date.toISOString()
-      })
-    }
-    const result = await mutate({
+    const result = await testMutate({
       mutation: REGISTER,
       variables: {
         registration: {
-          publicKey: newKeys.publicKeyArmored,
+          publicKeyArmored: newKeys.publicKeyArmored,
           alias,
           proof: await newKeys.privateKey.sign(data.challenge)
-        },
-        transaction
+        }
       }
     })
     expect(result.errors).toBe(undefined)
-    expect(result.data).toEqual({ 'register': {
-      ledger: fingerprint,
-      alias
-    } })
+    expect(result.data).toEqual({ 'register': fingerprint })
 
+    // check if we can get the public key
     const verification = await query({
       query: FIND_KEY,
       variables: { id: fingerprint } })
     expect(verification.errors).toBe(undefined)
     expect(verification.data).toEqual({ 'findkey': {
       alias,
-      publicKey: newKeys.publicKeyArmored
+      publicKeyArmored: newKeys.publicKeyArmored
     } })
+    /*
+    // we pretend a corresponding cognitoUser now exists as well
+    cognitoMock.setLedger(fingerprint)
     const transactions = await testQuery({
       query: ALL_TRANSACTIONS,
       variables: { id: fingerprint } })
@@ -73,5 +54,6 @@ describe('GraphQL registration', () => {
     expect(balance.ledger).toEqual(fingerprint)
     expect(mani(balance.balance)).toEqual(mani(0))
     expect(balance.date.getTime()).toEqual(date.getTime())
+    */
   })
 })

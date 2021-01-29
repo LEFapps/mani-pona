@@ -7,11 +7,8 @@ const SAY_HELLO = gql`
 `
 // Registration mutation:
 const REGISTER = gql`
-  mutation ($registration: LedgerRegistration!, $transaction: InitialTransaction!) {
-    register(registration: $registration, transaction: $transaction) {
-      ledger
-      alias
-    }
+  mutation ($registration: LedgerRegistration!) {
+    register(registration: $registration)
   }
 `
 // Challenge query:
@@ -25,7 +22,7 @@ const FIND_KEY = gql`
   query findkey ($id: String!) {
     findkey(id: $id) {
       alias
-      publicKey
+      publicKeyArmored
     }
   }
 `
@@ -67,6 +64,13 @@ const SYSTEM_PARAMETERS = gql`
     }
   }
 `
+
+const INIT = gql`
+  mutation init {
+    init
+  }
+`
+
 const JUBILEE = gql`
   mutation jubilee {
     jubilee {
@@ -77,4 +81,4 @@ const JUBILEE = gql`
   }
 `
 
-export { SAY_HELLO, REGISTER, CHALLENGE, FIND_KEY, ALL_TRANSACTIONS, PENDING_TRANSACTION, SYSTEM_PARAMETERS, JUBILEE }
+export { SAY_HELLO, REGISTER, CHALLENGE, FIND_KEY, ALL_TRANSACTIONS, PENDING_TRANSACTION, SYSTEM_PARAMETERS, JUBILEE, INIT }

@@ -3,6 +3,7 @@ import { GraphQLScalarType } from 'graphql'
 import { Kind } from 'graphql/language'
 import { DateTimeResolver } from 'graphql-scalars'
 import log from 'loglevel'
+import _ from 'lodash'
 import { Verifier } from '../crypto'
 import { LedgerCheck } from '../integrity'
 import { Ledger } from '../dynamodb-ledger'
@@ -118,7 +119,7 @@ export default {
       // console.log(ledger)
       return ledger
     }),
-    jubilee: async (_, { }, { db, userpool, admin, ledger }) => {
+    jubilee: async (root, noargs, { db, userpool, admin, ledger }) => {
       if (!admin) {
         log.error(`Illegal access attempt to jubilee by ${ledger}`)
         throw new ForbiddenError('Unauthorized access')
@@ -128,9 +129,20 @@ export default {
         income: mani(0),
         demurrage: mani(0)
       }
+      const L = Ledger(db)
+      const { income, demurrage } = await L.system.parameters()
       const resp = await userpool.getUsers() // add pagination token?
       resp.Users.forEach((user) => {
-
+        const ledgerEntry = _.find(user.Attributes, ['Name', 'ledger'])
+        if (!ledgerEntry) {
+          log.error(`No ledger attribue for cognito user ${JSON.stringify(user)}`)
+        }
+        const ledger = ledgerEntry.Value
+        const current = L.transactions(ledger).current()
+        if (!current) {
+          throw new ApolloError(`No /current transaction on ledger ${ledger}`)
+        }
+         
       })
       return convertMani(output)
     }

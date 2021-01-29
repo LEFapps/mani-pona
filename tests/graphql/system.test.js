@@ -2,8 +2,8 @@ import { describe, expect, it, beforeAll, afterAll } from '@jest/globals'
 import AWS from 'aws-sdk-mock'
 import { KeyLoader } from '../../src/crypto'
 import { mani } from '../../src/mani'
-import { SYSTEM_PARAMETERS, JUBILEE } from './queries'
-import { query, mutate, testQuery, cognitoMock } from './setup'
+import { INIT, SYSTEM_PARAMETERS, JUBILEE } from './queries'
+import { query, mutate, testQuery, testMutate, cognitoMock } from './setup'
 
 // Bugfix, see: https://github.com/openpgpjs/openpgpjs/issues/1036
 // and https://github.com/facebook/jest/issues/9983
@@ -12,15 +12,23 @@ global.TextEncoder = textEncoding.TextEncoder
 global.TextDecoder = textEncoding.TextDecoder
 
 describe('GraphQL system parameters and jubilee', () => {
-  beforeAll(() => {
+  beforeAll(async () => {
     cognitoMock.setAdmin(true)
     AWS.mock('CognitoIdentityServiceProvider', 'listUsers', function (params, callback) {
       callback(null, {
         Users: [
-
+          {
+            Attributes: [
+              {
+                Name: 'ledger',
+                Value: 'test-jubilee'
+              }
+            ]
+          }
         ]
       })
     })
+    await testMutate({ mutation: INIT })
   })
 
   afterAll(() => {
@@ -38,7 +46,7 @@ describe('GraphQL system parameters and jubilee', () => {
       system: {
         parameters: {
           income: mani(100).format(),
-          demurrage: '5.0'
+          demurrage: 5.0
         }
       }
     })
@@ -51,9 +59,9 @@ describe('GraphQL system parameters and jubilee', () => {
     expect(result.errors).toBe(undefined)
     expect(result.data).toEqual({
       jubilee: {
-        accounts: 1,
-        income: 100,
-        demurrage: 2.5
+        ledgers: 1,
+        income: '100,00 ɱ',
+        demurrage: '2,50 ɱ'
       }
     })
   })
