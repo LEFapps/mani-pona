@@ -1,52 +1,37 @@
-import { KeyGenerator, KeyWrapper } from '../crypto'
-import loglevel from 'loglevel'
-import { tools } from '../transaction'
+import assert from 'assert'
+import { isString } from 'lodash'
+import tools from '../core/tools'
+/**
+ * Strictly dynamodb related system calls. Look in src/core/system.js for heavy lifting.
+ */
+
+const PARAMS_KEY = { ledger: 'system', entry: 'parameters' }
+const PK_KEY = { ledger: 'system', entry: 'pk' }
 
 const system = function (table) {
   return {
-    async parameters () {
-      return table.getItem({ ledger: 'system', entry: 'parameters' }, 'Missing system parameters')
+    async parameters (required = false) {
+      const errorMsg = required ? 'Missing system parameters' : undefined
+      return table.getItem(PARAMS_KEY, errorMsg)
     },
-    async init () {
-      const keys = await table.getItem({ ledger: 'system', entry: 'pk' })
-      const msg = []
-      if (!keys) {
-        // TODO add both entries in one transactWrite operation
-        const keywrapper = await KeyGenerator().generate()
-        const { publicKeyArmored, privateKeyArmored } = keywrapper
-        await table.putItem({
-          ledger: 'system',
-          entry: 'pk',
-          publicKeyArmored,
-          privateKeyArmored
-        })
-        msg.push('new system keys generated')
-        const first = tools.first()
-        const signature = await keywrapper.privateKey.signature(first.payload)
-        const entry = tools.addPrimarySignature(first, signature)
-        await table.putItem(tools.toDb(entry))
-        msg.push('initial system entry added')
-      } else {
-        msg.push('keys found')
-      }
-
-      const parameters = await table.getItem({ ledger: 'system', entry: 'parameters' })
-      if (!parameters) {
-        await table.putItem({
-          ledger: 'system',
-          entry: 'parameters',
-          income: '100 ɱ',
-          demurrage: '5.0'
-        })
-        msg.push('default system parameters generated')
-      } else {
-        msg.push('system params found')
-      }
-      const result = `System initialized (${msg.concat(', ')})`
-      return result
+    async keys (required = false) {
+      const errorMsg = required ? 'Missing system keys' : undefined
+      return table.getItem(PK_KEY, errorMsg)
     },
-    async keys () {
-      return KeyWrapper(await table.getSingleItem({ ledger: 'system', entry: 'pk' }))
+    async saveParameters (parameters) {
+      return table.putItem({
+        ...PARAMS_KEY,
+        ...tools.toDb(parameters)
+      })
+    },
+    async saveKeys ({ publicKeyArmored, privateKeyArmored }) {
+      assert(isString(publicKeyArmored), 'Public key')
+      assert(isString(privateKeyArmored), 'Private key')
+      return table.putItem({
+        ...PK_KEY,
+        publicKeyArmored,
+        privateKeyArmored
+      })
     }
   }
 }

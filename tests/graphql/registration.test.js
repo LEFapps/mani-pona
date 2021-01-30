@@ -42,7 +42,7 @@ describe('GraphQL registration', () => {
       alias,
       publicKeyArmored: newKeys.publicKeyArmored
     } })
-    /*
+    
     // we pretend a corresponding cognitoUser now exists as well
     cognitoMock.setLedger(fingerprint)
     const transactions = await testQuery({
@@ -54,6 +54,5 @@ describe('GraphQL registration', () => {
     expect(balance.ledger).toEqual(fingerprint)
     expect(mani(balance.balance)).toEqual(mani(0))
     expect(balance.date.getTime()).toEqual(date.getTime())
-    */
   })
 })

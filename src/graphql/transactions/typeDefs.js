@@ -7,11 +7,8 @@ export default gql`
     "ID of destination ledger"
     destination: String
     amount: Currency
-    previous: String
     balance: Currency!
     date: DateTime!
-    "Proposed chain id"
-    proof: String!
   }
   
   type LedgerQuery {
@@ -20,10 +17,12 @@ export default gql`
   }
 
   type TransactionQuery {
-    "Most recent transactions"
-    all: [Transaction]
-    "Pending transaction"
+    "Current transaction aka the current balance of the ledger"
+    current: Transaction
+    "Pending transaction (note: use the signing interface to sign, not this informative entry)"
     pending: Transaction
+    "Most recent transactions"
+    recent: [Transaction]
   }
 
   type Query {

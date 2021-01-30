@@ -1,5 +1,5 @@
 import { jest, describe, expect, it, beforeEach } from '@jest/globals'
-import { tools } from '../src/transaction/'
+import tools from '../src/core/tools'
 import { mani } from '../src/mani'
 
 describe('Transaction tools', () => {

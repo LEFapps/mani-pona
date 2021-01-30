@@ -90,4 +90,4 @@ const tools = {
   }
 }
 
-export { tools }
+export default tools
