@@ -27,6 +27,14 @@ const transactions = (table, ledger) => {
     async saveEntry (entry) {
       assert(entry.ledger === ledger, 'Matching ledger')
       return table.putItem(tools.toDb(entry))
+    },
+    // return a "transactional version" of transactions
+    transactional (transaction = table.transaction()) {
+      return {
+        ...transactions(transaction, ledger),
+        transaction,
+        async execute () { return transaction.execute() }
+      }
     }
   }
 }

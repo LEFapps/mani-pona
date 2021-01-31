@@ -15,20 +15,40 @@ function table (db, TableName, options = {}) {
     }
     return table
   }, {})
-  // strips the surrounding stuff
-  t.getItem = async (Key, errorMsg) => {
-    const result = await t.get({ Key })
-    if (errorMsg && !result.Item) {
-      throw errorMsg
+  return {
+    // strips the surrounding stuff
+    async getItem (Key, errorMsg) {
+      const result = await t.get({ Key })
+      if (errorMsg && !result.Item) {
+        throw errorMsg
+      }
+      return result.Item
+    },
+    async putItem (Item) { return t.put({ Item }) },
+    attributes (attributes) {
+      return table(db, TableName, { AttributesToGet: attributes, ...options })
+    },
+    transaction () {
+      const TransactItems = []
+      return {
+        putItem (Item) {
+          TransactItems.push({
+            Put: {
+              TableName,
+              Item,
+              ...options
+            } })
+        },
+        attributes () {}, // we ignore this as we don't expect transactional gets
+        items () {
+          return TransactItems
+        },
+        async execute () {
+          return db.transactWrite({ TransactItems })
+        }
+      }
     }
-    return result.Item
   }
-  t.putItem = async (Item) => t.put({ Item })
-
-  t.attributes = (attributes) => {
-    return table(db, TableName, { AttributesToGet: attributes, ...options })
-  }
-  return t
 }
 
 export default table

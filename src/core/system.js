@@ -14,17 +14,23 @@ const system = (systemStore, systemLedger) => {
       const keys = await systemStore.keys()
       log('Initializing system')
       if (!keys) {
+        const store = systemStore.transactional()
+        const ledger = systemLedger.transactional(store.transaction)
         // TODO add both entries in one transactWrite operation
         const keywrapper = await KeyGenerator().generate()
         log('new system keys generated')
-        await systemStore.saveKeys(keywrapper)
+        store.saveKeys(keywrapper)
         log('system keys stored')
         // generate first entry
-        const first = tools.first()
+        const shadow = tools.shadowEntry('system')
+        const twin = tools.continuation(shadow, shadow, mani(0)) // Ouroboros
+        const first = twin.ledger
         const signature = await keywrapper.privateKey.signature(first.payload)
-        const entry = tools.addPrimarySignature(first, signature)
-        await systemLedger.saveEntry(entry)
+        const entry = tools.addSignature(first, 'system', signature)
+        ledger.saveEntry(entry)
         log('system keys added to ledger')
+        console.log(JSON.stringify(store.transaction.items(), null, 2))
+        await store.transaction.execute()
       } else {
         log('system keys found')
       }

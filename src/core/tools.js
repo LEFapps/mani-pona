@@ -10,26 +10,25 @@ const tools = {
   },
   other (party) { return party === 'ledger' ? 'destination' : 'ledger' },
   path (entry) { return `/${entry.ledger}/${tools.pad(entry.sequence)}/${entry.uid}` },
-  first () {
-    const date = new Date()
-    const entry = {
-      'ledger': 'system',
-      'entry': '/current',
-      'sequence': 0,
-      'date': date,
-      'uid': 'init', // there is nothing before this entry
-      'message': 'tenpo suno pona',
+  shadowEntry (ledger) {
+    // this is the "shadow entry" that sits right before the first entry on a ledger
+    return {
+      ledger,
+      'sequence': -1,
+      'next': 'init', // there is nothing before this entry
       'balance': new Mani(0)
     }
-    entry.payload = `/${entry.date.toISOString()}${tools.path(entry)}/${entry.balance.format()}`
-    return entry
   },
-  addPrimarySignature (entry, signature) {
-    return {
-      ...entry,
-      next: signature.hash,
-      signature: signature.signature
+  addSignature (entry, ledger, signature) {
+    const result = { ...entry }
+    if (entry.ledger === ledger) {
+      entry.next = signature.hash
+      entry.signature = signature.signature
     }
+    if (entry.destination === ledger) {
+      entry.counterSignature = signature.signature
+    }
+    return result
   },
   toDb (entry) {
     return mapValues(entry, (value) => {
@@ -63,7 +62,7 @@ const tools = {
     forEach(twin, (entry, party, twin) => {
       const other = twin[tools.other(party)]
       entry.destination = other.ledger
-      entry.payload = `/${entry.date.toISOString()}/from${tools.path(entry)}/to${tools.path(other)}`
+      entry.payload = `/${entry.date.toISOString()}/from${twin.ledger.ledger}/to${twin.destination.ledger}`
     })
     if (amount) {
       tools.addAmounts(twin, amount)
@@ -72,11 +71,11 @@ const tools = {
   },
   addAmounts (twin, amount) {
     tools.addAmount(twin.ledger, amount)
-    tools.addAmount(twin.destination, amount.multiply(-1))
+    tools.addAmount(twin.destination, amount, -1)
   },
-  addAmount (entry, amount) {
+  addAmount (entry, amount, sign = 1) {
     entry.amount = amount
-    entry.balance = entry.balance.add(amount)
+    entry.balance = entry.balance.add(amount).multiply(sign)
     entry.payload = `${entry.payload}/${amount.format()}`
   },
   check (entry) { // superficial integrity check

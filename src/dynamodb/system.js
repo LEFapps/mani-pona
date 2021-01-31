@@ -32,6 +32,14 @@ const system = function (table) {
         publicKeyArmored,
         privateKeyArmored
       })
+    },
+    // return a "transactional version" of system
+    transactional (transaction = table.transaction()) {
+      return {
+        ...system(transaction),
+        transaction,
+        async execute () { return transaction.execute() }
+      }
     }
   }
 }
