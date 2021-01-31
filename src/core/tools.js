@@ -22,11 +22,11 @@ const tools = {
   addSignature (entry, ledger, signature) {
     const result = { ...entry }
     if (entry.ledger === ledger) {
-      entry.next = signature.hash
-      entry.signature = signature.signature
+      result.next = signature.hash
+      result.signature = signature.signature
     }
     if (entry.destination === ledger) {
-      entry.counterSignature = signature.signature
+      result.counterSignature = signature.signature
     }
     return result
   },
@@ -62,7 +62,7 @@ const tools = {
     forEach(twin, (entry, party, twin) => {
       const other = twin[tools.other(party)]
       entry.destination = other.ledger
-      entry.payload = `/${entry.date.toISOString()}/from${twin.ledger.ledger}/to${twin.destination.ledger}`
+      entry.payload = `/${entry.date.toISOString()}/from${tools.path(twin.ledger)}/to${tools.path(twin.destination)}`
     })
     if (amount) {
       tools.addAmounts(twin, amount)
