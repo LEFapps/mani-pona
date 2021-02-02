@@ -1,6 +1,10 @@
 import { jest, describe, expect, it } from '@jest/globals'
+import { createGenerator } from '@faykah/core'
+import { firstNames } from '@faykah/first-names-en'
+import { lastNames } from '@faykah/last-names-en'
 import { mani } from '../../src/mani'
 import { KeyGenerator } from '../../src/crypto'
+import { flip } from '../../src/core/tools'
 import cognitoMock from './cognito.mock'
 // import fs from 'fs'
 import { REGISTER, CHALLENGE, FIND_KEY, ALL_TRANSACTIONS } from './queries'
@@ -12,44 +16,53 @@ const textEncoding = require('text-encoding-utf-8')
 global.TextEncoder = textEncoding.TextEncoder
 global.TextDecoder = textEncoding.TextDecoder
 
+const generateFirstName = createGenerator(firstNames)
+const generateLastName = createGenerator(lastNames)
+// make a random name
+const generateAlias = () => {
+  return `${generateFirstName()} ${generateLastName()}`
+}
+
 describe('GraphQL registration', () => {
   it('should register a public key as a new ledger', async () => {
-    expect.assertions(1)
+    expect.assertions(10)
     const date = new Date()
     jest.spyOn(global.Date, 'now').mockImplementationOnce(() => date.valueOf())
     const { data: { system: { challenge } } } = await query({ query: CHALLENGE })
     expect(challenge).toEqual(
       expect.stringMatching(new RegExp(
-        `/${date.toISOString()}/from/system/\\d+/[a-z0-9]+/to/<fingerprint>/000000000000/init/0,00 ɱ`
+        `/${date.toISOString()}/from/<fingerprint>/000000000000/init/to/system/\\d+/[a-z0-9]+/0,00 ɱ`
       ))
     )
     const newKeys = await KeyGenerator().generate()
     const fingerprint = await newKeys.publicKey.fingerprint()
     const payload = challenge.replace('<fingerprint>', fingerprint)
-    const alias = 'Firstname Lastname'
+    const alias = generateAlias()
     const result = await testQuery({
       query: REGISTER,
       variables: {
         registration: {
           publicKeyArmored: newKeys.publicKeyArmored,
           alias,
-          proof: await newKeys.privateKey.sign(payload),
-          payload: challenge
+          signature: await newKeys.privateKey.sign(payload),
+          counterSignature: await newKeys.privateKey.sign(flip(payload)),
+          payload
         }
       }
     })
     expect(result.errors).toBe(undefined)
-    expect(result.data).toEqual({ 'register': fingerprint })
-
+    expect(result.data).toEqual({ system: { 'register': fingerprint } })
     // check if we can get the public key
     const verification = await query({
       query: FIND_KEY,
       variables: { id: fingerprint } })
     expect(verification.errors).toBe(undefined)
-    expect(verification.data).toEqual({ 'findkey': {
-      alias,
-      publicKeyArmored: newKeys.publicKeyArmored
-    } })
+    expect(verification.data).toEqual({
+      system: {
+        'findkey': {
+          alias,
+          publicKeyArmored: newKeys.publicKeyArmored
+        } } })
 
     // we pretend a corresponding cognitoUser now exists as well
     cognitoMock.setLedger(fingerprint)

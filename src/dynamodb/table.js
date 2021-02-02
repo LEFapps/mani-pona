@@ -1,4 +1,5 @@
 import { reduce } from 'lodash'
+import loglevel from 'loglevel'
 import tools from '../core/tools'
 
 const methods = ['get', 'put', 'query', 'update']
@@ -46,12 +47,12 @@ function table (db, TableName, options = {}) {
               ...options
             } })
         },
-        updateItem ({ Key }, args) {
+        updateItem (Key, args) {
           TransactItems.push({
             Update: {
               TableName,
               Key,
-              ...args
+              ...tools.toDb(args)
             }
           })
         },
@@ -60,8 +61,12 @@ function table (db, TableName, options = {}) {
           return TransactItems
         },
         async execute () {
-          // console.log(JSON.stringify(TransactItems, null, 2))
-          return db.transactWrite({ TransactItems })
+          const result = await db.transactWrite({ TransactItems })
+          if (result.err) {
+            loglevel.error(JSON.stringify(result.err, null, 2))
+            throw result.err
+          }
+          return TransactItems.length
         }
       }
     }

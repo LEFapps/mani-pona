@@ -7,24 +7,23 @@ import { challenge } from '../core/tools'
  */
 const transactions = (table, ledger, verification) => {
   assert(isObject(verification), 'Verification')
-  // to reduce the size of the results, we limit the attributes requested:
-  const short = table.attributes(['ledger', 'destination', 'amount', 'balance', 'date'])
-  const chain = table.attributes(['ledger', 'sequence', 'next', 'uid'])
+  // to reduce the size of the results, we limit the attributes requested (omitting the signatures)
+  const short = table.attributes(['ledger', 'destination', 'amount', 'balance', 'date', 'payload', 'next', 'sequence', 'uid'])
   return {
     table, // we allow access to the underlying table
     async current () {
       return short.getItem({ ledger, entry: '/current' })
     },
-    async currentChain () {
-      return chain.getItem({ ledger, entry: '/current' })
+    async currentFull () {
+      return table.getItem({ ledger, entry: '/current' })
     },
     async pending () {
       return short.getItem({ ledger, entry: 'pending' })
     },
     async challenge (targetLedger, amount) {
       const date = new Date(Date.now())
-      const current = chain.getItem({ ledger, entry: '/current' })
-      const target = chain.getItem({ targetLedger, entry: '/current' })
+      const current = short.getItem({ ledger, entry: '/current' })
+      const target = short.getItem({ targetLedger, entry: '/current' })
       return challenge(date, current, target, amount)
     },
     async recent () {

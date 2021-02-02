@@ -10,7 +10,7 @@ const IndexDynamo = (db, tableName) => {
     system: system(T),
     transactions: (ledger) => transactions(T, ledger, verify),
     findkey: async (ledger) => {
-      return T.attributes(['publicKeyArmored']).getItem({ ledger, entry: 'pk' })
+      return T.attributes(['ledger', 'publicKeyArmored', 'alias']).getItem({ ledger, entry: 'pk' })
     }
   }
 }

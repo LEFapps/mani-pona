@@ -11,6 +11,7 @@ const wrap = (fn) => {
       return await fn(...args)
     } catch (err) {
       log.error('Error while executing async fn', err)
+      log.error(JSON.stringify(err, null, 2))
       throw new ApolloError(err)
     }
   }

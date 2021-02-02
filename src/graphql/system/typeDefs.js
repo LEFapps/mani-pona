@@ -22,8 +22,10 @@ const SystemSchema = gql`
     publicKeyArmored: String!
     "Payload that was signed as a challenge"
     payload: String!
-    "The challenge signed by the private key corresponding to this public key"
-    proof: String!
+    "Signature of the payload by the private key corresponding to this public key"
+    signature: String!
+    "Signature of the 'flipped' payload (the transaction opposite to the payload)"
+    counterSignature: String! 
     "A publically available alias of this ledger."
     alias: String
   }

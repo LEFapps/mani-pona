@@ -1,7 +1,8 @@
 import loglevel from 'loglevel'
 import assert from 'assert'
+import sha1 from 'sha1'
 import { KeyGenerator, KeyWrapper, Verifier } from '../crypto'
-import { destructure, shadowEntry, continuation, addSignature, addSignatureToTwin, challenge } from './tools'
+import { shadowEntry, continuation, addSignature, challenge, sortKey, toEntry } from './tools'
 import { mani } from '../mani'
 
 const SystemCore = (systemDynamo, SystemTransactions) => {
@@ -13,57 +14,89 @@ const SystemCore = (systemDynamo, SystemTransactions) => {
       // provides the payload of the first transaction on a new ledger
       // clients have to replace '<fingerprint>'
       const date = new Date(Date.now())
-      const current = await SystemTransactions.currentChain()
+      const current = await SystemTransactions.current()
       const target = {
         ledger: '<fingerprint>',
         sequence: -1,
         next: 'init'
       }
-      return challenge(date, current, target, mani(0))
+      return challenge(date, target, current, mani(0))
     },
-    async register ({ publicKeyArmored, proof, payload, alias }) {
-      // TODO: to make this function idempotent, we should simply return with the fingerprint if
-      // we already know this publicKey without erroring out
-      const { date, from, to, amount } = destructure(payload)
+    async register ({ publicKeyArmored, signature, counterSignature, payload, alias }) {
+      loglevel.info(`Registering ${payload}`)
+      const userEntry = toEntry(payload)
+      // this is the transaction viewed 'from' the system (.../from/system/.../0)
+      const systemEntry = toEntry(payload, true)
+
       const verifier = await Verifier(publicKeyArmored)
       const fingerprint = await verifier.fingerprint()
-      assert(amount.equals(mani(0)))
-      assert(from.ledger === 'system')
-      const current = await SystemTransactions.currentChain()
-      if (from.sequence !== (current.sequence + 1) || current.next !== from.uid) {
+
+      // check if the ledger already exists and return identical result (=idempotency)
+      const existingPk = await SystemTransactions.table.getItem({ ledger: fingerprint, entry: 'pk' })
+      if (existingPk) {
+        loglevel.info(`Ledger was already registered: ${fingerprint}`)
+        return fingerprint
+      }
+      // check the transaction (system)
+      assert(userEntry.destination === 'system')
+      const currentSystemEntry = await SystemTransactions.currentFull()
+      if (systemEntry.sequence !== (currentSystemEntry.sequence + 1) || systemEntry.uid !== currentSystemEntry.next) {
         throw new Error('Incorrect or outdated challenge, please try again')
       }
-      assert(to.ledger === fingerprint, 'fingerprint')
-      assert(to.sequence === 0, 'sequence')
-      assert(to.uid === 'init', 'uid')
-      await verifier.verify(payload, proof)
-      // TODO: check the date
+      // check the transaction (user side)
+      assert(userEntry.amount.equals(mani(0)))
+      assert(userEntry.ledger === fingerprint, 'fingerprint')
+      assert(userEntry.sequence === 0, 'sequence')
+      assert(userEntry.uid === 'init', 'uid')
+      // check signatures
+      await verifier.verify(userEntry.payload, signature)
+      await verifier.verify(systemEntry.payload, counterSignature)
       // everything seems OK!
+      // get system keys
+      const systemKeys = KeyWrapper(await systemDynamo.keys())
+      if (!systemKeys) {
+        throw new Error('System keys not found?!?')
+      }
 
+      // start transaction
       const transaction = SystemTransactions.table.transaction()
       // put public key
       transaction.putItem({
         ledger: fingerprint,
-        key: 'pk',
-        challenge: payload, // for prosperity
-        proof,
+        entry: 'pk',
+        created: userEntry.date,
+        challenge: userEntry.payload, // for prosperity
+        proof: signature,
         publicKeyArmored,
         alias
       })
-      // transaction on system ledger
-      transaction.updateItem(current,{
-        UpdateExpression: 'set entry = :entry',
-        ExpressionAttributeValues: {
-          ':entry': sortKey(current)
-        }
-      }
-      const systemEntry = ''
-      const keys = KeyWrapper(await SystemTransactions.keys())
-      const signature = await keys.privateKey.sign(payload)
-      )
-      const twin = addSignatureToTwin(cont, 'system', signature)
-      await SystemTransactions.saveTwin(twin)
-
+      // make current system entry permanent
+      transaction.putItem({
+        ...currentSystemEntry,
+        'entry': sortKey(currentSystemEntry)
+      })
+      // clobber current system entry
+      const systemSignature = await systemKeys.privateKey.sign(systemEntry.payload)
+      transaction.putItem({
+        ...systemEntry,
+        entry: '/current',
+        balance: currentSystemEntry.balance,
+        next: sha1(systemSignature),
+        signature: systemSignature,
+        counterSignature
+      })
+      // make first ledger entry
+      transaction.putItem({
+        ...userEntry,
+        entry: '/current',
+        balance: mani(0),
+        next: sha1(signature),
+        signature,
+        counterSignature: await systemKeys.privateKey.sign(userEntry.payload)
+      })
+      // commit transaction
+      console.log(JSON.stringify(transaction.items(), null, 2))
+      console.log('Finished registration')
       await transaction.execute()
       return fingerprint
     },
@@ -102,19 +135,6 @@ const SystemCore = (systemDynamo, SystemTransactions) => {
         log('system params found')
       }
       return msgs.join(', ')
-    },
-    async initLedger (id) {
-      const currentSystemEntry = SystemTransactions.current()
-      const shadow = shadowEntry(id)
-      const cont = continuation(currentSystemEntry, shadow, mani(0))
-      const payload = cont.ledger.payload
-      const keys = KeyWrapper(await SystemTransactions.keys())
-      const signature = await keys.privateKey.sign(payload)
-      const twin = addSignatureToTwin(cont, 'system', signature)
-      return SystemTransactions.saveTwin(twin)
-    },
-    async keys () {
-      return KeyWrapper(await systemDynamo.keys())
     }
   }
 }

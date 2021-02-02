@@ -20,6 +20,9 @@
   "devDependencies": {
     "@babel/core": "^7.12.9",
     "@babel/preset-env": "^7.12.7",
+    "@faykah/core": "^0.4.0",
+    "@faykah/first-names-en": "^0.1.0",
+    "@faykah/last-names-en": "^0.1.0",
     "apollo-server-testing": "^2.19.0",
     "aws-sdk-mock": "^5.1.0",
     "babel-jest": "^26.6.3",
