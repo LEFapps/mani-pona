@@ -1,6 +1,5 @@
 import assert from 'assert'
 import { isString } from 'lodash'
-import tools from '../core/tools'
 /**
  * Strictly dynamodb related system calls. Look in src/core/system.js for heavy lifting.
  */
@@ -21,7 +20,7 @@ const system = function (table) {
     async saveParameters (parameters) {
       return table.putItem({
         ...PARAMS_KEY,
-        ...tools.toDb(parameters)
+        ...parameters
       })
     },
     async saveKeys ({ publicKeyArmored, privateKeyArmored }) {
@@ -32,6 +31,13 @@ const system = function (table) {
         publicKeyArmored,
         privateKeyArmored
       })
+    },
+    async register (registration) {
+      await table.putItem({
+        ...registration,
+        entry: 'pk'
+      })
+      return registration.ledger
     },
     // return a "transactional version" of system
     transactional (transaction = table.transaction()) {

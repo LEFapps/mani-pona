@@ -1,28 +1,36 @@
 import { gql } from 'apollo-server'
 
-const SAY_HELLO = gql`
-  {
-    hello
+const TIME = gql`
+  query {
+    time
   }
 `
-// Registration mutation:
-const REGISTER = gql`
-  mutation ($registration: LedgerRegistration!) {
-    register(registration: $registration)
-  }
-`
+
 // Challenge query:
 const CHALLENGE = gql`
-  {
-    challenge
+  query {
+    system {
+      challenge
+    }
+  }
+`
+
+// Registration mutation:
+const REGISTER = gql`
+  query ($registration: LedgerRegistration!) {
+    system {
+      register(registration: $registration)
+    }
   }
 `
 
 const FIND_KEY = gql`
   query findkey ($id: String!) {
-    findkey(id: $id) {
-      alias
-      publicKeyArmored
+    system { 
+      findkey(id: $id) {
+        alias
+        publicKeyArmored
+      }
     }
   }
 `
@@ -67,18 +75,22 @@ const SYSTEM_PARAMETERS = gql`
 
 const INIT = gql`
   mutation init {
-    init
+    admin {
+      init
+    }
   }
 `
 
 const JUBILEE = gql`
   mutation jubilee {
-    jubilee {
-      accounts
-      demurrage
-      income
+    admin {
+      jubilee {
+        accounts
+        demurrage
+        income
+      }
     }
   }
 `
 
-export { SAY_HELLO, REGISTER, CHALLENGE, FIND_KEY, ALL_TRANSACTIONS, PENDING_TRANSACTION, SYSTEM_PARAMETERS, JUBILEE, INIT }
+export { TIME, REGISTER, CHALLENGE, FIND_KEY, ALL_TRANSACTIONS, PENDING_TRANSACTION, SYSTEM_PARAMETERS, JUBILEE, INIT }

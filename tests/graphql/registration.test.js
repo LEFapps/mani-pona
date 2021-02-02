@@ -1,9 +1,9 @@
-import { describe, expect, it } from '@jest/globals'
+import { jest, describe, expect, it } from '@jest/globals'
 import { mani } from '../../src/mani'
 import { KeyGenerator } from '../../src/crypto'
 import cognitoMock from './cognito.mock'
 // import fs from 'fs'
-import { SAY_HELLO, REGISTER, CHALLENGE, FIND_KEY, ALL_TRANSACTIONS } from './queries'
+import { REGISTER, CHALLENGE, FIND_KEY, ALL_TRANSACTIONS } from './queries'
 import { query, testMutate, testQuery } from './setup'
 
 // Bugfix, see: https://github.com/openpgpjs/openpgpjs/issues/1036
@@ -14,19 +14,27 @@ global.TextDecoder = textEncoding.TextDecoder
 
 describe('GraphQL registration', () => {
   it('should register a public key as a new ledger', async () => {
-    expect.assertions(5)
+    expect.assertions(1)
+    const date = new Date()
+    jest.spyOn(global.Date, 'now').mockImplementationOnce(() => date.valueOf())
+    const { data: { system: { challenge } } } = await query({ query: CHALLENGE })
+    expect(challenge).toEqual(
+      expect.stringMatching(new RegExp(
+        `/${date.toISOString()}/from/system/\\d+/[a-z0-9]+/to/<fingerprint>/000000000000/init/0,00 ɱ`
+      ))
+    )
     const newKeys = await KeyGenerator().generate()
     const fingerprint = await newKeys.publicKey.fingerprint()
+    const payload = challenge.replace('<fingerprint>', fingerprint)
     const alias = 'Firstname Lastname'
-    const { data } = await query({ query: CHALLENGE })
-    expect(data).toEqual({ 'challenge': 'This is my key, verify me' })
-    const result = await testMutate({
-      mutation: REGISTER,
+    const result = await testQuery({
+      query: REGISTER,
       variables: {
         registration: {
           publicKeyArmored: newKeys.publicKeyArmored,
           alias,
-          proof: await newKeys.privateKey.sign(data.challenge)
+          proof: await newKeys.privateKey.sign(payload),
+          payload: challenge
         }
       }
     })
@@ -42,7 +50,7 @@ describe('GraphQL registration', () => {
       alias,
       publicKeyArmored: newKeys.publicKeyArmored
     } })
-    
+
     // we pretend a corresponding cognitoUser now exists as well
     cognitoMock.setLedger(fingerprint)
     const transactions = await testQuery({

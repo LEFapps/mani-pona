@@ -1,4 +1,5 @@
 import { reduce } from 'lodash'
+import tools from '../core/tools'
 
 const methods = ['get', 'put', 'query', 'update']
 
@@ -22,28 +23,44 @@ function table (db, TableName, options = {}) {
       if (errorMsg && !result.Item) {
         throw errorMsg
       }
-      return result.Item
+      return tools.fromDb(result.Item)
     },
-    async putItem (Item) { return t.put({ Item }) },
+    async putItem (input) {
+      const Item = tools.toDb(input)
+      return t.put({ Item })
+    },
+    async queryItems (query) {
+      return tools.fromDb(await t.query(query))
+    },
     attributes (attributes) {
       return table(db, TableName, { AttributesToGet: attributes, ...options })
     },
     transaction () {
       const TransactItems = []
       return {
-        putItem (Item) {
+        putItem (input) {
           TransactItems.push({
             Put: {
               TableName,
-              Item,
+              Item: tools.toDb(input),
               ...options
             } })
+        },
+        updateItem ({ Key }, args) {
+          TransactItems.push({
+            Update: {
+              TableName,
+              Key,
+              ...args
+            }
+          })
         },
         attributes () {}, // we ignore this as we don't expect transactional gets
         items () {
           return TransactItems
         },
         async execute () {
+          // console.log(JSON.stringify(TransactItems, null, 2))
           return db.transactWrite({ TransactItems })
         }
       }

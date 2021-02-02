@@ -1,7 +1,7 @@
 import { ApolloServer } from 'apollo-server'
 import { createTestClient } from 'apollo-server-testing'
 import { DynamoPlus } from 'dynamo-plus'
-import ledgers from '../../src/dynamodb/'
+import { IndexDynamo } from '../../src/dynamodb/'
 import typeDefs from '../../src/graphql/typeDefs'
 import resolvers from '../../src/graphql/resolvers'
 import userpool from '../../src/cognito/userpool'
@@ -19,7 +19,7 @@ const server = new ApolloServer({
   resolvers,
   context: async () => {
     return {
-      ledgers: ledgers(
+      indexDynamo: IndexDynamo(
         DynamoPlus({
           region: 'localhost',
           endpoint: 'http://localhost:8000'

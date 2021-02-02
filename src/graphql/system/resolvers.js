@@ -1,28 +1,44 @@
 import { ForbiddenError } from 'apollo-server'
 import { wrap } from '../util'
-import system from '../../core/system'
+import SystemCore from '../../core/system'
 
-const resolvers = {
+const SystemResolvers = {
   Query: {
-    'system': () => { return {} }
-  },
-  'System': {
-    'parameters': wrap(async (_, args, { ledgers }) => {
-      return ledgers.system.parameters()
+    'system': wrap((_, args, { indexDynamo }) => {
+      return SystemCore(indexDynamo.system, indexDynamo.transactions('system'))
     })
   },
   'Mutation': {
-    'init': wrap(async (_, noargs, { admin, ledgers }) => {
+    'admin': wrap((_, args, { indexDynamo, admin }) => {
       if (!admin) {
         throw new ForbiddenError('Access denied')
       }
-      return system(ledgers.system, ledgers.transactions('system')).init()
+      return SystemCore(indexDynamo.system, indexDynamo.transactions('system'))
+    })
+  },
+  'System': {
+    'register': wrap(async (SystemCore, { registration }, { indexDynamo }) => {
+      return SystemCore.register(registration)
     }),
-    'jubilee': wrap(async (_, noargs, { userpool, admin, ledgers }) => {
+    'parameters': wrap(async (SystemCore, args, { indexDynamo }) => {
+      return indexDynamo.system.parameters()
+    }),
+    'challenge': wrap(async (SystemCore) => {
+      return SystemCore.challenge()
+    }),
+    'findkey': wrap(async (SystemCore, { id }, { indexDynamo }) => {
+      return indexDynamo.findkey(id)
+    })
+  },
+  'Admin': {
+    'init': wrap(async (SystemCore, noargs, { admin }) => {
+      return SystemCore.init()
+    }),
+    'jubilee': wrap(async (SystemCore, noargs, { userpool, admin }) => {
       // TODO
       return {}
     })
   }
 }
 
-export default resolvers
+export { SystemResolvers }

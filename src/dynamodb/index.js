@@ -1,23 +1,18 @@
 import table from './table'
 import system from './system'
 import transactions from './transactions'
+import verification from '../core/verification'
 
-const ledgers = (db, tableName) => {
+const IndexDynamo = (db, tableName) => {
   const T = table(db, tableName)
+  const verify = verification(T)
   return {
     system: system(T),
-    transactions: (ledger) => transactions(T, ledger),
-    register: async (registration) => {
-      await T.putItem({
-        ...registration,
-        entry: 'pk'
-      })
-      return registration.ledger
-    },
+    transactions: (ledger) => transactions(T, ledger, verify),
     findkey: async (ledger) => {
-      return T.getItem({ ledger, entry: 'pk' })
+      return T.attributes(['publicKeyArmored']).getItem({ ledger, entry: 'pk' })
     }
   }
 }
 
-export default ledgers
+export { IndexDynamo }
