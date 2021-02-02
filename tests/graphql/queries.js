@@ -35,11 +35,11 @@ const FIND_KEY = gql`
   }
 `
 
-const ALL_TRANSACTIONS = gql`
+const RECENT = gql`
   query ledger($id: String!) {
     ledger(id: $id) {
       transactions {
-        all {
+        recent {
           ledger
           balance
           date
@@ -93,4 +93,4 @@ const JUBILEE = gql`
   }
 `
 
-export { TIME, REGISTER, CHALLENGE, FIND_KEY, ALL_TRANSACTIONS, PENDING_TRANSACTION, SYSTEM_PARAMETERS, JUBILEE, INIT }
+export { TIME, REGISTER, CHALLENGE, FIND_KEY, RECENT, PENDING_TRANSACTION, SYSTEM_PARAMETERS, JUBILEE, INIT }

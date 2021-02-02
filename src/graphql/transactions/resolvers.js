@@ -2,7 +2,7 @@ import { ForbiddenError } from 'apollo-server'
 import log from 'loglevel'
 import { wrap } from '../util'
 
-const transactions = {
+const TransactionResolvers = {
   Query: {
     ledger: (_, { id }) => {
       return id // optional: check if this even exists?
@@ -19,16 +19,16 @@ const transactions = {
     }
   },
   'TransactionQuery': {
-    'current': async (id, arg, { ledgers }) => {
-      return ledgers.transactions(id).current()
+    'current': async (id, arg, { indexDynamo }) => {
+      return indexDynamo.transactions(id).current()
     },
-    'pending': async (id, arg, { ledgers }) => {
-      return ledgers.transactions(id).pending()
+    'pending': async (id, arg, { indexDynamo }) => {
+      return indexDynamo.transactions(id).pending()
     },
-    'recent': wrap(async (id, arg, { ledgers }) => {
-      return ledgers.transactions(id).recent()
+    'recent': wrap(async (id, arg, { indexDynamo }) => {
+      return indexDynamo.transactions(id).recent()
     })
   }
 }
 
-export default transactions
+export { TransactionResolvers }

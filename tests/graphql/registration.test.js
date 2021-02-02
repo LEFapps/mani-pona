@@ -1,4 +1,4 @@
-import { jest, describe, expect, it } from '@jest/globals'
+import { jest, describe, expect, it, beforeAll } from '@jest/globals'
 import { createGenerator } from '@faykah/core'
 import { firstNames } from '@faykah/first-names-en'
 import { lastNames } from '@faykah/last-names-en'
@@ -7,7 +7,7 @@ import { KeyGenerator } from '../../src/crypto'
 import { flip } from '../../src/core/tools'
 import cognitoMock from './cognito.mock'
 // import fs from 'fs'
-import { REGISTER, CHALLENGE, FIND_KEY, ALL_TRANSACTIONS } from './queries'
+import { REGISTER, CHALLENGE, FIND_KEY, RECENT, INIT } from './queries'
 import { query, testMutate, testQuery } from './setup'
 
 // Bugfix, see: https://github.com/openpgpjs/openpgpjs/issues/1036
@@ -24,6 +24,12 @@ const generateAlias = () => {
 }
 
 describe('GraphQL registration', () => {
+  beforeAll(async () => {
+    cognitoMock.setAdmin(true)
+    await testMutate({ mutation: INIT })
+    cognitoMock.setAdmin(false)
+  })
+
   it('should register a public key as a new ledger', async () => {
     expect.assertions(10)
     const date = new Date()
@@ -67,11 +73,12 @@ describe('GraphQL registration', () => {
     // we pretend a corresponding cognitoUser now exists as well
     cognitoMock.setLedger(fingerprint)
     const transactions = await testQuery({
-      query: ALL_TRANSACTIONS,
+      query: RECENT,
       variables: { id: fingerprint } })
     expect(transactions.errors).toBe(undefined)
-    expect(transactions.data.ledger.transactions.all.length).toBe(1)
-    const balance = transactions.data.ledger.transactions.all[0]
+    const { ledger: { transactions: { recent } } } = transactions.data
+    expect(recent.length).toBe(1)
+    const balance = recent[0]
     expect(balance.ledger).toEqual(fingerprint)
     expect(mani(balance.balance)).toEqual(mani(0))
     expect(balance.date.getTime()).toEqual(date.getTime())

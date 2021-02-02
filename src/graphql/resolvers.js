@@ -2,7 +2,7 @@ import { DateTimeResolver, NonNegativeFloatResolver } from 'graphql-scalars'
 import { merge } from 'lodash'
 import Currency from './scalars/currency'
 import { SystemResolvers } from './system/resolvers'
-import Transactions from './transactions/resolvers'
+import { TransactionResolvers } from './transactions/resolvers'
 
 const IndexResolvers = merge(
   {
@@ -16,7 +16,7 @@ const IndexResolvers = merge(
     }
   },
   SystemResolvers,
-  Transactions
+  TransactionResolvers
 )
 
 export default IndexResolvers

@@ -31,7 +31,8 @@ function table (db, TableName, options = {}) {
       return t.put({ Item })
     },
     async queryItems (query) {
-      return tools.fromDb(await t.query(query))
+      const items = (await t.query(query)).Items
+      return tools.fromDb(items)
     },
     attributes (attributes) {
       return table(db, TableName, { AttributesToGet: attributes, ...options })

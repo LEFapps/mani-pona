@@ -95,8 +95,6 @@ const SystemCore = (systemDynamo, SystemTransactions) => {
         counterSignature: await systemKeys.privateKey.sign(userEntry.payload)
       })
       // commit transaction
-      console.log(JSON.stringify(transaction.items(), null, 2))
-      console.log('Finished registration')
       await transaction.execute()
       return fingerprint
     },

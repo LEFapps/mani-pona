@@ -27,20 +27,17 @@ const transactions = (table, ledger, verification) => {
       return challenge(date, current, target, amount)
     },
     async recent () {
-      return short.queryItems({
+      return table.queryItems({
         KeyConditionExpression: 'ledger = :ledger AND begins_with(entry, :slash)',
         ExpressionAttributeValues: {
-          ':ledge': ledger,
+          ':ledger': ledger,
           ':slash': '/'
         }
       })
     },
-    async verifier () {
-      return verification(table).getVerifier(ledger)
-    },
     async saveEntry (entry) {
       assert(entry.ledger === ledger, 'Matching ledger')
-      verification.verifyEntry(entry)
+      await verification.verifyEntry(entry)
       return table.putItem(entry)
     },
     async saveTwin (twin) {
