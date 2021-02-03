@@ -5,7 +5,7 @@ import { KeyGenerator, KeyWrapper, Verifier } from '../crypto'
 import { shadowEntry, continuation, addSignature, challenge, sortKey, toEntry } from './tools'
 import { mani } from '../mani'
 
-const SystemCore = (systemDynamo, SystemTransactions) => {
+const SystemCore = (systemDynamo, SystemTransactions, userpool) => {
   return {
     async parameters () {
       return systemDynamo.parameters()
@@ -15,11 +15,7 @@ const SystemCore = (systemDynamo, SystemTransactions) => {
       // clients have to replace '<fingerprint>'
       const date = new Date(Date.now())
       const current = await SystemTransactions.current()
-      const target = {
-        ledger: '<fingerprint>',
-        sequence: -1,
-        next: 'init'
-      }
+      const target = shadowEntry('<fingerprint>')
       return challenge(date, target, current, mani(0))
     },
     async register ({ publicKeyArmored, signature, counterSignature, payload, alias }) {
@@ -99,6 +95,7 @@ const SystemCore = (systemDynamo, SystemTransactions) => {
       return fingerprint
     },
     async init () {
+      // TODO: rewrite this using the payload+flip method from 'register'?
       const msgs = []
       const log = (msg) => {
         // console.log(msg)
@@ -133,6 +130,20 @@ const SystemCore = (systemDynamo, SystemTransactions) => {
         log('system params found')
       }
       return msgs.join(', ')
+    },
+    async jubilee () {
+      const users = await userpool.getUsers()
+      const results = {
+        ledgers: 0,
+        demurrage: mani(0),
+        income: mani(0)
+      }
+      users.forEach((user) => {
+        // const curentUser = await SystemTransactions.getItem({ledger: user.ledger, entry: '/current'})
+        results.ledgers++
+      })
+      console.log(results)
+      return results
     }
   }
 }

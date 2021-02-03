@@ -1,6 +1,9 @@
 import { ApolloServer } from 'apollo-server'
 import { createTestClient } from 'apollo-server-testing'
 import { DynamoPlus } from 'dynamo-plus'
+import { createGenerator } from '@faykah/core'
+import { firstNames } from '@faykah/first-names-en'
+import { lastNames } from '@faykah/last-names-en'
 import { IndexDynamo } from '../../src/dynamodb/'
 import typeDefs from '../../src/graphql/typeDefs'
 import resolvers from '../../src/graphql/resolvers'
@@ -32,7 +35,8 @@ const server = new ApolloServer({
   }
 })
 
-const { query, mutate } = createTestClient(server)
+const testClient = createTestClient(server)
+const { query, mutate } = testClient
 
 // wrap the regular query and mutate in something smarter, only for queries that are
 // not supposed to fail
@@ -50,4 +54,10 @@ const testQuery = wrap(query)
 
 const testMutate = wrap(mutate)
 
-export { server, query, mutate, testQuery, testMutate, cognitoMock }
+const generateFirstName = createGenerator(firstNames)
+const generateLastName = createGenerator(lastNames)
+// make a random name
+const generateAlias = () => {
+  return `${generateFirstName()} ${generateLastName()}`
+}
+export { server, query, mutate, testQuery, testMutate, cognitoMock, generateAlias, testClient }

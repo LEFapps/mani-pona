@@ -51,6 +51,7 @@ const Signer = (key, pk) => {
  * @param {string} key - An armored OpenPGP (public) key
  */
 const Verifier = (key, pk) => {
+  let fingerprint
   return {
     /**
      * @param {string|object} text - The text or object that was signed
@@ -73,8 +74,11 @@ const Verifier = (key, pk) => {
       }
     },
     fingerprint: async () => {
-      pk = pk === undefined ? await unpack(key) : pk
-      return pk.getFingerprint()
+      if (!fingerprint) {
+        pk = pk === undefined ? await unpack(key) : pk
+        fingerprint = await pk.getFingerprint()
+      }
+      return fingerprint
     }
   }
 }

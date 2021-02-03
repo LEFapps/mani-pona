@@ -11,23 +11,9 @@ const textEncoding = require('text-encoding-utf-8')
 global.TextEncoder = textEncoding.TextEncoder
 global.TextDecoder = textEncoding.TextDecoder
 
-describe('GraphQL system parameters and jubilee', () => {
+describe('GraphQL system parameters and time', () => {
   beforeAll(async () => {
     cognitoMock.setAdmin(true)
-    AWS.mock('CognitoIdentityServiceProvider', 'listUsers', function (params, callback) {
-      callback(null, {
-        Users: [
-          {
-            Attributes: [
-              {
-                Name: 'ledger',
-                Value: 'test-jubilee'
-              }
-            ]
-          }
-        ]
-      })
-    })
     await testMutate({ mutation: INIT })
   })
 

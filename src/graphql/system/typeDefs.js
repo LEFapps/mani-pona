@@ -31,7 +31,7 @@ const SystemSchema = gql`
   }
 
   type Jubilee {
-    accounts: Int
+    ledgers: Int
     demurrage: Currency!
     income: Currency!
   }

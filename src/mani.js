@@ -53,6 +53,14 @@ class Mani {
     return new Mani(this.m.distribute(value))
   }
 
+  positive () {
+    return this.m.value > 0
+  }
+
+  negative () {
+    return this.m.value < 0
+  }
+
   format () {
     return this.m.format()
   }

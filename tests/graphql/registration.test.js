@@ -1,27 +1,17 @@
 import { jest, describe, expect, it, beforeAll } from '@jest/globals'
-import { createGenerator } from '@faykah/core'
-import { firstNames } from '@faykah/first-names-en'
-import { lastNames } from '@faykah/last-names-en'
 import { mani } from '../../src/mani'
-import { KeyGenerator } from '../../src/crypto'
+import { KeyManager } from '../../src/client/KeyManager'
 import { flip } from '../../src/core/tools'
 import cognitoMock from './cognito.mock'
 // import fs from 'fs'
 import { REGISTER, CHALLENGE, FIND_KEY, RECENT, INIT } from './queries'
-import { query, testMutate, testQuery } from './setup'
+import { query, testMutate, testQuery, generateAlias } from './setup'
 
 // Bugfix, see: https://github.com/openpgpjs/openpgpjs/issues/1036
 // and https://github.com/facebook/jest/issues/9983
 const textEncoding = require('text-encoding-utf-8')
 global.TextEncoder = textEncoding.TextEncoder
 global.TextDecoder = textEncoding.TextDecoder
-
-const generateFirstName = createGenerator(firstNames)
-const generateLastName = createGenerator(lastNames)
-// make a random name
-const generateAlias = () => {
-  return `${generateFirstName()} ${generateLastName()}`
-}
 
 describe('GraphQL registration', () => {
   beforeAll(async () => {
@@ -40,8 +30,9 @@ describe('GraphQL registration', () => {
         `/${date.toISOString()}/from/<fingerprint>/000000000000/init/to/system/\\d+/[a-z0-9]+/0,00 ɱ`
       ))
     )
-    const newKeys = await KeyGenerator().generate()
-    const fingerprint = await newKeys.publicKey.fingerprint()
+    const keyManager = await KeyManager()
+    const newKeys = await keyManager.getKeys()
+    const fingerprint = await keyManager.fingerprint()
     const payload = challenge.replace('<fingerprint>', fingerprint)
     const alias = generateAlias()
     const result = await testQuery({

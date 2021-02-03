@@ -1,5 +1,6 @@
 import { forEach, isString, isInteger, isArray, mapValues, map } from 'lodash'
 import assert from 'assert'
+import sha1 from 'sha1'
 import { Mani } from '../mani'
 /**
  * In many ways, this is the heart of the system. Thread carefully.
@@ -68,29 +69,27 @@ function shadowEntry (ledger) {
   // this is the "shadow entry" that sits right before the first entry on a ledger
   return {
     ledger,
+    'entry': 'shadow',
     'sequence': -1,
     'next': 'init', // there is nothing before this entry
     'balance': new Mani(0)
   }
 }
 function addSignature (entry, ledger, signature) {
-  const result = { ...entry }
+  assert(isString(signature), 'signature')
+  const result = { ...entry } // cheap clone
   if (entry.ledger === ledger) {
-    result.next = signature.hash
-    result.signature = signature.signature
+    result.next = sha1(signature)
+    result.signature = signature
   }
   if (entry.destination === ledger) {
-    result.counterSignature = signature.signature
+    result.counterSignature = signature
   }
   if (entry.entry === 'pending' && isSigned(result)) {
     result.entry = '/current'
   }
   return result
 }
-function addSignatureTwin (twin, ledger, signature) {
-  return mapValues(twin, (entry) => addSignature(entry, ledger, signature))
-}
-
 function toDb (entry) {
   return mapValues(entry, (value) => {
     if (value instanceof Mani) {
@@ -120,6 +119,7 @@ function fromDb (entry) {
   })
 }
 function isSigned (entry) {
+  if (isString(entry.signature) && entry.ledger === 'system') return true // system entries don't require counterSignatures!
   if (!isString(entry.signature) || !isString(entry.counterSignature)) {
     return false
   }
@@ -136,11 +136,10 @@ function next (previous, date) {
   }
   return entry
 }
-function challenge (date, source, target, amount) {
+function challenge ({ date, source, target, amount }) {
   return payload({ date, from: next(source), to: next(target), amount })
 }
-function continuation (source, target, amount) { // continue from (previous) transactions
-  const date = new Date(Date.now()) // easier to mock
+function continuation ({ date, source, target, amount }) { // continue from (previous) transactions
   const twin = {
     'ledger': next(source, date),
     'destination': next(target, date)
@@ -153,7 +152,7 @@ function continuation (source, target, amount) { // continue from (previous) tra
       entry.amount = party === 'ledger' ? amount : amount.multiply(-1)
       entry.balance = entry.balance.add(entry.amount)
     }
-    entry.payload = payload({ date: entry.date, from: twin[party], to: twin[other(party)], amount: entry.amount })
+    entry.payload = payload({ date: date, from: twin[party], to: twin[other(party)], amount: entry.amount })
   })
   return twin
 }
@@ -166,8 +165,8 @@ function check (entry) { // superficial integrity check
   assert(entry.balance instanceof Mani, 'balance')
   return true
 }
-export { pad, other, shadowEntry, addSignature, addSignatureTwin, toDb, fromDb, isSigned, next, continuation, payload, check, destructure, destructurePath, challenge, toEntry, sortKey, flip }
+export { pad, other, shadowEntry, addSignature, toDb, fromDb, isSigned, next, continuation, payload, check, destructure, destructurePath, challenge, toEntry, sortKey, flip }
 
-const tools = { pad, other, shadowEntry, addSignature, addSignatureTwin, toDb, fromDb, isSigned, next, continuation, payload, check, destructure, destructurePath, challenge, toEntry, sortKey, flip }
+const tools = { pad, other, shadowEntry, addSignature, toDb, fromDb, isSigned, next, continuation, payload, check, destructure, destructurePath, challenge, toEntry, sortKey, flip }
 
 export default tools

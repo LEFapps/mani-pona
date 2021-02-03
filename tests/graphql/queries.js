@@ -85,7 +85,7 @@ const JUBILEE = gql`
   mutation jubilee {
     admin {
       jubilee {
-        accounts
+        ledgers
         demurrage
         income
       }

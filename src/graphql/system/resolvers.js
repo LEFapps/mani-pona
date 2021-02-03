@@ -4,16 +4,16 @@ import SystemCore from '../../core/system'
 
 const SystemResolvers = {
   Query: {
-    'system': wrap((_, args, { indexDynamo }) => {
-      return SystemCore(indexDynamo.system, indexDynamo.transactions('system'))
+    'system': wrap((_, args, { indexDynamo, userpool }) => {
+      return SystemCore(indexDynamo.system, indexDynamo.transactions('system'), userpool)
     })
   },
   'Mutation': {
-    'admin': wrap((_, args, { indexDynamo, admin }) => {
+    'admin': wrap((_, args, { indexDynamo, admin, userpool }) => {
       if (!admin) {
         throw new ForbiddenError('Access denied')
       }
-      return SystemCore(indexDynamo.system, indexDynamo.transactions('system'))
+      return SystemCore(indexDynamo.system, indexDynamo.transactions('system'), userpool)
     })
   },
   'System': {
@@ -35,8 +35,7 @@ const SystemResolvers = {
       return SystemCore.init()
     }),
     'jubilee': wrap(async (SystemCore, noargs, { userpool, admin }) => {
-      // TODO
-      return {}
+      return SystemCore.jubilee(userpool)
     })
   }
 }
