@@ -48,6 +48,7 @@ function toEntry (pl, flip = false) {
   return {
     date,
     ledger,
+    entry: 'pending',
     sequence,
     uid,
     destination: to.ledger,
@@ -125,14 +126,23 @@ function isSigned (entry) {
   }
   return true
 }
-function next (previous, date) {
+function next ({ ledger, sequence, next }) {
+  return {
+    ledger,
+    sequence: sequence + 1,
+    uid: next
+  }
+}
+function nextEntry (from, to, date, amount) {
   const entry = {
-    'ledger': previous.ledger,
+    ...next(from),
     'entry': 'pending', // ready to be signed
-    'sequence': previous.sequence + 1,
-    'uid': previous.next,
-    'date': date,
-    'balance': previous.balance // note that is a 'working' balance, so subject to change!
+    'sequence': from.sequence + 1,
+    'uid': from.next,
+    date,
+    amount,
+    'balance': from.balance.add(amount),
+    payload: payload({ date: date, from: next(from), to: next(to), amount: amount })
   }
   return entry
 }
@@ -140,21 +150,12 @@ function challenge ({ date, source, target, amount }) {
   return payload({ date, from: next(source), to: next(target), amount })
 }
 function continuation ({ date, source, target, amount }) { // continue from (previous) transactions
-  const twin = {
-    'ledger': next(source, date),
-    'destination': next(target, date)
+  return {
+    date,
+    ledger: nextEntry(date, source, target, amount),
+    destination: nextEntry(date, target, source, amount),
+    amount
   }
-  // add cross references:
-  forEach(twin, (entry, party, twin) => {
-    const mirror = twin[other(party)]
-    entry.destination = mirror.ledger
-    if (amount) {
-      entry.amount = party === 'ledger' ? amount : amount.multiply(-1)
-      entry.balance = entry.balance.add(entry.amount)
-    }
-    entry.payload = payload({ date: date, from: twin[party], to: twin[other(party)], amount: entry.amount })
-  })
-  return twin
 }
 function check (entry) { // superficial integrity check
   assert(isString(entry.ledger), 'ledger')

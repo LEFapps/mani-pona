@@ -3,7 +3,7 @@ import { isString } from 'lodash'
 /**
  * Strictly dynamodb related system calls. Look in src/core/system.js for heavy lifting.
  */
-
+// TODO: DEPRECATED
 const PARAMS_KEY = { ledger: 'system', entry: 'parameters' }
 const PK_KEY = { ledger: 'system', entry: 'pk' }
 
@@ -21,15 +21,6 @@ const system = function (table) {
       return table.putItem({
         ...PARAMS_KEY,
         ...parameters
-      })
-    },
-    async saveKeys ({ publicKeyArmored, privateKeyArmored }) {
-      assert(isString(publicKeyArmored), 'Public key')
-      assert(isString(privateKeyArmored), 'Private key')
-      return table.putItem({
-        ...PK_KEY,
-        publicKeyArmored,
-        privateKeyArmored
       })
     },
     async register (registration) {

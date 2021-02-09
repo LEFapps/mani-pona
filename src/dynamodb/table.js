@@ -17,22 +17,23 @@ function table (db, TableName, options = {}) {
     }
     return table
   }, {})
+  async function getItem (Key, errorMsg) {
+    const result = await t.get({ Key })
+    if (errorMsg && !result.Item) {
+      throw errorMsg
+    }
+    return tools.fromDb(result.Item)
+  }
+  async function queryItems (query) {
+    const items = (await t.query(query)).Items
+    return tools.fromDb(items)
+  }
   return {
-    // strips the surrounding stuff
-    async getItem (Key, errorMsg) {
-      const result = await t.get({ Key })
-      if (errorMsg && !result.Item) {
-        throw errorMsg
-      }
-      return tools.fromDb(result.Item)
-    },
+    getItem,
+    queryItems,
     async putItem (input) {
       const Item = tools.toDb(input)
       return t.put({ Item })
-    },
-    async queryItems (query) {
-      const items = (await t.query(query)).Items
-      return tools.fromDb(items)
     },
     attributes (attributes) {
       return table(db, TableName, { AttributesToGet: attributes, ...options })
@@ -40,6 +41,7 @@ function table (db, TableName, options = {}) {
     transaction () {
       const TransactItems = []
       return {
+        getItem,
         putItem (input) {
           TransactItems.push({
             Put: {
@@ -51,6 +53,15 @@ function table (db, TableName, options = {}) {
         updateItem (Key, args) {
           TransactItems.push({
             Update: {
+              TableName,
+              Key,
+              ...tools.toDb(args)
+            }
+          })
+        },
+        deleteItem (Key, args) {
+          TransactItems.push({
+            Delete: {
               TableName,
               Key,
               ...tools.toDb(args)

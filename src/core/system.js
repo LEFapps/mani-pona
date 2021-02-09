@@ -1,133 +1,101 @@
 import loglevel from 'loglevel'
 import assert from 'assert'
 import sha1 from 'sha1'
+import { Transaction } from './transaction'
 import { KeyGenerator, KeyWrapper, Verifier } from '../crypto'
 import { shadowEntry, continuation, addSignature, challenge, sortKey, toEntry } from './tools'
 import { mani } from '../mani'
 
+const PARAMS_KEY = { ledger: 'system', entry: 'parameters' }
+const PK_KEY = { ledger: 'system', entry: 'pk' }
+
 const SystemCore = (systemDynamo, SystemTransactions, userpool) => {
+  const table = SystemTransactions.table
   return {
     async parameters () {
-      return systemDynamo.parameters()
+      return table.getItem(PARAMS_KEY, 'Missing system parameters')
     },
     async challenge () {
       // provides the payload of the first transaction on a new ledger
       // clients have to replace '<fingerprint>'
-      const date = new Date(Date.now())
-      const current = await SystemTransactions.current()
-      const target = shadowEntry('<fingerprint>')
-      return challenge(date, target, current, mani(0))
+      return Transaction(table).create()
+        .then((t) => t.addInit('source', '<fingerprint>'))
+        .then((t) => t.addCurrent('target', 'system'))
+        .then((t) => t.addAmount(mani(0)))
+        .then((t) => t.challenge())
     },
     async register ({ publicKeyArmored, signature, counterSignature, payload, alias }) {
       loglevel.info(`Registering ${payload}`)
-      const userEntry = toEntry(payload)
-      // this is the transaction viewed 'from' the system (.../from/system/.../0)
-      const systemEntry = toEntry(payload, true)
-
       const verifier = await Verifier(publicKeyArmored)
       const fingerprint = await verifier.fingerprint()
-
       // check if the ledger already exists and return identical result (=idempotency)
-      const existingPk = await SystemTransactions.table.getItem({ ledger: fingerprint, entry: 'pk' })
+      const existingPk = await table.getItem({ ledger: fingerprint, entry: 'pk' })
       if (existingPk) {
         loglevel.info(`Ledger was already registered: ${fingerprint}`)
         return fingerprint
       }
-      // check the transaction (system)
-      assert(userEntry.destination === 'system')
-      const currentSystemEntry = await SystemTransactions.currentFull()
-      if (systemEntry.sequence !== (currentSystemEntry.sequence + 1) || systemEntry.uid !== currentSystemEntry.next) {
-        throw new Error('Incorrect or outdated challenge, please try again')
-      }
-      // check the transaction (user side)
-      assert(userEntry.amount.equals(mani(0)))
-      assert(userEntry.ledger === fingerprint, 'fingerprint')
-      assert(userEntry.sequence === 0, 'sequence')
-      assert(userEntry.uid === 'init', 'uid')
-      // check signatures
-      await verifier.verify(userEntry.payload, signature)
-      await verifier.verify(systemEntry.payload, counterSignature)
-      // everything seems OK!
-      // get system keys
-      const systemKeys = KeyWrapper(await systemDynamo.keys())
-      if (!systemKeys) {
-        throw new Error('System keys not found?!?')
-      }
-
-      // start transaction
-      const transaction = SystemTransactions.table.transaction()
-      // put public key
-      transaction.putItem({
+      const trans = table.transaction()
+      // add the public key
+      trans.putItem({
         ledger: fingerprint,
         entry: 'pk',
-        created: userEntry.date,
-        challenge: userEntry.payload, // for prosperity
+        created: new Date(),
+        challenge: payload, // for prosperity
         proof: signature,
         publicKeyArmored,
         alias
       })
-      // make current system entry permanent
-      transaction.putItem({
-        ...currentSystemEntry,
-        'entry': sortKey(currentSystemEntry)
-      })
-      // clobber current system entry
-      const systemSignature = await systemKeys.privateKey.sign(systemEntry.payload)
-      transaction.putItem({
-        ...systemEntry,
-        entry: '/current',
-        balance: currentSystemEntry.balance,
-        next: sha1(systemSignature),
-        signature: systemSignature,
-        counterSignature
-      })
-      // make first ledger entry
-      transaction.putItem({
-        ...userEntry,
-        entry: '/current',
-        balance: mani(0),
-        next: sha1(signature),
-        signature,
-        counterSignature: await systemKeys.privateKey.sign(userEntry.payload)
-      })
-      // commit transaction
-      await transaction.execute()
+      // add initial transaction
+      await Transaction(trans).payload(payload)
+        .then((t) => {
+          console.log(JSON.stringify(t.context(), null, 2))
+          return t
+        })
+        .then((t) => t.sign(fingerprint, signature, counterSignature, publicKeyArmored))
+        .then((t) => t.autosign())
+        .then((t) => {
+          console.log(JSON.stringify(t.items(), null, 2))
+          return t
+        })
+        .then((t) => t.execute())
+      await trans.execute()
       return fingerprint
     },
     async init () {
-      // TODO: rewrite this using the payload+flip method from 'register'?
       const msgs = []
       const log = (msg) => {
-        // console.log(msg)
-        loglevel.info(msg)
+        console.log(msg)
         msgs.push(msg)
       }
-      const keys = await systemDynamo.keys()
-      log('Initializing system')
+      let keys = await table.getItem(PK_KEY)
       if (!keys) {
-        const keywrapper = await KeyGenerator().generate()
-        log('new system keys generated')
-        await systemDynamo.saveKeys(keywrapper)
+        const trans = table.transaction()
+        log('Initializing system')
+        keys = await KeyGenerator().generate()
+        const { publicKeyArmored, privateKeyArmored } = keys
+        await trans.putItem({
+          ...PK_KEY,
+          publicKeyArmored,
+          privateKeyArmored
+        })
         log('system keys stored')
-        // generate first entry
-        const shadow = shadowEntry('system')
-        const twin = continuation(shadow, shadow, mani(0)) // Ouroboros
-        const first = twin.ledger
-        const signature = await keywrapper.privateKey.signature(first.payload)
-        const entry = addSignature(first, 'system', signature)
-        await SystemTransactions.saveEntry(entry)
+        await Transaction(trans).create()
+          .then((t) => t.addInit('source', 'system'))
+          .then((t) => t.addInit('target', 'system'))
+          .then((t) => t.addAmount(mani(0)))
+          .then((t) => t.autosign(keys))
+          .then((t) => t.execute())
         log('system keys added to ledger')
-        // console.log(JSON.stringify(store.transaction.items(), null, 2))
-      } else {
-        log('system keys found')
-      }
-
-      const parameters = await systemDynamo.parameters()
-      if (!parameters) {
-        await systemDynamo.saveParameters({ income: mani(100), demurrage: 5.0 })
+        await table.putItem({
+          ...PARAMS_KEY,
+          income: mani(100),
+          demurrage: 5.0
+        })
         log('default system parameters generated')
+        console.log(JSON.stringify(await trans.items(), null, 2))
+        await trans.execute()
       } else {
-        log('system params found')
+        log('System already initialized')
       }
       return msgs.join(', ')
     },
