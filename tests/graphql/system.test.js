@@ -15,13 +15,6 @@ describe('GraphQL system parameters and time', () => {
     cognitoMock.setAdmin(false)
     // AWS.restore('CognitoIdentityServiceProvider', 'listUsers')
   })
-  /*
-  it('should init the system', async () => {
-    expect.assertions(2)
-    const { errors } = await testMutate({ mutation: INIT })
-    expect(errors).toBe(undefined)
-  })
-  */
   describe('time', () => {
     const dateISO = '2021-01-28T00:00:00.000Z'
     const date = new Date(dateISO)

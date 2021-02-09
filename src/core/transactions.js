@@ -1,11 +1,12 @@
 import assert from 'assert'
 import sha1 from 'sha1'
 import util from 'util'
+import { mapValues } from 'lodash'
 // import log from 'loglevel'
 import { KeyWrapper, Verifier } from '../crypto'
-import { shadowEntry, destructure, next, other, flip, fromDb, isSigned, sortKey, payload } from './tools'
+import { shadowEntry, destructure, next, other, flip, isSigned, sortKey, payload } from './tools'
 
-const log = util.debuglog('StateMachine') // activate by adding NODE_DEBUG=StateMachine to environment
+const log = util.debuglog('ManiCore') // activate by adding NODE_DEBUG=ManiCore to environment
 
 async function mapValuesAsync (object, asyncFn) {
   return Object.fromEntries(
@@ -29,7 +30,7 @@ async function mapValuesAsync (object, asyncFn) {
 async function getSources (table, input) {
   log('Getting sources')
   return mapValuesAsync(input, async (ledger, role, input) => {
-    const current = fromDb(await table.getItem({ ledger, entry: '/current' }))
+    const current = await table.getItem({ ledger, entry: '/current' })
     if (current) return current
     return shadowEntry(ledger)
   })
@@ -67,7 +68,7 @@ async function getNextTargets (table, { sources }) {
 /**
  * Add amount to targets.
  */
-async function addAmount ({ targets: { ledger, destination } }, amount) {
+function addAmount ({ targets: { ledger, destination } }, amount) {
   ledger.amount = amount
   ledger.balance = ledger.balance.add(amount)
   ledger.challenge = payload({ date: ledger.date, from: ledger, to: destination, amount })
@@ -97,7 +98,7 @@ async function addDI ({ targets: { ledger, destination } }, { demurrage, income 
  * Used in: create new ledger, sign transaction (initial)
  */
 function getPayloadTargets ({ payloads, sources }) {
-  return mapValuesAsync(payloads, async (payload, role, payloads) => {
+  return mapValues(payloads, (payload, role, payloads) => {
     const { date, from: { ledger, sequence, uid }, to: { ledger: destination }, challenge, amount } = payload
     const { sequence: sourceSequence, next, balance } = sources[role]
     assert(sequence === (sourceSequence + 1), 'Matching sequence')
@@ -122,9 +123,9 @@ async function getPendingTargets (table, { payloads }) {
   return mapValuesAsync(payloads, async (payload, role, payloads) => {
     const { date, from: { ledger, sequence, uid }, to: { ledger: destination }, amount } = payload
     if (ledger === 'system') {
-      const matching = fromDb(await table.getItem({ ledger, entry: `/${date.toISOString()}/${sequence}/${uid}` })) // already made permanent
+      const matching = await table.getItem({ ledger, entry: `/${date.toISOString()}/${sequence}/${uid}` }) // already made permanent
       if (matching) return matching
-      const current = fromDb(await table.getItem({ ledger, entry: '/current' }))
+      const current = await table.getItem({ ledger, entry: '/current' })
       if (current) {
         assert(date.getTime() === current.date.getTime(), 'Matching dates')
         assert(amount.equals(current.amount), 'Matching amounts')
@@ -132,7 +133,7 @@ async function getPendingTargets (table, { payloads }) {
       }
       throw new Error(`Matching system entry not found`)
     } else {
-      const pending = fromDb(await table.getItem({ ledger, entry: 'pending' }))
+      const pending = await table.getItem({ ledger, entry: 'pending' })
       if (!pending) throw new Error(`No pending entry found on ledger ${ledger}`)
       assert(date.getTime() === pending.date.getTime(), 'Matching date')
       assert(destination === pending.destination, 'Matching destination')
@@ -158,13 +159,19 @@ async function addSystemSignatures (table, { sources, targets }, keys) {
   if (!keys) {
     keys = KeyWrapper(await table.getItem({ ledger: 'system', entry: 'pk' }, 'System keys not found'))
   }
-  const signature = await keys.privateKey.sign(targets.destination.challenge) // Attention: We are reverse signing here!
-  const counterSignature = await keys.privateKey.sign(targets.ledger.challenge)
-  targets = addSignature(targets, { signature, counterSignature })
+  targets.destination.signature = await keys.privateKey.sign(targets.destination.challenge)
+  const next = sha1(targets.destination.signature)
+  targets.destination.next = next
   if (targets.ledger.ledger === 'system') {
     // system init
     assert(targets.destination.challenge === targets.ledger.challenge, 'Oroborous system init')
-    targets = addSignature({ ledger: targets.destination, destination: targets.ledger }, { signature: counterSignature, counterSignature: signature }) // Reverse
+    const signature = targets.destination.signature
+    targets.ledger.signature = signature
+    targets.ledger.counterSignature = signature
+    targets.ledger.next = next
+    targets.destination.counterSignature = signature
+  } else {
+    targets.ledger.counterSignature = await keys.privateKey.sign(targets.ledger.challenge)
   }
   return targets
 }
@@ -173,7 +180,6 @@ async function addSystemSignatures (table, { sources, targets }, keys) {
  * This automatically saves entries.
  */
 async function addSignatures (table, { targets }, { ledger, signature, counterSignature, publicKeyArmored }) {
-  log(`Adding signatures for ${ledger}\n${JSON.stringify(targets, null, 2)}`)
   if (ledger) {
     assert(ledger === targets.ledger.ledger, 'Target ledger')
     if (!publicKeyArmored) {
@@ -185,7 +191,6 @@ async function addSignatures (table, { targets }, { ledger, signature, counterSi
     await verifier.verify(targets.destination.challenge, counterSignature) // throws error if wrong
     targets = addSignature(targets, { signature, counterSignature })
   }
-  log(`Signed targets:\n${JSON.stringify(targets, null, 2)}`)
   return targets
 }
 /**

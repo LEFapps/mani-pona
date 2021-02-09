@@ -7,12 +7,6 @@ import cognitoMock from './cognito.mock'
 import { REGISTER, CHALLENGE, FIND_KEY, RECENT, INIT } from './queries'
 import { query, testMutate, testQuery, generateAlias } from './setup'
 
-// Bugfix, see: https://github.com/openpgpjs/openpgpjs/issues/1036
-// and https://github.com/facebook/jest/issues/9983
-const textEncoding = require('text-encoding-utf-8')
-global.TextEncoder = textEncoding.TextEncoder
-global.TextDecoder = textEncoding.TextDecoder
-
 describe('GraphQL registration', () => {
   beforeAll(async () => {
     cognitoMock.setAdmin(true)
@@ -23,7 +17,7 @@ describe('GraphQL registration', () => {
   it('should register a public key as a new ledger', async () => {
     expect.assertions(10)
     const date = new Date()
-    jest.spyOn(global.Date, 'now').mockImplementationOnce(() => date.valueOf())
+    jest.spyOn(global.Date, 'now').mockImplementation(() => date.valueOf())
     const { data: { system: { challenge } } } = await query({ query: CHALLENGE })
     expect(challenge).toEqual(
       expect.stringMatching(new RegExp(

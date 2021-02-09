@@ -123,12 +123,10 @@ const KeyGenerator = (userId = {}) => {
   bugfix()
   return {
     generate: async () => {
-      console.log('Generating key')
       const key = await openpgp.generateKey({
         userIds: [userId],
         rsaBits: 4096
       })
-      console.log('Key generated')
       return KeyWrapper(key, key.key)
     }
   }
