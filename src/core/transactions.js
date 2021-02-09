@@ -82,7 +82,7 @@ function addAmount ({ targets: { ledger, destination } }, amount) {
 /**
  * Add Demmurage and Income.
  */
-async function addDI ({ targets: { ledger, destination } }, { demurrage, income }) {
+function addDI ({ targets: { ledger, destination } }, { demurrage, income }) {
   ledger.demurrage = ledger.balance.multiply(demurrage)
   ledger.income = income
   ledger.amount = ledger.income.subtract(ledger.demurrage)

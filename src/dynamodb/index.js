@@ -7,6 +7,7 @@ const IndexDynamo = (db, tableName) => {
   const T = table(db, tableName)
   const verify = verification(T)
   return {
+    table: T,
     system: system(T),
     transactions: (ledger) => transactions(T, ledger, verify),
     findkey: async (ledger) => {

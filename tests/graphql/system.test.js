@@ -1,9 +1,7 @@
 import { jest, describe, expect, it, beforeAll, beforeEach, afterAll } from '@jest/globals'
-import AWS from 'aws-sdk-mock'
-import { KeyLoader } from '../../src/crypto'
 import { mani } from '../../src/mani'
-import { INIT, SYSTEM_PARAMETERS, TIME, JUBILEE } from './queries'
-import { query, mutate, testQuery, testMutate, cognitoMock } from './setup'
+import { INIT, SYSTEM_PARAMETERS, TIME } from './queries'
+import { testQuery, testMutate, cognitoMock } from './setup'
 
 describe('GraphQL system parameters and time', () => {
   beforeAll(async () => {
@@ -13,7 +11,6 @@ describe('GraphQL system parameters and time', () => {
 
   afterAll(() => {
     cognitoMock.setAdmin(false)
-    // AWS.restore('CognitoIdentityServiceProvider', 'listUsers')
   })
   describe('time', () => {
     const dateISO = '2021-01-28T00:00:00.000Z'
@@ -48,22 +45,4 @@ describe('GraphQL system parameters and time', () => {
       }
     })
   })
-
-  // TODO: add current 'system balance'? (it changes due to testing though...)
-
-  /*
-  it('should apply the jubilee', async () => {
-    const result = await mutate({
-      mutation: JUBILEE
-    })
-    expect(result.errors).toBe(undefined)
-    expect(result.data).toEqual({
-      jubilee: {
-        ledgers: 1,
-        income: '100,00 ɱ',
-        demurrage: '2,50 ɱ'
-      }
-    })
-  })
-  */
 })

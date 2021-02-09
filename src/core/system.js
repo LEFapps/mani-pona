@@ -1,5 +1,6 @@
 import util from 'util'
 import loglevel from 'loglevel'
+import StateMachine from './statemachine'
 import { getSources, getPayloads, getNextTargets, addAmount, addDI, getPayloadTargets, getPendingTargets, addSignatures, addSystemSignatures, saveResults } from './transactions'
 import { Transaction } from './transaction'
 import { KeyGenerator, KeyWrapper, Verifier } from '../crypto'
@@ -10,12 +11,9 @@ const PARAMS_KEY = { ledger: 'system', entry: 'parameters' }
 const PK_KEY = { ledger: 'system', entry: 'pk' }
 const logutil = util.debuglog('ManiCore') // activate by adding NODE_DEBUG=StateMachine to environment
 
-const SystemCore = (systemDynamo, SystemTransactions, userpool) => {
-  const table = SystemTransactions.table
-  const msgs = []
+const SystemCore = (table, userpool) => {
   const log = (msg) => {
     logutil(msg)
-    msgs.push(msg)
   }
   return {
     async parameters () {
@@ -35,43 +33,37 @@ const SystemCore = (systemDynamo, SystemTransactions, userpool) => {
       trans.putItem({ ...PK_KEY, publicKeyArmored, privateKeyArmored })
       trans.putItem({ ...PARAMS_KEY, income: mani(100), demurrage: 5.0 })
       log('Keys and parameters stored')
-      const context = {
-        sources: await getSources(trans, { ledger: 'system', destination: 'system' })
-      }
-      context.targets = await getNextTargets(trans, context)
-      context.targets = addAmount(context, mani(0))
-      context.targets = await addSystemSignatures(trans, context, keys)
-      saveResults(trans, context)
-      await trans.execute()
+      await StateMachine(trans)
+        .getSources({ ledger: 'system', destination: 'system' })
+        .then(t => t.addAmount(mani(0)))
+        .then(t => t.addSystemSignatures(keys))
+        .then(t => t.save()).catch(err => log(err, err.stack))
       log(`Database update:\n${JSON.stringify(trans.items(), null, 2)}`)
+      await trans.execute()
     },
     async challenge () {
       // provides the payload of the first transaction on a new ledger
       // clients have to replace '<fingerprint>'
-      const context = {
-        sources: await getSources(table, { ledger: '<fingerprint>', destination: 'system' })
-      }
-      context.targets = await getNextTargets(table, context)
-      context.targets = await addAmount(context, mani(0))
-      return context.targets.ledger.challenge
+      return StateMachine(table)
+        .getSources({ ledger: '<fingerprint>', destination: 'system' })
+        .then(t => t.addAmount(mani(0)))
+        .then(t => t.challenge())
     },
     async register (registration) {
       const { publicKeyArmored, payload, alias } = registration
       const ledger = await Verifier(publicKeyArmored).fingerprint()
       const existing = await table.getItem({ ledger, entry: '/current' })
       if (existing) return ledger
-      const context = {
-        payloads: getPayloads(payload),
-        sources: await getSources(table, { ledger, destination: 'system' })
-      }
-      context.targets = getPayloadTargets(context)
-      context.targets = addAmount(context, mani(0))
-      context.targets = await addSystemSignatures(table, context)
-      context.targets = await addSignatures(table, context, { ledger, ...registration })
-      // log('Registration context:\n' + JSON.stringify(context, null, 2))
       const transaction = table.transaction()
+      await StateMachine(transaction)
+        .getPayloads(payload)
+        .getSources({ ledger, destination: 'system' })
+        .then(t => t.continuePayload())
+        .then(t => t.addSystemSignatures())
+        .then(t => t.addSignatures({ ledger, ...registration }))
+        .then(t => t.save())
+      // log('Registration context:\n' + JSON.stringify(context, null, 2))
       transaction.putItem({ ledger, entry: 'pk', publicKeyArmored, alias, challenge: payload })
-      saveResults(transaction, context)
       await transaction.execute()
       // log(`Database update:\n${JSON.stringify(transaction.items(), null, 2)}`)
       return ledger
@@ -83,10 +75,9 @@ const SystemCore = (systemDynamo, SystemTransactions, userpool) => {
         demurrage: mani(0),
         income: mani(0)
       }
-      users.forEach((user) => {
-        // const curentUser = await SystemTransactions.getItem({ledger: user.ledger, entry: '/current'})
+      for (let user of users) { // these for loops allow await!
         results.ledgers++
-      })
+      }
       console.log(results)
       return results
     }

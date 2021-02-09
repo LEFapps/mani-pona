@@ -5,7 +5,7 @@ import SystemCore from '../../core/system'
 const SystemResolvers = {
   Query: {
     'system': wrap((_, args, { indexDynamo, userpool }) => {
-      return SystemCore(indexDynamo.system, indexDynamo.transactions('system'), userpool)
+      return SystemCore(indexDynamo.table, userpool)
     })
   },
   'Mutation': {
@@ -13,7 +13,7 @@ const SystemResolvers = {
       if (!admin) {
         throw new ForbiddenError('Access denied')
       }
-      return SystemCore(indexDynamo.system, indexDynamo.transactions('system'), userpool)
+      return SystemCore(indexDynamo.table, userpool)
     })
   },
   'System': {
@@ -21,7 +21,7 @@ const SystemResolvers = {
       return SystemCore.register(registration)
     }),
     'parameters': wrap(async (SystemCore, args, { indexDynamo }) => {
-      return indexDynamo.system.parameters()
+      return SystemCore.parameters()
     }),
     'challenge': wrap(async (SystemCore) => {
       return SystemCore.challenge()
