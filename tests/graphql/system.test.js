@@ -5,12 +5,6 @@ import { mani } from '../../src/mani'
 import { INIT, SYSTEM_PARAMETERS, TIME, JUBILEE } from './queries'
 import { query, mutate, testQuery, testMutate, cognitoMock } from './setup'
 
-// Bugfix, see: https://github.com/openpgpjs/openpgpjs/issues/1036
-// and https://github.com/facebook/jest/issues/9983
-const textEncoding = require('text-encoding-utf-8')
-global.TextEncoder = textEncoding.TextEncoder
-global.TextDecoder = textEncoding.TextDecoder
-
 describe('GraphQL system parameters and time', () => {
   beforeAll(async () => {
     cognitoMock.setAdmin(true)
@@ -19,9 +13,15 @@ describe('GraphQL system parameters and time', () => {
 
   afterAll(() => {
     cognitoMock.setAdmin(false)
-    AWS.restore('CognitoIdentityServiceProvider', 'listUsers')
+    // AWS.restore('CognitoIdentityServiceProvider', 'listUsers')
   })
-
+  /*
+  it('should init the system', async () => {
+    expect.assertions(2)
+    const { errors } = await testMutate({ mutation: INIT })
+    expect(errors).toBe(undefined)
+  })
+  */
   describe('time', () => {
     const dateISO = '2021-01-28T00:00:00.000Z'
     const date = new Date(dateISO)

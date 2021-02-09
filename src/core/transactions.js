@@ -1,8 +1,11 @@
 import assert from 'assert'
 import sha1 from 'sha1'
+import util from 'util'
 // import log from 'loglevel'
 import { KeyWrapper, Verifier } from '../crypto'
-import { shadowEntry, destructure, next, other, flip, fromDb, isSigned, sortKey } from './tools'
+import { shadowEntry, destructure, next, other, flip, fromDb, isSigned, sortKey, payload } from './tools'
+
+const log = util.debuglog('StateMachine') // activate by adding NODE_DEBUG=StateMachine to environment
 
 async function mapValuesAsync (object, asyncFn) {
   return Object.fromEntries(
@@ -24,6 +27,7 @@ async function mapValuesAsync (object, asyncFn) {
  *  - destination: 'system'
  */
 async function getSources (table, input) {
+  log('Getting sources')
   return mapValuesAsync(input, async (ledger, role, input) => {
     const current = fromDb(await table.getItem({ ledger, entry: '/current' }))
     if (current) return current
@@ -66,9 +70,11 @@ async function getNextTargets (table, { sources }) {
 async function addAmount ({ targets: { ledger, destination } }, amount) {
   ledger.amount = amount
   ledger.balance = ledger.balance.add(amount)
+  ledger.challenge = payload({ date: ledger.date, from: ledger, to: destination, amount })
   if (ledger.ledger !== 'system' && ledger.balance.value < 0) throw new Error(`Amount not available`)
   destination.amount = amount.multiply(-1)
   destination.balance = destination.balance.add(amount.multiply(-1))
+  destination.challenge = payload({ date: ledger.date, from: destination, to: ledger, amount: amount.multiply(-1) })
   if (destination.ledger !== 'system' && destination.balance.value < 0) throw new Error(`Amount not available`)
   return { ledger, destination }
 }
@@ -76,11 +82,10 @@ async function addAmount ({ targets: { ledger, destination } }, amount) {
  * Add Demmurage and Income.
  */
 async function addDI ({ targets: { ledger, destination } }, { demurrage, income }) {
-  demurrage = demurrage < 0 ? demurrage : demurrage * -1 // make sure the sign is negative
   ledger.demurrage = ledger.balance.multiply(demurrage)
   ledger.income = income
-  ledger.amount = ledger.demurrage.add(ledger.income)
-  ledger.balance = ledger.balance.add(ledger.demurrage).add(ledger.income)
+  ledger.amount = ledger.income.subtract(ledger.demurrage)
+  ledger.balance = ledger.balance.subtract(ledger.demurrage).add(ledger.income)
   destination.demurrage = ledger.demurrage.multiply(-1)
   destination.income = ledger.income.multiply(-1)
   destination.amount = destination.demurrage.add(destination.income)
@@ -141,72 +146,76 @@ async function getPendingTargets (table, { payloads }) {
 function addSignature ({ ledger, destination }, { signature, counterSignature }) {
   ledger.signature = signature
   ledger.next = sha1(signature)
-  ledger.counterSignature = counterSignature
+  destination.counterSignature = counterSignature
   return { ledger, destination }
+}
+
+async function addSystemSignatures (table, { sources, targets }, keys) {
+  // autosigning system side
+  // happens during system init, UBI and creation of new ledger
+  log(`Autosigning system`)
+  assert(targets.destination.ledger === 'system' && targets.ledger.destination === 'system', 'System destination')
+  if (!keys) {
+    keys = KeyWrapper(await table.getItem({ ledger: 'system', entry: 'pk' }, 'System keys not found'))
+  }
+  const signature = await keys.privateKey.sign(targets.destination.challenge) // Attention: We are reverse signing here!
+  const counterSignature = await keys.privateKey.sign(targets.ledger.challenge)
+  targets = addSignature(targets, { signature, counterSignature })
+  if (targets.ledger.ledger === 'system') {
+    // system init
+    assert(targets.destination.challenge === targets.ledger.challenge, 'Oroborous system init')
+    targets = addSignature({ ledger: targets.destination, destination: targets.ledger }, { signature: counterSignature, counterSignature: signature }) // Reverse
+  }
+  return targets
 }
 /**
  * Add signatures, autosigning system entries.
  * This automatically saves entries.
  */
-async function addSignatures (table, { sources, targets }, { ledger, signature, counterSignature, publicKeyArmored }) {
-  if (targets.destination.ledger === 'system') {
-    // autosigning system side
-    // happens during system init, UBI and creation of new ledger
-    const systemKeys = KeyWrapper(await table.getItem({ ledger: 'system', entry: 'pk' }, 'System keys not found'))
-    const signature = await systemKeys.privateKey.sign(targets.target.challenge) // Attention: We are reverse signing here!
-    const counterSignature = await systemKeys.privateKey.sign(targets.destination.challenge)
-    targets = addSignature(targets, { signature, counterSignature })
-    if (targets.ledger.ledger === 'system') {
-      // system init
-      assert(targets.destination.challenge === targets.ledger.challenge, 'Oroborous system init')
-      targets = addSignature(targets, { signature: counterSignature, counterSignature: signature })
-    }
-  }
+async function addSignatures (table, { targets }, { ledger, signature, counterSignature, publicKeyArmored }) {
+  log(`Adding signatures for ${ledger}\n${JSON.stringify(targets, null, 2)}`)
   if (ledger) {
     assert(ledger === targets.ledger.ledger, 'Target ledger')
     if (!publicKeyArmored) {
-      const pk = await table.getItem({ ledger, entry: 'pk' })
-      if (!pk) throw new Error(`Unkown ledger ${ledger}`)
-      publicKeyArmored = pk.publicKeyArmored
+      ({ publicKeyArmored } = await table.getItem({ ledger, entry: 'pk' }))
+      if (!publicKeyArmored) throw new Error(`Unkown ledger ${ledger}`)
     }
-    const verifier = await Verifier(publicKeyArmored)
+    const verifier = Verifier(publicKeyArmored)
     await verifier.verify(targets.ledger.challenge, signature) // throws error if wrong
     await verifier.verify(targets.destination.challenge, counterSignature) // throws error if wrong
     targets = addSignature(targets, { signature, counterSignature })
   }
-  return saveResults(table, { sources, targets })
+  log(`Signed targets:\n${JSON.stringify(targets, null, 2)}`)
+  return targets
 }
 /**
  * Transition entries, adding/updating/deleting DB entries where necessarywhere necessary
  */
-function transition (transaction, { source, target }) {
+function transition (table, { source, target }) {
   if (target.entry === 'pending' && isSigned(target)) {
     target.entry = '/current'
-    transition.putItem(target)
-    transition.deleteItem({ ledger: target.ledger, entry: 'pending' })
+    table.putItem(target)
+    table.deleteItem({ ledger: target.ledger, entry: 'pending' })
     if (source.entry === '/current') {
       // bump to a permanent state
       source.entry = sortKey(source)
-      transition.putItem(source)
+      table.putItem(source)
     }
   } else {
     // no state transition, we just save the target
-    transition.putItem(target)
+    table.putItem(target)
   }
 }
 /**
  * Save the targets, transitioning entry states where relevant.
  */
-async function saveResults (table, { sources, targets }) {
-  const transaction = table.transaction()
+function saveResults (table, { sources, targets }) {
   if (sources.ledger.ledger !== 'system') { // only happens during system init
-    transition(transaction, { source: sources.ledger, target: targets.ledger })
+    transition(table, { source: sources.ledger, target: targets.ledger })
   } else {
     assert(targets.destination.challenge === targets.ledger.challenge, 'Oroborous system init')
   }
-  transition(transaction, { source: sources.destination, target: targets.destination })
-  console.log(JSON.stringify(transaction.items(), null, 2))
-  // await transaction.execute()
+  transition(table, { source: sources.destination, target: targets.destination })
 }
 
-export { getSources, getPayloads, getNextTargets, addAmount, addDI, getPayloadTargets, getPendingTargets, addSignatures }
+export { getSources, getPayloads, getNextTargets, addAmount, addDI, getPayloadTargets, getPendingTargets, addSignatures, addSystemSignatures, saveResults }

@@ -1,19 +1,25 @@
 import loglevel from 'loglevel'
 import assert from 'assert'
 import sha1 from 'sha1'
+import Actions from './actions'
 import { Transaction } from './transaction'
 import { KeyGenerator, KeyWrapper, Verifier } from '../crypto'
 import { shadowEntry, continuation, addSignature, challenge, sortKey, toEntry } from './tools'
 import { mani } from '../mani'
 
 const PARAMS_KEY = { ledger: 'system', entry: 'parameters' }
-const PK_KEY = { ledger: 'system', entry: 'pk' }
 
 const SystemCore = (systemDynamo, SystemTransactions, userpool) => {
   const table = SystemTransactions.table
   return {
     async parameters () {
       return table.getItem(PARAMS_KEY, 'Missing system parameters')
+    },
+    async init () {
+      console.log('Initializing')
+      const results = await (Actions(table)).systemInit()
+      console.log(results)
+      return results
     },
     async challenge () {
       // provides the payload of the first transaction on a new ledger
@@ -60,44 +66,6 @@ const SystemCore = (systemDynamo, SystemTransactions, userpool) => {
         .then((t) => t.execute())
       await trans.execute()
       return fingerprint
-    },
-    async init () {
-      const msgs = []
-      const log = (msg) => {
-        console.log(msg)
-        msgs.push(msg)
-      }
-      let keys = await table.getItem(PK_KEY)
-      if (!keys) {
-        const trans = table.transaction()
-        log('Initializing system')
-        keys = await KeyGenerator().generate()
-        const { publicKeyArmored, privateKeyArmored } = keys
-        await trans.putItem({
-          ...PK_KEY,
-          publicKeyArmored,
-          privateKeyArmored
-        })
-        log('system keys stored')
-        await Transaction(trans).create()
-          .then((t) => t.addInit('source', 'system'))
-          .then((t) => t.addInit('target', 'system'))
-          .then((t) => t.addAmount(mani(0)))
-          .then((t) => t.autosign(keys))
-          .then((t) => t.execute())
-        log('system keys added to ledger')
-        await table.putItem({
-          ...PARAMS_KEY,
-          income: mani(100),
-          demurrage: 5.0
-        })
-        log('default system parameters generated')
-        console.log(JSON.stringify(await trans.items(), null, 2))
-        await trans.execute()
-      } else {
-        log('System already initialized')
-      }
-      return msgs.join(', ')
     },
     async jubilee () {
       const users = await userpool.getUsers()

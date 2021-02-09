@@ -5,6 +5,14 @@ import assert from 'assert'
 import _ from 'lodash'
 import sha1 from 'sha1'
 
+function bugfix () {
+// Bugfix, see: https://github.com/openpgpjs/openpgpjs/issues/1036
+// and https://github.com/facebook/jest/issues/9983
+  const textEncoding = require('text-encoding-utf-8')
+  global.TextEncoder = textEncoding.TextEncoder
+  global.TextDecoder = textEncoding.TextDecoder
+}
+
 const unpack = async (key) => {
   const { err, keys: [parsedkey] } = await openpgp.key.readArmored(key)
   if (err) {
@@ -20,6 +28,7 @@ const sortedObjectString = (obj) => {
 const Signer = (key, pk) => {
   const signer = {
     sign: async (input) => {
+      bugfix()
       assert(!_.isEmpty(input), 'Missing input')
       const text = typeof input === 'string' ? input : sortedObjectString(input)
       pk = pk === undefined ? await unpack(key) : pk // lazy loaded
@@ -30,7 +39,7 @@ const Signer = (key, pk) => {
       })
       return detachedSignature
     },
-    signature: async (input) => {
+    signature: async (input) => { // TODO: @deprecated
       const s = await signer.sign(input)
       const hash = sha1(s)
       return {
@@ -60,6 +69,7 @@ const Verifier = (key, pk) => {
      * @throws An error if the input (key or signature) is not in a valid format or if the signature doesn't match.
      */
     verify: async (input, signature) => {
+      bugfix()
       const text = typeof input === 'string' ? input : sortedObjectString(input)
       pk = pk === undefined ? await unpack(key) : pk
       const { signatures } = await openpgp.verify({
@@ -110,12 +120,15 @@ const KeyLoader = (dir) => {
 }
 
 const KeyGenerator = (userId = {}) => {
+  bugfix()
   return {
     generate: async () => {
+      console.log('Generating key')
       const key = await openpgp.generateKey({
         userIds: [userId],
         rsaBits: 4096
       })
+      console.log('Key generated')
       return KeyWrapper(key, key.key)
     }
   }
