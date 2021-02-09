@@ -47,7 +47,7 @@ const SystemCore = (table, userpool) => {
       return StateMachine(table)
         .getSources({ ledger: '<fingerprint>', destination: 'system' })
         .then(t => t.addAmount(mani(0)))
-        .then(t => t.challenge())
+        .then(t => t.getPrimaryEntry().challenge)
     },
     async register (registration) {
       const { publicKeyArmored, payload, alias } = registration
@@ -55,6 +55,7 @@ const SystemCore = (table, userpool) => {
       const existing = await table.getItem({ ledger, entry: '/current' })
       if (existing) return ledger
       const transaction = table.transaction()
+      // TODO: assert amount = 0
       await StateMachine(transaction)
         .getPayloads(payload)
         .getSources({ ledger, destination: 'system' })
@@ -75,10 +76,25 @@ const SystemCore = (table, userpool) => {
         demurrage: mani(0),
         income: mani(0)
       }
-      for (let user of users) { // these for loops allow await!
-        results.ledgers++
+      const parameters = await table.getItem(PARAMS_KEY, 'Missing system parameters')
+      const transaction = table.transaction()
+      for (let { ledger } of users) { // these for loops allow await!
+        log(`Applying DI to ${ledger}`)
+        await StateMachine(transaction)
+          .getSources({ ledger, destination: 'system' })
+          .then(t => t.addDI(parameters))
+          .then(t => {
+            const entry = t.getPrimaryEntry()
+            results.income = results.income.add(entry.income)
+            results.demurrage = results.demurrage.add(entry.demurrage)
+            results.ledgers++
+            return t
+          })
+          .then(t => t.addSystemSignatures())
+          .then(t => t.save())
       }
-      console.log(results)
+      await transaction.execute()
+      // log(`Database update:\n${JSON.stringify(transaction.items(), null, 2)}`)
       return results
     }
   }

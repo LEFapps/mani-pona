@@ -50,8 +50,8 @@ const StateMachine = (table) => {
   }
   function Continue (context) {
     return {
-      challenge () {
-        return context.targets.ledger.challenge
+      getPrimaryEntry () {
+        return context.targets.ledger
       },
       async addSystemSignatures (keys) {
         context.targets = await addSystemSignatures(table, context, keys)
