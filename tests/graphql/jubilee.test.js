@@ -12,6 +12,7 @@ describe('Jubilee', () => {
   let verifiedUser, unverifiedUser, alias
 
   beforeAll(async () => {
+    jest.setTimeout(10000)
     verifiedUser = await ManiClient(testClient)
     unverifiedUser = await ManiClient(testClient)
     cognitoMock.setAdmin(true)
