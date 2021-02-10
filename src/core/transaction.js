@@ -30,6 +30,7 @@ import { shadowEntry, addSignature, continuation, destructure, challenge as conv
  *
  *
  */
+/* DEPRECATED
 const Transaction = (table) => {
   function checkComplete (context) {
     if (isEmpty(context.source)) throw new Error('No source defined')
@@ -206,3 +207,4 @@ const Transaction = (table) => {
 }
 
 export { Transaction }
+*/

@@ -1,5 +1,5 @@
-import { jest, describe, expect, it, beforeEach } from '@jest/globals'
-import { pad, other, toDb, fromDb, check, continuation, destructure, destructurePath, challenge, toEntry, flip } from '../src/core/tools'
+import { describe, expect, it } from '@jest/globals'
+import { pad, other, toDb, fromDb, destructure, destructurePath, challenge, toEntry, flip } from '../src/core/tools'
 import { mani } from '../src/mani'
 
 describe('Transaction tools', () => {
@@ -79,6 +79,7 @@ describe('Transaction tools', () => {
       .toEqual({
         date,
         ledger: 'ledger1',
+        entry: 'pending',
         sequence: 13,
         uid: 'nextuida',
         destination: 'ledger2',
@@ -89,6 +90,7 @@ describe('Transaction tools', () => {
       .toEqual({
         date,
         ledger: 'ledger2',
+        entry: 'pending',
         sequence: 24,
         uid: 'nextuidb',
         destination: 'ledger1',
@@ -121,16 +123,14 @@ describe('Transaction tools', () => {
       next: 'nextuidb',
       balance: mani(77.55)
     }
-    expect(challenge(date, source, target, mani(-7.35)))
+    expect(challenge({ date, source, target, amount: mani(-7.35) }))
       .toEqual(`/2021-01-28T00:00:00.000Z/from/ledger1/000000000013/nextuida/to/ledger2/000000000024/nextuidb/-7,35 ɱ`)
   })
-
+  /*
+   * DEPRECATED
   describe('continued transactions', () => {
     const dateISO = '2021-01-28T00:00:00.000Z'
     const date = new Date(dateISO)
-    beforeEach(() => {
-      jest.spyOn(global.Date, 'now').mockImplementationOnce(() => date.valueOf())
-    })
     it('should create a transaction twin', () => {
       const source = {
         ledger: 'ledger1',
@@ -148,7 +148,7 @@ describe('Transaction tools', () => {
       }
       expect(check(source)).toBe(true)
       expect(check(target)).toBe(true)
-      expect(continuation(source, target, mani(-7.35))).toEqual({
+      expect(continuation({ date, source, target, amount: mani(-7.35) })).toEqual({
         ledger: {
           ledger: 'ledger1',
           destination: 'ledger2',
@@ -174,4 +174,5 @@ describe('Transaction tools', () => {
       })
     })
   })
+  */
 })

@@ -1,6 +1,7 @@
 import { ForbiddenError } from 'apollo-server'
 import { wrap } from '../util'
 import SystemCore from '../../core/system'
+import log from 'loglevel'
 
 const SystemResolvers = {
   Query: {
@@ -9,8 +10,9 @@ const SystemResolvers = {
     })
   },
   'Mutation': {
-    'admin': wrap((_, args, { indexDynamo, admin, userpool }) => {
+    'admin': wrap((_, args, { indexDynamo, admin, userpool, ledger }) => {
       if (!admin) {
+        log.error(`Illegal system access attempt by ${ledger}`)
         throw new ForbiddenError('Access denied')
       }
       return SystemCore(indexDynamo.table, userpool)

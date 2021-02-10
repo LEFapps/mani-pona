@@ -1,4 +1,4 @@
-import { forEach, isString, isInteger, isArray, mapValues, map } from 'lodash'
+import { isString, isArray, mapValues, map } from 'lodash'
 import assert from 'assert'
 import sha1 from 'sha1'
 import { Mani } from '../mani'
@@ -136,6 +136,10 @@ function next ({ ledger, sequence, next }) {
     uid: next
   }
 }
+function challenge ({ date, source, target, amount }) {
+  return payload({ date, from: next(source), to: next(target), amount })
+}
+/* DEPRECATED
 function nextEntry (from, to, date, amount) {
   const entry = {
     ...next(from),
@@ -149,17 +153,17 @@ function nextEntry (from, to, date, amount) {
   }
   return entry
 }
-function challenge ({ date, source, target, amount }) {
-  return payload({ date, from: next(source), to: next(target), amount })
-}
+*/
+/* DEPRECATED
 function continuation ({ date, source, target, amount }) { // continue from (previous) transactions
   return {
     date,
-    ledger: nextEntry(date, source, target, amount),
-    destination: nextEntry(date, target, source, amount),
+    ledger: nextEntry(source, target, date, amount),
+    destination: nextEntry(target, source, date, amount),
     amount
   }
-}
+} */
+/* DEPRECATED
 function check (entry) { // superficial integrity check
   assert(isString(entry.ledger), 'ledger')
   assert(entry.entry === '/current', 'current entry')
@@ -169,8 +173,9 @@ function check (entry) { // superficial integrity check
   assert(entry.balance instanceof Mani, 'balance')
   return true
 }
-export { pad, other, shadowEntry, addSignature, toDb, fromDb, isSigned, next, continuation, payload, check, destructure, destructurePath, challenge, toEntry, sortKey, flip }
+*/
+export { pad, other, shadowEntry, addSignature, toDb, fromDb, isSigned, next, payload, destructure, destructurePath, challenge, toEntry, sortKey, flip }
 
-const tools = { pad, other, shadowEntry, addSignature, toDb, fromDb, isSigned, next, continuation, payload, check, destructure, destructurePath, challenge, toEntry, sortKey, flip }
+const tools = { pad, other, shadowEntry, addSignature, toDb, fromDb, isSigned, next, payload, destructure, destructurePath, challenge, toEntry, sortKey, flip }
 
 export default tools
