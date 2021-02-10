@@ -5,6 +5,9 @@ import { testClient, testMutate, generateAlias } from './setup'
 import { INIT, JUBILEE } from './queries'
 import { mani } from '../../src/mani'
 import { ManiClient } from '../../src/client/ManiClient'
+import sha1 from 'sha1'
+
+const log = require('util').debuglog('Transactions')
 
 describe('Jubilee', () => {
   let verifiedUser, unverifiedUser, alias
@@ -21,7 +24,7 @@ describe('Jubilee', () => {
   })
 
   it('should put mani in a verified account', async () => {
-    expect.assertions(2)
+    expect.assertions(9)
     AWS.mock('CognitoIdentityServiceProvider', 'listUsers', function (params, callback) {
       callback(null, {
         data: {
@@ -38,7 +41,7 @@ describe('Jubilee', () => {
     cognitoMock.setLedger(verifiedUser.ledger)
     const beforeV = await verifiedUser.transactions.current()
     expect(beforeV.balance).toEqual(mani(0))
-
+    // jubilee
     cognitoMock.setAdmin(true)
     const result = await testMutate({ mutation: JUBILEE })
     const { data: { admin: { jubilee } } } = result
@@ -48,5 +51,21 @@ describe('Jubilee', () => {
       income: mani(100).format()
     })
     cognitoMock.setAdmin(false)
+    // check user
+    cognitoMock.setLedger(verifiedUser.ledger)
+    const pending = await verifiedUser.transactions.pending()
+    expect(pending.balance).toEqual(mani(100))
+    expect(pending.income).toEqual(mani(100))
+    expect(pending.demurrage).toEqual(mani(0))
+
+    // confirm transaction
+    const hash = await verifiedUser.transactions.confirm(pending.challenge)
+    expect(hash).toBeDefined()
+    // current balance
+    const afterV = await verifiedUser.transactions.current()
+    log(JSON.stringify(afterV, null, 2))
+    expect(afterV.balance).toEqual(mani(100))
+    expect(afterV.income).toEqual(mani(100))
+    expect(afterV.demurrage).toEqual(mani(0))
   })
 })

@@ -1,14 +1,17 @@
 import assert from 'assert'
 import { isObject } from 'lodash'
 import { challenge } from '../core/tools'
+import StateMachine from '../core/statemachine'
+
+const log = require('util').debuglog('Transactions')
 
 /**
  * Transactions are the way a user sees the ledger.
  */
-const transactions = (table, ledger, verification) => {
+const TransactionsDynamo = (table, ledger, verification) => {
   assert(isObject(verification), 'Verification')
   // to reduce the size of the results, we limit the attributes requested (omitting the signatures)
-  const short = table.attributes(['ledger', 'destination', 'amount', 'balance', 'date', 'payload', 'next', 'sequence', 'uid'])
+  const short = table.attributes(['ledger', 'destination', 'amount', 'balance', 'date', 'payload', 'next', 'sequence', 'uid', 'income', 'demurrage', 'challenge'])
   return {
     table, // we allow access to the underlying table
     async current () {
@@ -35,6 +38,28 @@ const transactions = (table, ledger, verification) => {
         }
       })
     },
+    async confirm (proof) {
+      // proof contains signature, counterSignature, payload
+      const existing = await table.getItem({ ledger, entry: '/current' })
+      if (existing.challenge === proof.payload) {
+        console.log(`Transaction ${proof.payload} was already confirmed`)
+        return existing.next
+      }
+      let next
+      const transaction = table.transaction()
+      await StateMachine(transaction)
+        .getPayloads(proof.payload)
+        .continuePending()
+        .then(t => t.addSignatures({ ledger, ...proof }))
+        .then(t => {
+          next = t.getPrimaryEntry().next
+          return t
+        })
+        .then(t => t.save())
+      await transaction.execute()
+      log(`Database update:\n${JSON.stringify(transaction.items(), null, 2)}`)
+      return next
+    },
     async saveEntry (entry) {
       assert(entry.ledger === ledger, 'Matching ledger')
       await verification.verifyEntry(entry)
@@ -53,7 +78,7 @@ const transactions = (table, ledger, verification) => {
     // return a "transactional version" of transactions
     transactional (transaction = table.transaction()) {
       return {
-        ...transactions(transaction, ledger, verification),
+        ...TransactionsDynamo(transaction, ledger, verification),
         transaction,
         async execute () { return transaction.execute() }
       }
@@ -61,4 +86,4 @@ const transactions = (table, ledger, verification) => {
   }
 }
 
-export default transactions
+export default TransactionsDynamo

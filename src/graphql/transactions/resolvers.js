@@ -27,6 +27,9 @@ const TransactionResolvers = {
     },
     'recent': wrap(async (id, arg, { indexDynamo }) => {
       return indexDynamo.transactions(id).recent()
+    }),
+    'confirm': wrap(async (id, { proof }, { indexDynamo }) => {
+      return indexDynamo.transactions(id).confirm(proof)
     })
   }
 }

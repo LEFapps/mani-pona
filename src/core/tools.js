@@ -113,7 +113,10 @@ function fromDb (entry) {
     if (key === 'date') {
       return new Date(value)
     }
-    if (key === 'amount' || key === 'balance' || key === 'income') {
+    if ((key === 'amount' || key === 'balance' || key === 'income') && isString(value)) {
+      return new Mani(value)
+    }
+    if (key === 'demurrage' && isString(value)) {
       return new Mani(value)
     }
     return value

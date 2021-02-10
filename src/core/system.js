@@ -9,7 +9,7 @@ import { mani } from '../mani'
 
 const PARAMS_KEY = { ledger: 'system', entry: 'parameters' }
 const PK_KEY = { ledger: 'system', entry: 'pk' }
-const logutil = util.debuglog('ManiCore') // activate by adding NODE_DEBUG=StateMachine to environment
+const logutil = util.debuglog('SystemCore') // activate by adding NODE_DEBUG=SystemCore to environment
 
 const SystemCore = (table, userpool) => {
   const log = (msg) => {

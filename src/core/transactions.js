@@ -135,8 +135,7 @@ async function getPendingTargets (table, { payloads }) {
       }
       throw new Error(`Matching system entry not found`)
     } else {
-      const pending = await table.getItem({ ledger, entry: 'pending' })
-      if (!pending) throw new Error(`No pending entry found on ledger ${ledger}`)
+      const pending = await table.getItem({ ledger, entry: 'pending' }, `No pending entry found on ledger ${ledger}`)
       assert(date.getTime() === pending.date.getTime(), 'Matching date')
       assert(destination === pending.destination, 'Matching destination')
       assert(sequence === pending.sequence, 'Matching sequence')
@@ -146,6 +145,21 @@ async function getPendingTargets (table, { payloads }) {
     }
   })
 }
+/**
+ * Find the entries preceding the targets.
+ */
+async function getPendingSources (table, { targets }) {
+  return mapValuesAsync(targets, async (target, role, targets) => {
+    if (target.ledger !== 'system') {
+      const current = await table.getItem({ ledger: target.ledger, entry: '/current' }, `No current entry found on ledger ${target.ledger}`)
+      assert(target.uid === current.next, 'Sequential uid')
+      assert(target.sequence === current.sequence + 1, 'Sequence')
+      return current
+    }
+    // Note we don't reconstruct sources for system entries as they are necessarily already made permanent
+  })
+}
+
 function addSignature ({ ledger, destination }, { signature, counterSignature }) {
   ledger.signature = signature
   ledger.next = sha1(signature)
@@ -206,7 +220,7 @@ function transition (table, { source, target }) {
     if (target.ledger !== 'system') {
       table.deleteItem({ ledger: target.ledger, entry: 'pending' })
     }
-    if (source.entry === '/current') {
+    if (source && source.entry === '/current') {
       // bump to a permanent state
       source.entry = sortKey(source)
       table.putItem(source)
@@ -228,4 +242,4 @@ function saveResults (table, { sources, targets }) {
   transition(table, { source: sources.destination, target: targets.destination })
 }
 
-export { getSources, getPayloads, getNextTargets, addAmount, addDI, getPayloadTargets, getPendingTargets, addSignatures, addSystemSignatures, saveResults }
+export { getSources, getPayloads, getNextTargets, addAmount, addDI, getPayloadTargets, getPendingTargets, getPendingSources, addSignatures, addSystemSignatures, saveResults }

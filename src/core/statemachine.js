@@ -1,7 +1,11 @@
-import { getSources, getPayloads, getNextTargets, addAmount, addDI, getPayloadTargets, getPendingTargets, addSignatures, addSystemSignatures, saveResults } from './transactions'
+import { getSources, getPayloads, getNextTargets, addAmount, addDI,
+  getPayloadTargets, getPendingTargets, getPendingSources,
+  addSignatures, addSystemSignatures, saveResults } from './transactions'
 
-const log = require('util').debuglog('ManiCore')
-
+const log = require('util').debuglog('Transactions')
+/**
+ * This is the way.
+ */
 const StateMachine = (table) => {
   const context = {}
   return {
@@ -18,6 +22,12 @@ const StateMachine = (table) => {
       async getSources (ledgers) {
         context.sources = await getSources(table, ledgers)
         return Targets(context)
+      },
+      async continuePending () {
+        context.targets = await getPendingTargets(table, context)
+        context.sources = await getPendingSources(table, context)
+        // log(JSON.stringify(context, null, 2))
+        return Continue(context)
       }
     }
   }
@@ -27,17 +37,12 @@ const StateMachine = (table) => {
         continuePayload () {
           context.targets = getPayloadTargets(context)
           return Continue(context)
-        },
-        async continuePending () {
-          context.targets = await getPendingTargets(context)
-          return Continue(context)
         }
       }
     } else {
       context.targets = await getNextTargets(table, context)
       return {
         addAmount (amount) {
-          // log(JSON.stringify(context, null, 2))
           context.targets = addAmount(context, amount)
           return Continue(context)
         },
