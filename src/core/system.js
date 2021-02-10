@@ -1,10 +1,6 @@
 import util from 'util'
-import loglevel from 'loglevel'
 import StateMachine from './statemachine'
-import { getSources, getPayloads, getNextTargets, addAmount, addDI, getPayloadTargets, getPendingTargets, addSignatures, addSystemSignatures, saveResults } from './transactions'
-import { Transaction } from './transaction'
-import { KeyGenerator, KeyWrapper, Verifier } from '../crypto'
-import { shadowEntry, continuation, addSignature, challenge, sortKey, toEntry } from './tools'
+import { KeyGenerator, Verifier } from '../crypto'
 import { mani } from '../mani'
 
 const PARAMS_KEY = { ledger: 'system', entry: 'parameters' }
