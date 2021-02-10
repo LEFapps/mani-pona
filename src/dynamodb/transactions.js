@@ -23,12 +23,6 @@ const TransactionsDynamo = (table, ledger, verification) => {
     async pending () {
       return short.getItem({ ledger, entry: 'pending' })
     },
-    async challenge (targetLedger, amount) {
-      const date = new Date(Date.now())
-      const current = short.getItem({ ledger, entry: '/current' })
-      const target = short.getItem({ targetLedger, entry: '/current' })
-      return challenge(date, current, target, amount)
-    },
     async recent () {
       return table.queryItems({
         KeyConditionExpression: 'ledger = :ledger AND begins_with(entry, :slash)',
@@ -38,12 +32,40 @@ const TransactionsDynamo = (table, ledger, verification) => {
         }
       })
     },
+    async challenge (destination, amount) {
+      return StateMachine(table)
+        .getSources({ ledger, destination })
+        .then(t => t.addAmount(amount))
+        .then(t => t.getPrimaryEntry().challenge)
+    },
+    async create (proof) {
+      const existing = await table.getItem({ ledger, entry: 'pending' })
+      if (existing && existing.challenge === proof.payload) {
+        console.log(`Transaction ${proof.payload} was already created`)
+        return existing.next // idempotency
+      }
+      let next
+      const transaction = table.transaction()
+      await StateMachine(transaction)
+        .getPayloads(proof.payload)
+        .getPayloadSources()
+        .then(t => t.continuePayload())
+        .then(t => t.addSignatures({ ledger, ...proof }))
+        .then(t => {
+          next = t.getPrimaryEntry().next
+          return t
+        })
+        .then(t => t.save())
+      // log(`Database update:\n${JSON.stringify(transaction.items(), null, 2)}`)
+      await transaction.execute()
+      return next
+    },
     async confirm (proof) {
       // proof contains signature, counterSignature, payload
       const existing = await table.getItem({ ledger, entry: '/current' })
-      if (existing.challenge === proof.payload) {
+      if (existing && existing.challenge === proof.payload) {
         console.log(`Transaction ${proof.payload} was already confirmed`)
-        return existing.next
+        return existing.next // idempotency
       }
       let next
       const transaction = table.transaction()
@@ -60,11 +82,13 @@ const TransactionsDynamo = (table, ledger, verification) => {
       log(`Database update:\n${JSON.stringify(transaction.items(), null, 2)}`)
       return next
     },
+    // deprecated
     async saveEntry (entry) {
       assert(entry.ledger === ledger, 'Matching ledger')
       await verification.verifyEntry(entry)
       return table.putItem(entry)
     },
+    // deprecated
     async saveTwin (twin) {
       assert(twin.ledger.ledger === ledger, 'Matching source ledger')
       assert(twin.destination.ledger === ledger, 'Matching destination ledger')
@@ -75,6 +99,7 @@ const TransactionsDynamo = (table, ledger, verification) => {
       })
       return transaction.execute()
     },
+    // deprecated
     // return a "transactional version" of transactions
     transactional (transaction = table.transaction()) {
       return {

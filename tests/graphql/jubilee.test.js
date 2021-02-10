@@ -1,11 +1,10 @@
-import { describe, expect, it, beforeAll } from '@jest/globals'
+import { jest, describe, expect, it, beforeAll } from '@jest/globals'
 import AWS from 'aws-sdk-mock'
 import cognitoMock from './cognito.mock'
 import { testClient, testMutate, generateAlias } from './setup'
 import { INIT, JUBILEE } from './queries'
 import { mani } from '../../src/mani'
 import { ManiClient } from '../../src/client/ManiClient'
-import sha1 from 'sha1'
 
 const log = require('util').debuglog('Transactions')
 
@@ -24,7 +23,7 @@ describe('Jubilee', () => {
   })
 
   it('should put mani in a verified account', async () => {
-    expect.assertions(9)
+    expect.assertions(17)
     AWS.mock('CognitoIdentityServiceProvider', 'listUsers', function (params, callback) {
       callback(null, {
         data: {
@@ -34,11 +33,11 @@ describe('Jubilee', () => {
               Attributes: [
                 {
                   Name: 'ledger',
-                  Value: verifiedUser.ledger
+                  Value: verifiedUser.id
                 }
               ] }] } })
     })
-    cognitoMock.setLedger(verifiedUser.ledger)
+    cognitoMock.setLedger(verifiedUser.id)
     const beforeV = await verifiedUser.transactions.current()
     expect(beforeV.balance).toEqual(mani(0))
     // jubilee
@@ -52,7 +51,7 @@ describe('Jubilee', () => {
     })
     cognitoMock.setAdmin(false)
     // check user
-    cognitoMock.setLedger(verifiedUser.ledger)
+    cognitoMock.setLedger(verifiedUser.id)
     const pending = await verifiedUser.transactions.pending()
     expect(pending.balance).toEqual(mani(100))
     expect(pending.income).toEqual(mani(100))
@@ -60,12 +59,43 @@ describe('Jubilee', () => {
 
     // confirm transaction
     const hash = await verifiedUser.transactions.confirm(pending.challenge)
-    expect(hash).toBeDefined()
+    expect(hash).toHaveLength(40)
     // current balance
     const afterV = await verifiedUser.transactions.current()
-    log(JSON.stringify(afterV, null, 2))
+    // log(JSON.stringify(afterV, null, 2))
     expect(afterV.balance).toEqual(mani(100))
     expect(afterV.income).toEqual(mani(100))
     expect(afterV.demurrage).toEqual(mani(0))
+
+    const date = new Date()
+    jest.spyOn(global.Date, 'now').mockImplementation(() => date.valueOf())
+    const challenge = await verifiedUser.transactions.challenge(unverifiedUser.id, mani(-20.15))
+    expect(challenge).toEqual(
+      expect.stringMatching(new RegExp(
+        `/${date.toISOString()}/from/${verifiedUser.id}/0{11}2/[a-z0-9]{40}/to/${unverifiedUser.id}/0{11}1/[a-z0-9]{40}/-20,15 ɱ`
+      ))
+    )
+    log(`Confirming challenge ${challenge}`)
+    const confirmHash = await verifiedUser.transactions.create(challenge)
+    expect(confirmHash).toHaveLength(40)
+    // confirm on the other side
+    cognitoMock.setLedger(unverifiedUser.id)
+    const confirm = await unverifiedUser.transactions.pending()
+    expect(confirm.balance).toEqual(mani(20.15))
+    expect(confirm.amount).toEqual(mani(20.15))
+    expect(confirm.challenge).toEqual(
+      expect.stringMatching(new RegExp(
+        `/${date.toISOString()}/from/${unverifiedUser.id}/0{11}1/[a-z0-9]{40}/to/${verifiedUser.id}/0{11}2/[a-z0-9]{40}/20,15 ɱ`
+      ))
+    )
+    const targetHash = await unverifiedUser.transactions.confirm(confirm.challenge)
+    expect(targetHash).toHaveLength(40)
+    // get current for unverified
+    const newCurrentTarget = await unverifiedUser.transactions.current()
+    expect(newCurrentTarget.balance).toEqual(mani(20.15))
+
+    cognitoMock.setLedger(verifiedUser.id)
+    const newCurrentSource = await verifiedUser.transactions.current()
+    expect(newCurrentSource.balance).toEqual(mani(79.85))
   })
 })

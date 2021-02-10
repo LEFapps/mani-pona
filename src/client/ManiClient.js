@@ -11,13 +11,12 @@ const REGISTER = gql`
       register(registration: $registration)
     }
   }`
-const CHALLENGE = gql`
+const SYSTEM_CHALLENGE = gql`
   query {
     system {
       challenge
     }
   }`
-
 const CURRENT = gql`
   query ledger($id: String!) {
     ledger(id: $id) {
@@ -34,7 +33,6 @@ const CURRENT = gql`
       }
     }
   }`
-
 const PENDING = gql`
   query ledger($id: String!) {
     ledger(id: $id) {
@@ -52,7 +50,22 @@ const PENDING = gql`
       }
     }
   }`
-
+const CHALLENGE = gql`
+  query challenge($id: String!, $destination: String!, $amount: Currency!) {
+    ledger(id: $id) {
+      transactions {
+        challenge(destination: $destination, amount: $amount)
+      }
+    }
+  }`
+const CREATE = gql`
+  query ledger($id: String!, $proof: Proof!) {
+    ledger(id: $id) {
+      transactions {
+        create(proof: $proof)
+      }
+    }
+  }`
 const CONFIRM = gql`
   query ledger($id: String!, $proof: Proof!) {
     ledger(id: $id) {
@@ -64,7 +77,7 @@ const CONFIRM = gql`
 
 const ManiClient = async (graphqlClient, keyStore) => {
   const keyManager = await KeyManager(keyStore)
-  const ledger = await keyManager.fingerprint()
+  const id = await keyManager.fingerprint()
   async function query (query, path, variables = {}, required = true) {
     const result = await graphqlClient.query({ query, variables })
     if (result.errors) {
@@ -78,8 +91,8 @@ const ManiClient = async (graphqlClient, keyStore) => {
     return obj
   }
   async function register (alias) {
-    const challenge = await query(CHALLENGE, 'system.challenge')
-    const payload = challenge.replace('<fingerprint>', ledger)
+    const challenge = await query(SYSTEM_CHALLENGE, 'system.challenge')
+    const payload = challenge.replace('<fingerprint>', id)
     return query(REGISTER, 'system.register', {
       registration: {
         publicKeyArmored: (await keyManager.getKeys()).publicKeyArmored,
@@ -91,17 +104,29 @@ const ManiClient = async (graphqlClient, keyStore) => {
   }
   const transactions = {
     async current () {
-      const current = await query(CURRENT, 'ledger.transactions.current', { id: ledger })
+      const current = await query(CURRENT, 'ledger.transactions.current', { id })
       log(JSON.stringify(current, null, 2))
       return fromDb(current)
     },
     async pending () {
-      const pending = await query(PENDING, 'ledger.transactions.pending', { id: ledger })
+      const pending = await query(PENDING, 'ledger.transactions.pending', { id })
       return fromDb(pending)
     },
     async confirm (challenge) {
       return query(CONFIRM, 'ledger.transactions.confirm', {
-        id: ledger,
+        id,
+        proof: {
+          signature: await keyManager.sign(challenge),
+          counterSignature: await keyManager.sign(flip(challenge)),
+          payload: challenge
+        } })
+    },
+    async challenge (destination, amount) {
+      return query(CHALLENGE, 'ledger.transactions.challenge', { id, destination, amount: amount.format() })
+    },
+    async create (challenge) {
+      return query(CREATE, 'ledger.transactions.create', {
+        id,
         proof: {
           signature: await keyManager.sign(challenge),
           counterSignature: await keyManager.sign(flip(challenge)),
@@ -110,7 +135,7 @@ const ManiClient = async (graphqlClient, keyStore) => {
     }
   }
   return {
-    ledger,
+    id,
     register,
     transactions
   }

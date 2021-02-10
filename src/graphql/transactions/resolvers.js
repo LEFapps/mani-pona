@@ -28,6 +28,12 @@ const TransactionResolvers = {
     'recent': wrap(async (id, arg, { indexDynamo }) => {
       return indexDynamo.transactions(id).recent()
     }),
+    'challenge': wrap(async (id, { destination, amount }, { indexDynamo }) => {
+      return indexDynamo.transactions(id).challenge(destination, amount)
+    }),
+    'create': wrap(async (id, { proof }, { indexDynamo }) => {
+      return indexDynamo.transactions(id).create(proof)
+    }),
     'confirm': wrap(async (id, { proof }, { indexDynamo }) => {
       return indexDynamo.transactions(id).confirm(proof)
     })

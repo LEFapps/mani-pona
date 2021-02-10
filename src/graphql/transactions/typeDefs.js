@@ -34,6 +34,10 @@ export default gql`
     pending: Transaction
     "Most recent transactions"
     recent: [Transaction]
+    "Provide transaction challenge with supplied destination and amount"
+    challenge(destination: String, amount: Currency): String
+    "Create (pending) transaction"
+    create(proof: Proof!): String
     "Confirm pending transaction"
     confirm(proof: Proof!): String
   }

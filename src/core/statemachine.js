@@ -1,5 +1,5 @@
 import { getSources, getPayloads, getNextTargets, addAmount, addDI,
-  getPayloadTargets, getPendingTargets, getPendingSources,
+  getPayloadSources, getPayloadTargets, getPendingTargets, getPendingSources,
   addSignatures, addSystemSignatures, saveResults } from './transactions'
 
 const log = require('util').debuglog('Transactions')
@@ -21,6 +21,10 @@ const StateMachine = (table) => {
     return {
       async getSources (ledgers) {
         context.sources = await getSources(table, ledgers)
+        return Targets(context)
+      },
+      async getPayloadSources () {
+        context.sources = await getPayloadSources(table, context)
         return Targets(context)
       },
       async continuePending () {

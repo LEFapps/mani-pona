@@ -42,6 +42,14 @@ function getPayloads (payload) {
     destination: { ...destructure(payload, true), challenge: flip(payload) }
   }
 }
+// used during regular transaction creation
+async function getPayloadSources (table, { payloads }) {
+  return mapValuesAsync(payloads, async ({ from: { ledger } }, role, payloads) => {
+    log(`Getting current on ${role} ${ledger}`)
+    return table.getItem({ ledger, entry: '/current' }, `No current entry on ledger ${ledger}`)
+  })
+}
+
 /**
  * Get 'next' target (pending) entries.
  * There should be no pending items in the DB.
@@ -72,11 +80,12 @@ function addAmount ({ targets: { ledger, destination } }, amount) {
   ledger.amount = amount
   ledger.balance = ledger.balance.add(amount)
   ledger.challenge = payload({ date: ledger.date, from: ledger, to: destination, amount })
-  if (ledger.ledger !== 'system' && ledger.balance.value < 0) throw new Error(`Amount not available`)
-  destination.amount = amount.multiply(-1)
-  destination.balance = destination.balance.add(amount.multiply(-1))
-  destination.challenge = payload({ date: ledger.date, from: destination, to: ledger, amount: amount.multiply(-1) })
-  if (destination.ledger !== 'system' && destination.balance.value < 0) throw new Error(`Amount not available`)
+  if (ledger.ledger !== 'system' && ledger.balance.value < 0) throw new Error(`Amount not available on ${ledger.ledger}`)
+  const complement = amount.multiply(-1)
+  destination.amount = complement
+  destination.balance = destination.balance.add(complement)
+  destination.challenge = payload({ date: ledger.date, from: destination, to: ledger, amount: complement })
+  if (destination.ledger !== 'system' && destination.balance.value < 0) throw new Error(`Amount ${complement.format()} not available on ${destination.ledger}`)
   return { ledger, destination }
 }
 /**
@@ -175,7 +184,7 @@ async function addSystemSignatures (table, { sources, targets }, keys) {
   if (!keys) {
     keys = KeyWrapper(await table.getItem({ ledger: 'system', entry: 'pk' }, 'System keys not found'))
   }
-  log(JSON.stringify(targets, null, 2))
+  // log(JSON.stringify(targets, null, 2))
   targets.destination.signature = await keys.privateKey.sign(targets.destination.challenge)
   const next = sha1(targets.destination.signature)
   targets.destination.next = next
@@ -242,4 +251,9 @@ function saveResults (table, { sources, targets }) {
   transition(table, { source: sources.destination, target: targets.destination })
 }
 
-export { getSources, getPayloads, getNextTargets, addAmount, addDI, getPayloadTargets, getPendingTargets, getPendingSources, addSignatures, addSystemSignatures, saveResults }
+export { getSources, getPayloads, getNextTargets,
+  addAmount, addDI,
+  getPayloadSources, getPayloadTargets,
+  getPendingSources, getPendingTargets,
+  addSignatures, addSystemSignatures,
+  saveResults }

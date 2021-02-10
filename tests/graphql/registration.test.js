@@ -21,7 +21,7 @@ describe('GraphQL registration', () => {
     const { data: { system: { challenge } } } = await query({ query: CHALLENGE })
     expect(challenge).toEqual(
       expect.stringMatching(new RegExp(
-        `/${date.toISOString()}/from/<fingerprint>/000000000000/init/to/system/\\d+/[a-z0-9]+/0,00 ɱ`
+        `/${date.toISOString()}/from/<fingerprint>/0{12}/init/to/system/\\d{12}/[a-z0-9]+/0,00 ɱ`
       ))
     )
     const keyManager = await KeyManager()
