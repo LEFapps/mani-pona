@@ -2,12 +2,10 @@ import AWS from 'aws-sdk'
 import { promisify } from 'util'
 import { reduce } from 'lodash'
 
-AWS.config.region = 'eu-west-1'
-
 // TODO: continue the pagination token
-const userpool = (UserPoolId) => {
+const CognitoUserPool = (UserPoolId) => {
   return {
-    getUsers: async (PaginationToken) => {
+    listJubileeUsers: async (PaginationToken) => {
       const provider = new AWS.CognitoIdentityServiceProvider()
       provider.listUsersPromise = promisify(provider.listUsers)
       const params = {
@@ -32,4 +30,4 @@ const userpool = (UserPoolId) => {
   }
 }
 
-export default userpool
+export { CognitoUserPool }

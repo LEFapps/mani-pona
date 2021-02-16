@@ -9,33 +9,33 @@ const TransactionResolvers = {
     }
   },
   'LedgerQuery': {
-    'transactions': (id, arg, { ledger, verified }) => {
+    'transactions': (id, arg, { indexDynamo, ledger, verified }) => {
       if (id !== ledger) {
         const err = `Illegal access attempt detected from ${ledger} on ${id}`
         log.error(err)
         throw new ForbiddenError(err)
       }
-      return id
+      return indexDynamo.transactions(id)
     }
   },
   'TransactionQuery': {
-    'current': async (id, arg, { indexDynamo }) => {
-      return indexDynamo.transactions(id).current()
+    'current': async (tr, arg, { indexDynamo }) => {
+      return tr.current()
     },
-    'pending': async (id, arg, { indexDynamo }) => {
-      return indexDynamo.transactions(id).pending()
+    'pending': async (tr, arg, { indexDynamo }) => {
+      return tr.pending()
     },
-    'recent': wrap(async (id, arg, { indexDynamo }) => {
-      return indexDynamo.transactions(id).recent()
+    'recent': wrap(async (tr, arg, { indexDynamo }) => {
+      return tr.recent()
     }),
-    'challenge': wrap(async (id, { destination, amount }, { indexDynamo }) => {
-      return indexDynamo.transactions(id).challenge(destination, amount)
+    'challenge': wrap(async (tr, { destination, amount }, { indexDynamo }) => {
+      return tr.challenge(destination, amount)
     }),
-    'create': wrap(async (id, { proof }, { indexDynamo }) => {
-      return indexDynamo.transactions(id).create(proof)
+    'create': wrap(async (tr, { proof }, { indexDynamo }) => {
+      return tr.create(proof)
     }),
-    'confirm': wrap(async (id, { proof }, { indexDynamo }) => {
-      return indexDynamo.transactions(id).confirm(proof)
+    'confirm': wrap(async (tr, { proof }, { indexDynamo }) => {
+      return tr.confirm(proof)
     })
   }
 }

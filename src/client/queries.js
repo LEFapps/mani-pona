@@ -68,5 +68,43 @@ const CONFIRM = gql`
       }
     }
   }`
+const FIND_KEY = gql`
+  query findkey ($id: String!) {
+    system { 
+      findkey(id: $id) {
+        alias
+        publicKeyArmored
+      }
+    }
+  }
+`
+const JUBILEE = gql`
+  mutation jubilee {
+    admin {
+      jubilee {
+        ledgers
+        demurrage
+        income
+      }
+    }
+  }
+`
+const SYSTEM_PARAMETERS = gql`
+  query {
+    system {
+      parameters {
+        income
+        demurrage
+      }
+    }
+  }
+`
+const INIT = gql`
+  mutation init {
+    admin {
+      init
+    }
+  }
+`
 
-export { REGISTER, SYSTEM_CHALLENGE, CURRENT, PENDING, CHALLENGE, CREATE, CONFIRM }
+export { REGISTER, SYSTEM_CHALLENGE, CURRENT, PENDING, CHALLENGE, CREATE, CONFIRM, FIND_KEY, JUBILEE, INIT, SYSTEM_PARAMETERS }

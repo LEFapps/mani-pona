@@ -1,0 +1,56 @@
+# The structure of the ledger, subject to change
+
+States:
+  - 'shadow' # aka 'init' uid -> when saving, this becomes pending
+  - 'pending' # came from the DB -> saves as is
+  - 'signed' # sufficient signatures to promote -> becomes /current (and clobbers previous current!)
+  - '/current' # was already fully signed? Why do we see it?
+
+If source or origin are present,
+
+source, target: Either /current or pending entries *from the DB*
+ledger, destination: Strictly newly created entries, either pending or /current
+
+State diagram source/target:
+shadow | /current (no transitions!)
+
+State diagram ledger/destination:
+pending -> /current (when signed)
+
+Flow diagram
+
+create:
+  - addInit: source/target = shadow
+  - addEntry: source/target = /current (error if already pending entry!)
+  - addAmount: 
+    this creates the ledger/destination, if the ledger is 'system' they are immediately '/current' *and* signed otherwise 'pending'
+    balance is source/target + amount
+
+payload:
+  - source/target: the pending item from the database OR /current in the case of 'system'
+    ledger/destination: 
+    '/current' if from system ledger, 'pending' otherwise
+    balance is identical to what comes from the DB!
+
+# a continuation should hold the *future* 
+
+manipona:
+  - ledger: "<fingerprint owner> | system"
+    destination: "<fingerprint> | system"
+    entry: "pk | parameters | pending | /current | /ISODate/type/paraph.ledger"
+    type: "init | transaction | jubilee"
+    date: "ISODate"
+    previous: "signature.ledger (previous)"
+    amount: "<mani> (optional)"
+    balance: "<mani> (optional)"
+    income: "<mani> (optional)"
+    demurrage: "<mani> (optional)" 
+    paraph:
+      ledger: "<hash of proof>"
+      destination: "<hash of proof>"
+    signatures:
+      ledger: "<proof>"
+      destination: "<proof>"
+
+
+# the entry equal to '/' is the current transaction, 

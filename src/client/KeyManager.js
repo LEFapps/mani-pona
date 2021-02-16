@@ -2,17 +2,8 @@ import log from 'loglevel'
 import { KeyGenerator, KeyWrapper } from '../crypto'
 // interface for keys
 
-const KeyStore = {
-  async getKeys () {
-    // TODO
-  },
-  async saveKeys (keys) {
-    // TODO
-  }
-}
-
-const KeyManager = async (store = KeyStore) => {
-  const storedKeys = await store.getKeys()
+const KeyManager = async (store) => {
+  const storedKeys = store.getKeys()
   let keys
   if (storedKeys) {
     log.info('Stored keys found')
@@ -21,6 +12,7 @@ const KeyManager = async (store = KeyStore) => {
   async function getKeys () {
     if (!keys) {
       keys = await KeyGenerator().generate()
+      keys.ledger = await keys.publicKey.fingerprint()
       log.info('New keys generated')
       store.saveKeys(keys)
       log.info('New keys saved to store')

@@ -1,24 +1,40 @@
 import { get } from 'lodash'
+import loglevel from 'loglevel'
 import { KeyManager } from './KeyManager'
 import { flip, fromDb } from '../core/tools'
-import { REGISTER, SYSTEM_CHALLENGE, CURRENT, PENDING, CHALLENGE, CREATE, CONFIRM } from './queries'
+import { REGISTER, SYSTEM_CHALLENGE, CURRENT, PENDING, CHALLENGE, CREATE, CONFIRM, FIND_KEY, JUBILEE, INIT, SYSTEM_PARAMETERS } from './queries'
 
-const log = require('util').debuglog('Transactions')
+// const log = require('util').debuglog('Transactions')
 
-const ManiClient = async (graphqlClient, keyStore) => {
+const log = (msg) => loglevel.error(msg)
+
+function defaultContext () { return {} }
+const defaultKeyStore = {
+  async getKeys () {
+    // TODO
+  },
+  async saveKeys (keys) {
+    // TODO
+  }
+}
+
+const ManiClient = async ({ graphqlClient, keyStore = defaultKeyStore, fail = true, contextProvider = defaultContext }) => {
   const keyManager = await KeyManager(keyStore)
   const id = await keyManager.fingerprint()
   async function query (query, path, variables = {}, required = true) {
-    const result = await graphqlClient.query({ query, variables })
+    const result = await graphqlClient.query({ query, variables, context: contextProvider(), fetchPolicy: 'no-cache' })
     if (result.errors) {
       log(result.errors)
-      throw new Error(result.errors)
+      if (fail) throw new Error(result.errors)
     }
     const obj = get(result.data, path)
-    if (required && !obj) {
+    if (required && fail && !obj) {
       throw new Error(`Could not find ${path} in\n${JSON.stringify(result.data)}`)
     }
     return obj
+  }
+  async function find (ledger) {
+    return query(FIND_KEY, 'system.findkey.alias', { id: ledger }, false)
   }
   async function register (alias) {
     const challenge = await query(SYSTEM_CHALLENGE, 'system.challenge')
@@ -35,11 +51,11 @@ const ManiClient = async (graphqlClient, keyStore) => {
   const transactions = {
     async current () {
       const current = await query(CURRENT, 'ledger.transactions.current', { id })
-      log(JSON.stringify(current, null, 2))
+      // log(JSON.stringify(current, null, 2))
       return fromDb(current)
     },
     async pending () {
-      const pending = await query(PENDING, 'ledger.transactions.pending', { id })
+      const pending = await query(PENDING, 'ledger.transactions.pending', { id }, false)
       return fromDb(pending)
     },
     async confirm (challenge) {
@@ -64,10 +80,26 @@ const ManiClient = async (graphqlClient, keyStore) => {
         } })
     }
   }
+  const system = {
+    async parameters () {
+      return fromDb(await query(SYSTEM_PARAMETERS, 'system.parameters', {}, false))
+    }
+  }
+  const admin = {
+    async jubilee () {
+      return fromDb(await query(JUBILEE, 'admin.jubilee'))
+    },
+    async init () {
+      return query(INIT, 'admin.init')
+    }
+  }
   return {
     id,
     register,
-    transactions
+    find,
+    transactions,
+    system,
+    admin
   }
 }
 

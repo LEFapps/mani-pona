@@ -92,15 +92,15 @@ function addAmount ({ targets: { ledger, destination } }, amount) {
  * Add Demmurage and Income.
  */
 function addDI ({ targets: { ledger, destination } }, { demurrage, income }) {
-  ledger.demurrage = ledger.balance.multiply(demurrage)
+  ledger.demurrage = ledger.balance.multiply(demurrage / 100)
   ledger.income = income
   ledger.amount = ledger.income.subtract(ledger.demurrage)
   ledger.balance = ledger.balance.subtract(ledger.demurrage).add(ledger.income)
   ledger.challenge = payload({ date: ledger.date, from: ledger, to: destination, amount: ledger.amount })
   destination.demurrage = ledger.demurrage.multiply(-1)
   destination.income = ledger.income.multiply(-1)
-  destination.amount = destination.demurrage.add(destination.income)
-  destination.balance = destination.balance.add(destination.demurrage).add(destination.income)
+  destination.amount = destination.income.subtract(destination.demurrage)
+  destination.balance = destination.balance.subtract(destination.demurrage).add(destination.income)
   destination.challenge = payload({ date: ledger.date, from: destination, to: ledger, amount: destination.amount })
   return { ledger, destination }
 }

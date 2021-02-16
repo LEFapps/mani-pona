@@ -2,9 +2,9 @@ import { gql } from 'apollo-server-lambda'
 
 const SystemSchema = gql`
   type SystemParameters {
-    # the (monthly) (basic) income
+    "The (monthly) (basic) income"
     income: Currency!
-    # (monthly) demurrage in percentage (so 5.0 would be a 5% demurrage)
+    "(monthly) demurrage in percentage (so 5.0 would be a 5% demurrage)"
     demurrage: NonNegativeFloat!
   }
   
@@ -37,12 +37,12 @@ const SystemSchema = gql`
   }
   
   type System {
-    "The current income and demurrage settings"
-    parameters: SystemParameters!
+    "The current income and demurrage settings, returns nothing when system hasn't been initialized yet"
+    parameters: SystemParameters
     "Text to be signed by client to verify key ownership"
     challenge: String!
     "Find the public key corresponding to this (fingerprint) id"
-    findkey(id: String!): Ledger!
+    findkey(id: String!): Ledger
     "Register a new ledger, returns the id (fingerprint)"
     register(registration: LedgerRegistration!): String
   }

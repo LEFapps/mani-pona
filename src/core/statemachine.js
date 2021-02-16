@@ -2,7 +2,7 @@ import { getSources, getPayloads, getNextTargets, addAmount, addDI,
   getPayloadSources, getPayloadTargets, getPendingTargets, getPendingSources,
   addSignatures, addSystemSignatures, saveResults } from './transactions'
 
-const log = require('util').debuglog('Transactions')
+// const log = require('util').debuglog('Transactions')
 /**
  * This is the way.
  */

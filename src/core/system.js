@@ -13,7 +13,7 @@ const SystemCore = (table, userpool) => {
   }
   return {
     async parameters () {
-      return table.getItem(PARAMS_KEY, 'Missing system parameters')
+      return table.getItem(PARAMS_KEY)
     },
     async init () {
       log('System init')
@@ -36,6 +36,7 @@ const SystemCore = (table, userpool) => {
         .then(t => t.save()).catch(err => log(err, err.stack))
       log(`Database update:\n${JSON.stringify(trans.items(), null, 2)}`)
       await trans.execute()
+      return `SuMsy initialized with ${mani(100).format()} income and 5% demurrage.`
     },
     async challenge () {
       // provides the payload of the first transaction on a new ledger
@@ -66,7 +67,7 @@ const SystemCore = (table, userpool) => {
       return ledger
     },
     async jubilee () {
-      const users = await userpool.getUsers()
+      const users = await userpool.listJubileeUsers()
       const results = {
         ledgers: 0,
         demurrage: mani(0),

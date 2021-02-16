@@ -1,3 +1,4 @@
+import AWS from 'aws-sdk'
 import { ApolloServer } from 'apollo-server'
 import { createTestClient } from 'apollo-server-testing'
 import { DynamoPlus } from 'dynamo-plus'
@@ -7,7 +8,7 @@ import { lastNames } from '@faykah/last-names-en'
 import { IndexDynamo } from '../../src/dynamodb/'
 import typeDefs from '../../src/graphql/typeDefs'
 import resolvers from '../../src/graphql/resolvers'
-import userpool from '../../src/cognito/userpool'
+import { CognitoUserPool } from '../../src/cognito/userpool'
 import cognitoMock from './cognito.mock'
 import log from 'loglevel'
 
@@ -15,6 +16,9 @@ import log from 'loglevel'
 const textEncoding = require('text-encoding-utf-8')
 global.TextEncoder = textEncoding.TextEncoder
 global.TextDecoder = textEncoding.TextDecoder
+
+// We can mock AWS methods, but still need to suppy a 'dummy' region
+AWS.config.region = 'eu-west-1'
 
 const server = new ApolloServer({
   debug: true,
@@ -29,7 +33,7 @@ const server = new ApolloServer({
         }),
         'manipona'
       ),
-      userpool: userpool('mock-pool'),
+      userpool: CognitoUserPool('mock-pool'),
       ...cognitoMock.context()
     }
   }
