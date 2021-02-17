@@ -823,7 +823,7 @@ const TransactionsDynamo = (table, ledger, verification) => {
       return table.getItem({ ledger, entry: '/current' })
     },
     async pending () {
-      return short.getItem({ ledger, entry: 'pending' })
+      return table.getItem({ ledger, entry: 'pending' })
     },
     async recent () {
       return table.queryItems({
@@ -883,6 +883,21 @@ const TransactionsDynamo = (table, ledger, verification) => {
       await transaction.execute();
       log$1(`Database update:\n${JSON.stringify(transaction.items(), null, 2)}`);
       return next
+    },
+    async cancel (challenge) {
+      const pending = await table.getItem({ ledger, entry: 'pending' });
+      if (pending && pending.challenge === challenge) {
+        if (pending.destination === 'system') throw new Error('System transactions cannot be cancelled.')
+        const destination = await table.getItem({ ledger: pending.destination, entry: 'pending' });
+        if (!destination) throw new Error('No matching transaction found on destination ledger, please contact system administrators.')
+        const transaction = table.transaction();
+        transaction.deleteItem({ ledger, entry: 'pending' });
+        transaction.deleteItem({ ledger: pending.destination, entry: 'pending' });
+        await transaction.execute();
+        return 'Pending transaction successfully cancelled.'
+      } else {
+        return 'No matching pending transaction found, it may have already been cancelled or confirmed.'
+      }
     },
     // deprecated
     async saveEntry (entry) {
@@ -1006,7 +1021,7 @@ const SystemSchema = apolloServerLambda.gql`
 
   type Admin {
     # apply demurrage and (basic) income to all accounts
-    jubilee: Jubilee!
+    jubilee(ledger: String): Jubilee!
     # initialize the system
     init: String
   }
@@ -1027,12 +1042,22 @@ var transactions = apolloServerLambda.gql`
     ledger: String!
     "ID of destination ledger"
     destination: String
+    "The amount to transfer. Note that a negative amount means it will be decrease the balance on this ledger ('outgoing'), a positive amount is 'incoming'"
     amount: Currency!
+    "The ledger balance after the transfer"
     balance: Currency!
+    "The date when this transfer was initiated"
     date: DateTime!
+    "If the transaction was based on a jubilee, this show the proportion due to income."
     income: Currency
+    "If the transaction was based on a jubilee, this show the proportion due to demurrage."
     demurrage: Currency
+    "A unique representation of transaction used to create signatures"
     challenge: String
+    "An (optional) message that was added to the transaction"
+    message: String
+    "Set to true if the ledger still needs to sign. (The destination may or may not have already provided a counter-signature.)"
+    toSign: Boolean
   }
   
   type LedgerQuery {
@@ -1061,6 +1086,8 @@ var transactions = apolloServerLambda.gql`
     create(proof: Proof!): String
     "Confirm pending transaction"
     confirm(proof: Proof!): String
+    "Cancel the currently pending transaction, matching this challenge."
+    cancel(challenge: String!): String!
   }
 
   type Query {
@@ -1188,16 +1215,15 @@ const SystemCore = (table, userpool) => {
       // log(`Database update:\n${JSON.stringify(transaction.items(), null, 2)}`)
       return ledger
     },
-    async jubilee () {
-      const users = await userpool.listJubileeUsers();
+    async jubilee (ledger) {
       const results = {
         ledgers: 0,
         demurrage: mani(0),
         income: mani(0)
       };
       const parameters = await table.getItem(PARAMS_KEY$1, 'Missing system parameters');
-      const transaction = table.transaction();
-      for (let { ledger } of users) { // these for loops allow await!
+      async function applyJubilee (ledger) {
+        const transaction = table.transaction();
         log(`Applying DI to ${ledger}`);
         await StateMachine(transaction)
           .getSources({ ledger, destination: 'system' })
@@ -1211,8 +1237,16 @@ const SystemCore = (table, userpool) => {
           })
           .then(t => t.addSystemSignatures())
           .then(t => t.save());
+        await transaction.execute();
       }
-      await transaction.execute();
+      if (ledger) {
+        await applyJubilee(ledger);
+      } else {
+        const users = await userpool.listJubileeUsers();
+        for (let { ledger } of users) { // these for loops allow await!
+          await applyJubilee(ledger);
+        }
+      }
       // log(`Database update:\n${JSON.stringify(transaction.items(), null, 2)}`)
       return results
     }
@@ -1252,8 +1286,8 @@ const SystemResolvers = {
     'init': wrap$1(async (SystemCore, noargs, { admin }) => {
       return SystemCore.init()
     }),
-    'jubilee': wrap$1(async (SystemCore, noargs, { userpool, admin }) => {
-      return SystemCore.jubilee(userpool)
+    'jubilee': wrap$1(async (SystemCore, { ledger }, { userpool, admin }) => {
+      return SystemCore.jubilee(ledger)
     })
   }
 };
@@ -1275,23 +1309,33 @@ const TransactionResolvers = {
     }
   },
   'TransactionQuery': {
-    'current': async (tr, arg, { indexDynamo }) => {
-      return tr.current()
+    'current': async (transactions, arg) => {
+      return transactions.current()
     },
-    'pending': async (tr, arg, { indexDynamo }) => {
-      return tr.pending()
+    'pending': async (transactions, arg) => {
+      const pending = await transactions.pending();
+      if (pending) {
+        return {
+          ...pending,
+          message: 'Pending',
+          toSign: _.isEmpty(pending.signature)
+        }
+      }
     },
-    'recent': wrap$1(async (tr, arg, { indexDynamo }) => {
-      return tr.recent()
+    'recent': wrap$1(async (transactions, arg) => {
+      return transactions.recent()
     }),
-    'challenge': wrap$1(async (tr, { destination, amount }, { indexDynamo }) => {
-      return tr.challenge(destination, amount)
+    'challenge': wrap$1(async (transactions, { destination, amount }) => {
+      return transactions.challenge(destination, amount)
     }),
-    'create': wrap$1(async (tr, { proof }, { indexDynamo }) => {
-      return tr.create(proof)
+    'create': wrap$1(async (transactions, { proof }) => {
+      return transactions.create(proof)
     }),
-    'confirm': wrap$1(async (tr, { proof }, { indexDynamo }) => {
-      return tr.confirm(proof)
+    'confirm': wrap$1(async (transactions, { proof }) => {
+      return transactions.confirm(proof)
+    }),
+    'cancel': wrap$1(async (transactions, { challenge }) => {
+      return transactions.cancel(challenge)
     })
   }
 };

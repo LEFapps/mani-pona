@@ -21,7 +21,7 @@ const TransactionsDynamo = (table, ledger, verification) => {
       return table.getItem({ ledger, entry: '/current' })
     },
     async pending () {
-      return short.getItem({ ledger, entry: 'pending' })
+      return table.getItem({ ledger, entry: 'pending' })
     },
     async recent () {
       return table.queryItems({
@@ -81,6 +81,21 @@ const TransactionsDynamo = (table, ledger, verification) => {
       await transaction.execute()
       log(`Database update:\n${JSON.stringify(transaction.items(), null, 2)}`)
       return next
+    },
+    async cancel (challenge) {
+      const pending = await table.getItem({ ledger, entry: 'pending' })
+      if (pending && pending.challenge === challenge) {
+        if (pending.destination === 'system') throw new Error('System transactions cannot be cancelled.')
+        const destination = await table.getItem({ ledger: pending.destination, entry: 'pending' })
+        if (!destination) throw new Error('No matching transaction found on destination ledger, please contact system administrators.')
+        const transaction = table.transaction()
+        transaction.deleteItem({ ledger, entry: 'pending' })
+        transaction.deleteItem({ ledger: pending.destination, entry: 'pending' })
+        await transaction.execute()
+        return 'Pending transaction successfully cancelled.'
+      } else {
+        return 'No matching pending transaction found, it may have already been cancelled or confirmed.'
+      }
     },
     // deprecated
     async saveEntry (entry) {

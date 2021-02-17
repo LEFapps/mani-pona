@@ -40,6 +40,8 @@ const PENDING = gql`
           balance
           date
           challenge
+          message
+          toSign
         }
       }
     }
@@ -68,6 +70,14 @@ const CONFIRM = gql`
       }
     }
   }`
+const CANCEL = gql`
+  query ledger($id: String!, $challenge: String!) {
+    ledger(id: $id) {
+      transactions {
+        cancel(challenge: $challenge)
+      }
+    }
+  }`
 const FIND_KEY = gql`
   query findkey ($id: String!) {
     system { 
@@ -79,9 +89,9 @@ const FIND_KEY = gql`
   }
 `
 const JUBILEE = gql`
-  mutation jubilee {
+  mutation jubilee($ledger: String) {
     admin {
-      jubilee {
+      jubilee(ledger: $ledger) {
         ledgers
         demurrage
         income
@@ -107,4 +117,4 @@ const INIT = gql`
   }
 `
 
-export { REGISTER, SYSTEM_CHALLENGE, CURRENT, PENDING, CHALLENGE, CREATE, CONFIRM, FIND_KEY, JUBILEE, INIT, SYSTEM_PARAMETERS }
+export { REGISTER, SYSTEM_CHALLENGE, CURRENT, PENDING, CHALLENGE, CREATE, CONFIRM, CANCEL, FIND_KEY, JUBILEE, INIT, SYSTEM_PARAMETERS }

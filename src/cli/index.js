@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import inquirer from 'inquirer'
 import log from 'loglevel'
 import { ApolloClient, InMemoryCache } from '@apollo/client/core'
@@ -12,6 +14,8 @@ log.setLevel('info')
 /**
  * FOR DEMONSTRATION PURPOSES ONLY.
  */
+console.log('FOR DEMONSTRATION PURPOSES ONLY. WILL NOT WORK WITH (SECURED) SUMSY ENDPOINTS, ONLY WITH OFFLINE (LOCALHOST) INSTANCES.')
+
 async function cli () {
   const { uri } = await inquirer.prompt([{
     type: 'input',
@@ -57,20 +61,38 @@ async function cli () {
         log.info(`A Jubilee occurred: ${pending.demurrage.format()} demurrage and ${pending.income.format()} income is automatically confirmed`)
         await client.transactions.confirm(pending.challenge)
       } else {
-        const { confirmation } = await inquirer.prompt({
-          type: 'confirm',
-          name: 'confirmation',
-          message: `A transaction of ${pending.amount.format()} was initiated by ledger ${pending.destination}, do you accept?`,
-          default: true
-        })
-        if (confirmation) {
-          await client.transactions.confirm(pending.challenge)
+        // log.info(`Pending transaction: ${JSON.stringify(pending, null, 2)}`)
+        if (pending.toSign) {
+          const { confirmation } = await inquirer.prompt({
+            type: 'confirm',
+            name: 'confirmation',
+            message: `A transaction of ${pending.amount.format()} was initiated by ledger ${pending.destination}, do you accept?`,
+            default: true
+          })
+          if (confirmation) {
+            await client.transactions.confirm(pending.challenge)
+          } else {
+            await client.transactions.cancel(pending.challenge)
+          }
+          return true
         } else {
-          // TODO: Cancellation!
+          const { cancel } = await inquirer.prompt({
+            type: 'confirm',
+            name: 'cancel',
+            message: `You have a transaction pending (${pending.amount.format()}), waiting for confirmation by ledger ${pending.destination}, do you wish to cancel?`,
+            default: false
+          })
+          if (cancel) {
+            await client.transactions.cancel(pending.challenge)
+            return true
+          } else {
+            return false
+          }
         }
       }
     } else {
       log.info('No pending transactions')
+      return true
     }
   }
   async function createTransaction () {
@@ -86,7 +108,6 @@ async function cli () {
     }
   }
   async function promptLoop () {
-    await pendingLoop()
     const { command } = await inquirer.prompt([{
       type: 'list',
       name: 'command',
@@ -101,18 +122,23 @@ async function cli () {
     }])
     switch (command) {
       case 'new':
-        await createTransaction()
+        const nopending = await pendingLoop()
+        if (nopending) await createTransaction()
         break
       case 'pending':
         await pendingLoop()
         break
       case 'current':
+        await pendingLoop()
         const current = await client.transactions.current()
         console.log(`Your current account balance is ${current.balance.format()} (last updated: ${current.date.toLocaleString('nl-BE')})`)
         break
       case 'jubilee':
-        const jubilee = await client.admin.jubilee()
-        console.log(`Deducted ${jubilee.demurrage.format()} demurrare and added ${jubilee.income.format()} total to ${jubilee.ledgers} ledgers`)
+        const possible = await pendingLoop()
+        if (possible) {
+          const jubilee = await client.admin.jubilee()
+          console.log(`Deducted ${jubilee.demurrage.format()} demurrage and added ${jubilee.income.format()} total to ${jubilee.ledgers} ledgers`)
+        }
         break
       case 'exit':
         log.info('Exiting the client, goodbye')

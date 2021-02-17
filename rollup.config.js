@@ -1,3 +1,5 @@
+import hashbang from 'rollup-plugin-hashbang'
+
 export default [{
   input: 'src/lambda/handler.js',
   output: {
@@ -11,5 +13,8 @@ export default [{
     format: 'cjs'
   },
   // we don't actually include bundles
-  external: ['inquirer', 'loglevel', '@apollo/client/core']
+  external: ['inquirer', 'loglevel', '@apollo/client/core'],
+  plugins: [
+    hashbang()
+  ]
 }]

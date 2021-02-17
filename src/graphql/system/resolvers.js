@@ -36,8 +36,8 @@ const SystemResolvers = {
     'init': wrap(async (SystemCore, noargs, { admin }) => {
       return SystemCore.init()
     }),
-    'jubilee': wrap(async (SystemCore, noargs, { userpool, admin }) => {
-      return SystemCore.jubilee(userpool)
+    'jubilee': wrap(async (SystemCore, { ledger }, { userpool, admin }) => {
+      return SystemCore.jubilee(ledger)
     })
   }
 }

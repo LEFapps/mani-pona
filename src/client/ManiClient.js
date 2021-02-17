@@ -2,7 +2,7 @@ import { get } from 'lodash'
 import loglevel from 'loglevel'
 import { KeyManager } from './KeyManager'
 import { flip, fromDb } from '../core/tools'
-import { REGISTER, SYSTEM_CHALLENGE, CURRENT, PENDING, CHALLENGE, CREATE, CONFIRM, FIND_KEY, JUBILEE, INIT, SYSTEM_PARAMETERS } from './queries'
+import { REGISTER, SYSTEM_CHALLENGE, CURRENT, PENDING, CHALLENGE, CREATE, CONFIRM, CANCEL, FIND_KEY, JUBILEE, INIT, SYSTEM_PARAMETERS } from './queries'
 
 // const log = require('util').debuglog('Transactions')
 
@@ -78,6 +78,9 @@ const ManiClient = async ({ graphqlClient, keyStore = defaultKeyStore, fail = tr
           counterSignature: await keyManager.sign(flip(challenge)),
           payload: challenge
         } })
+    },
+    async cancel (challenge) {
+      return query(CANCEL, 'ledger.transactions.cancel', { id, challenge })
     }
   }
   const system = {
@@ -87,7 +90,7 @@ const ManiClient = async ({ graphqlClient, keyStore = defaultKeyStore, fail = tr
   }
   const admin = {
     async jubilee () {
-      return fromDb(await query(JUBILEE, 'admin.jubilee'))
+      return fromDb(await query(JUBILEE, 'admin.jubilee', { ledger: id }))
     },
     async init () {
       return query(INIT, 'admin.init')

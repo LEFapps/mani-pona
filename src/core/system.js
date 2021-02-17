@@ -66,16 +66,15 @@ const SystemCore = (table, userpool) => {
       // log(`Database update:\n${JSON.stringify(transaction.items(), null, 2)}`)
       return ledger
     },
-    async jubilee () {
-      const users = await userpool.listJubileeUsers()
+    async jubilee (ledger) {
       const results = {
         ledgers: 0,
         demurrage: mani(0),
         income: mani(0)
       }
       const parameters = await table.getItem(PARAMS_KEY, 'Missing system parameters')
-      const transaction = table.transaction()
-      for (let { ledger } of users) { // these for loops allow await!
+      async function applyJubilee (ledger) {
+        const transaction = table.transaction()
         log(`Applying DI to ${ledger}`)
         await StateMachine(transaction)
           .getSources({ ledger, destination: 'system' })
@@ -89,8 +88,16 @@ const SystemCore = (table, userpool) => {
           })
           .then(t => t.addSystemSignatures())
           .then(t => t.save())
+        await transaction.execute()
       }
-      await transaction.execute()
+      if (ledger) {
+        await applyJubilee(ledger)
+      } else {
+        const users = await userpool.listJubileeUsers()
+        for (let { ledger } of users) { // these for loops allow await!
+          await applyJubilee(ledger)
+        }
+      }
       // log(`Database update:\n${JSON.stringify(transaction.items(), null, 2)}`)
       return results
     }

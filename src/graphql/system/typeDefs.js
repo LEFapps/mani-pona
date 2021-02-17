@@ -49,7 +49,7 @@ const SystemSchema = gql`
 
   type Admin {
     # apply demurrage and (basic) income to all accounts
-    jubilee: Jubilee!
+    jubilee(ledger: String): Jubilee!
     # initialize the system
     init: String
   }

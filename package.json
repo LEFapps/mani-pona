@@ -4,7 +4,7 @@
   "description": "A centralized (AWS based) implementation of SuMSy ledgers",
   "main": "src/client/index.js",
   "bin": {
-    "sumsy-cli": "node ./dist/cli.js"
+    "sumsy": "./dist/cli.js"
   },
   "scripts": {
     "test": "JEST_CIRCUS=1 LEDGER=manipona NODE_DEBUG=Transactions jest --bail",
@@ -56,6 +56,7 @@
     "lodash": "^4.17.20",
     "loglevel": "^1.7.1",
     "openpgp": "^4.10.8",
+    "rollup-plugin-hashbang": "^2.2.2",
     "serverless-dotenv-plugin": "^3.3.0",
     "sha1": "^1.1.1"
   }

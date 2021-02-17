@@ -1,4 +1,5 @@
 import { ForbiddenError } from 'apollo-server'
+import { isEmpty } from 'lodash'
 import log from 'loglevel'
 import { wrap } from '../util'
 
@@ -19,23 +20,33 @@ const TransactionResolvers = {
     }
   },
   'TransactionQuery': {
-    'current': async (tr, arg, { indexDynamo }) => {
-      return tr.current()
+    'current': async (transactions, arg) => {
+      return transactions.current()
     },
-    'pending': async (tr, arg, { indexDynamo }) => {
-      return tr.pending()
+    'pending': async (transactions, arg) => {
+      const pending = await transactions.pending()
+      if (pending) {
+        return {
+          ...pending,
+          message: 'Pending',
+          toSign: isEmpty(pending.signature)
+        }
+      }
     },
-    'recent': wrap(async (tr, arg, { indexDynamo }) => {
-      return tr.recent()
+    'recent': wrap(async (transactions, arg) => {
+      return transactions.recent()
     }),
-    'challenge': wrap(async (tr, { destination, amount }, { indexDynamo }) => {
-      return tr.challenge(destination, amount)
+    'challenge': wrap(async (transactions, { destination, amount }) => {
+      return transactions.challenge(destination, amount)
     }),
-    'create': wrap(async (tr, { proof }, { indexDynamo }) => {
-      return tr.create(proof)
+    'create': wrap(async (transactions, { proof }) => {
+      return transactions.create(proof)
     }),
-    'confirm': wrap(async (tr, { proof }, { indexDynamo }) => {
-      return tr.confirm(proof)
+    'confirm': wrap(async (transactions, { proof }) => {
+      return transactions.confirm(proof)
+    }),
+    'cancel': wrap(async (transactions, { challenge }) => {
+      return transactions.cancel(challenge)
     })
   }
 }
