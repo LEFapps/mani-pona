@@ -1,4 +1,4 @@
-import { _ } from 'lodash'
+import _ from 'lodash'
 import ManiError from './ManiError'
 import { mani } from '../mani'
 
@@ -237,7 +237,7 @@ class MockClient {
   get demurageHistory () {
     return {
       all: () =>
-        new Promise((resolve) => {
+        new Promise(resolve => {
           resolve(this._demurageHistory)
         })
     }
@@ -246,7 +246,7 @@ class MockClient {
   get contacts () {
     return {
       all: () =>
-        new Promise((resolve) => {
+        new Promise(resolve => {
           resolve(this._contacts)
         })
     }
@@ -255,7 +255,7 @@ class MockClient {
   get standingOrders () {
     return {
       all: () =>
-        new Promise((resolve) => {
+        new Promise(resolve => {
           resolve(this._standingOrders)
         })
     }
@@ -264,7 +264,7 @@ class MockClient {
   get issuedBuffers () {
     return {
       all: () =>
-        new Promise((resolve) => {
+        new Promise(resolve => {
           resolve(this._issuedBuffers)
         })
     }
@@ -273,11 +273,11 @@ class MockClient {
   get systemConfiguration () {
     return {
       demurage: () =>
-        new Promise((resolve) => {
+        new Promise(resolve => {
           resolve(this._systemConfiguration.demurage)
         }),
       incomePrediction: () =>
-        new Promise((resolve) => {
+        new Promise(resolve => {
           resolve(this._systemConfiguration.incomePrediction)
         })
     }
@@ -286,7 +286,7 @@ class MockClient {
   get notifications () {
     return {
       all: () =>
-        new Promise((resolve) => {
+        new Promise(resolve => {
           resolve(this._notifications)
         })
     }
@@ -295,7 +295,7 @@ class MockClient {
   get transactions () {
     return {
       all: () =>
-        new Promise((resolve) => {
+        new Promise(resolve => {
           resolve(this._transactions)
         }),
       create: ({ peerId, amount }) =>
