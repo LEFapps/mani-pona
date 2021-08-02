@@ -1,0 +1,18 @@
+Resources:
+  ledger:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: ${env:DYN_TABLE}
+      AttributeDefinitions:
+        - AttributeName: ledger
+          AttributeType: S
+        - AttributeName: entry
+          AttributeType: S
+      KeySchema:
+        - AttributeName: ledger
+          KeyType: HASH
+        - AttributeName: entry
+          KeyType: RANGE
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1

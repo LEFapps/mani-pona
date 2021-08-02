@@ -1,0 +1,45 @@
+Resources:
+  CloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Comment: mani-pona-${self:provider.stage}-client
+        CustomErrorResponses:
+          - ErrorCachingMinTTL: 0
+            ErrorCode: 403
+            ResponseCode: 200
+            ResponsePagePath: "/index.html"
+          - ErrorCachingMinTTL: 0
+            ErrorCode: 404
+            ResponseCode: 200
+            ResponsePagePath: "/index.html"
+        DefaultCacheBehavior:
+          AllowedMethods:
+            - GET
+            - HEAD
+          CachedMethods:
+            - GET
+            - HEAD
+          Compress: true
+          ForwardedValues:
+            QueryString: false
+          TargetOriginId: Client
+          ViewerProtocolPolicy: "redirect-to-https"
+        DefaultRootObject: "index.html"
+        Enabled: true
+        IPV6Enabled: true
+        Origins:
+          - Id: Client
+            DomainName:
+              Fn::Join:
+                - ""
+                - - Ref: ClientBucket
+                  - "."
+                  - "s3-app-"
+                  - ${self:provider.region}
+                  - ".amazonaws.com"
+            CustomOriginConfig:
+              HTTPPort: 80
+              HTTPSPort: 443
+              OriginProtocolPolicy: http-only
+        PriceClass: PriceClass_100

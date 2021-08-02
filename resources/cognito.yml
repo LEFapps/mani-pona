@@ -1,0 +1,145 @@
+Resources:
+  CognitoUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      # Generate a name based on the stage
+      UserPoolName: mani-pona-${self:provider.stage}-user-pool
+      AutoVerifiedAttributes:
+        - email
+      UsernameAttributes:
+        - email
+      UsernameConfiguration:
+        CaseSensitive: false
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireLowercase: true
+          RequireNumbers: true
+          RequireSymbols: true
+          RequireUppercase: true
+      Schema:
+        - Name: email
+          AttributeDataType: String
+          Mutable: false
+          Required: true
+      EmailVerificationMessage: 'Gebruik volgende code om uw account te verifiëren: {####}'
+      EmailVerificationSubject: Welkom bij Mani Pona ${env:CLIENT}
+      # LambdaConfig:
+      #   PostConfirmation:
+      #     Fn::GetAtt: ['SignupLambdaFunction', 'Arn']
+
+  CognitoUserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      # Generate an app client name based on the stage
+      ClientName: mani-pona-${self:provider.stage}-user-pool-client
+      UserPoolId:
+        Ref: CognitoUserPool
+      ExplicitAuthFlows:
+        - ADMIN_NO_SRP_AUTH
+      GenerateSecret: false
+  # The federated identity for our user pool to auth with
+  CognitoIdentityPool:
+    Type: AWS::Cognito::IdentityPool
+    Properties:
+      # Generate a name based on the stage
+      IdentityPoolName: mani-pona-${self:provider.stage}-identity-pool
+      # Don't allow unathenticated users
+      AllowUnauthenticatedIdentities: false
+      # Link to our User Pool
+      CognitoIdentityProviders:
+        - ClientId:
+            Ref: CognitoUserPoolClient
+          ProviderName:
+            Fn::GetAtt: ['CognitoUserPool', 'ProviderName']
+  # IAM roles
+  CognitoIdentityPoolRoles:
+    Type: AWS::Cognito::IdentityPoolRoleAttachment
+    Properties:
+      IdentityPoolId:
+        Ref: CognitoIdentityPool
+      Roles:
+        authenticated:
+          Fn::GetAtt: [CognitoAuthRole, Arn]
+
+  # IAM role used for authenticated users
+  CognitoAuthRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Path: /
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: 'Allow'
+            Principal:
+              Federated: 'cognito-identity.amazonaws.com'
+            Action:
+              - 'sts:AssumeRoleWithWebIdentity'
+            Condition:
+              StringEquals:
+                'cognito-identity.amazonaws.com:aud':
+                  Ref: CognitoIdentityPool
+              'ForAnyValue:StringLike':
+                'cognito-identity.amazonaws.com:amr': authenticated
+      Policies:
+        - PolicyName: 'CognitoAuthorizedPolicy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: 'Allow'
+                Action:
+                  - 'mobileanalytics:PutEvents'
+                  - 'cognito-sync:*'
+                  - 'cognito-identity:*'
+                Resource: '*'
+
+              # Allow users to invoke our API
+              - Effect: 'Allow'
+                Action:
+                  - 'execute-api:Invoke'
+                Resource:
+                  Fn::Join:
+                    - ''
+                    - - 'arn:aws:execute-api:'
+                      - Ref: AWS::Region
+                      - ':'
+                      - Ref: AWS::AccountId
+                      - ':'
+                      - Ref: ApiGatewayRestApi
+                      - '/*'
+              # Allow signed-in user to upload files to assets
+              - Effect: 'Allow'
+                Action:
+                  - 's3:GetObject'
+                  - 's3:PutObject'
+                Resource:
+                  - Fn::Join:
+                      - ''
+                      - - Fn::GetAtt:
+                            - ClientBucket
+                            - Arn
+                        - '/files/*'
+              - Effect: 'Allow'
+                Action:
+                  - 's3:PutObject'
+                Resource:
+                  - Fn::Join:
+                      - ''
+                      - - Fn::GetAtt:
+                            - ClientBucket
+                            - Arn
+                        - '/files/*'
+  # Api Gateway Authorizer for use on endpoints
+  # Note: it would be nice to have this in another resource yml file, need to figure out how to get the Cognito User Pool ARN to do that.
+  ApiGatewayAuthorizer:
+    DependsOn:
+      - ApiGatewayRestApi
+    Type: AWS::ApiGateway::Authorizer
+    Properties:
+      Name: cognito-authorizer
+      AuthorizerResultTtlInSeconds: 300 # time-to-live
+      IdentitySource: method.request.header.Authorization # this is the header parameter that needs to contain the IdToken
+      Type: COGNITO_USER_POOLS
+      RestApiId: { 'Ref': 'ApiGatewayRestApi' }
+      ProviderARNs:
+        - Fn::GetAtt: [CognitoUserPool, Arn]

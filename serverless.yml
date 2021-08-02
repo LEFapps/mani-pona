@@ -1,4 +1,4 @@
-service: ${env:CLIENT}-mani-pona
+service: ${env:CLIENT, 'dev'}-mani-pona
 
 provider:
   name: aws
@@ -16,7 +16,7 @@ plugins:
   # WARNING! This is serverless-dynamodb-local from https://github.com/99x/serverless-dynamodb-local
   # it is different from the official serverless docs!
   - serverless-dynamodb-local
-  - serverless-offline 
+  - serverless-offline
 
 functions:
   graphql:
@@ -28,11 +28,12 @@ functions:
       - http:
           path: graphql
           method: get
-  environment:
-    DYN_REGION: ${env:DYN_REGION}
-    DYN_ENDPOINT: ${env:DYN_ENDPOINT} # TODO: replace with 'Ref'
-    DYN_TABLE: ${env:DYN_TABLE}
-    DEBUG: ${env:DEBUG, self:custom.debug}
+    environment:
+      DYN_REGION: ${env:DYN_REGION}
+      DYN_ENDPOINT:
+        Ref: ledger
+      DYN_TABLE: ${env:DYN_TABLE}
+      DEBUG: ${env:DEBUG, self:custom.debug}
 
     # From the documentation (https://www.serverless.com/framework/docs/providers/aws/events/apigateway/):
     # If you want more control over which attributes are exposed as claims you can switch to integration: lambda and add the following configuration. The claims will be exposed at events.cognitoPoolClaims.
@@ -62,30 +63,19 @@ functions:
     #       Properties: ...
 
 resources:
-  Resources:
-    ledger:
-      Type: AWS::DynamoDB::Table
-      Properties:
-        TableName: ${env:DYN_TABLE}
-        AttributeDefinitions:
-          - AttributeName: ledger
-            AttributeType: S
-          - AttributeName: entry
-            AttributeType: S
-        KeySchema:
-          - AttributeName: ledger
-            KeyType: HASH
-          - AttributeName: entry
-            KeyType: RANGE
-        ProvisionedThroughput:
-          ReadCapacityUnits: 1
-          WriteCapacityUnits: 1
+  - ${file(resources/dynamo.yml)}
+  - ${file(resources/cloudfront.yml)}
+  - ${file(resources/cognito.yml)}
+  - ${file(resources/client.yml)}
+  - ${file(resources/exports.yml)}
 
 # Warning: the dynamodb shell does NOT work in Firefox, only in Chrome
 custom:
   debug: ${env:DEBUG, false} # debug mode (string values or 0|1 are converted)
   dotenv:
     basePath: env/
+  output:
+    file: 'client/src/aws-exports.json'
   dynamodb:
     stages:
       - test
@@ -99,4 +89,3 @@ custom:
 #        sources:
 #          - table: manipona
 #            sources: [./tests/seeds/manipona.json]
-

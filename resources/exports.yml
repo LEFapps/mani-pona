@@ -1,0 +1,21 @@
+Outputs:
+  IdentityPoolId:
+    Value:
+      Ref: CognitoIdentityPool
+  AuthorizerId:
+    Value:
+      Ref: ApiGatewayRestApi
+  UserPoolId:
+    Value:
+      Ref: CognitoUserPool
+  UserPoolClientId:
+    Value:
+      Ref: CognitoUserPoolClient
+  ClientBucket:
+    Value:
+      Ref: ClientBucket
+  Region:
+    Value: ${self:provider.region}
+  CloudFrontDistribution:
+    Value:
+      Ref: CloudFrontDistribution

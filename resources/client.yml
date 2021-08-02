@@ -1,0 +1,46 @@
+Resources:
+  ClientBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: ${self:service}-${self:provider.stage}-client
+      WebsiteConfiguration:
+        IndexDocument: "index.html"
+        ErrorDocument: "index.html"
+      Tags:
+        - Key: "client"
+          Value: ${env:CLIENT}
+      CorsConfiguration:
+        CorsRules:
+          - AllowedOrigins:
+              - "*"
+            AllowedHeaders:
+              - "*"
+            AllowedMethods:
+              - HEAD
+              - GET
+              - PUT
+              - POST
+              - DELETE
+            MaxAge: 3000
+            ExposedHeaders:
+              - x-amz-server-side-encryption
+              - x-amz-request-id
+              - x-amz-id-2
+              - ETag
+  ClientBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket:
+        Ref: ClientBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Action: "s3:GetObject"
+            Effect: "allow"
+            Principal: "*"
+            Resource:
+              Fn::Join: # ok, so it looks weird, but this joins the parts using an empty string
+                - ""
+                - - "arn:aws:s3:::"
+                  - Ref: ClientBucket
+                  - "/*"
