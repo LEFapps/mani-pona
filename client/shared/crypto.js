@@ -1,33 +1,40 @@
 import * as openpgp from 'openpgp'
-import fs from 'fs'
-import path from 'path'
 import assert from 'assert'
 import _ from 'lodash'
 import sha1 from 'sha1'
 
 function bugfix () {
-// Bugfix, see: https://github.com/openpgpjs/openpgpjs/issues/1036
-// and https://github.com/facebook/jest/issues/9983
+  // Bugfix, see: https://github.com/openpgpjs/openpgpjs/issues/1036
+  // and https://github.com/facebook/jest/issues/9983
   const textEncoding = require('text-encoding-utf-8')
   global.TextEncoder = textEncoding.TextEncoder
   global.TextDecoder = textEncoding.TextDecoder
 }
 
-const unpack = async (key) => {
-  const { err, keys: [parsedkey] } = await openpgp.key.readArmored(key)
+const unpack = async key => {
+  const {
+    err,
+    keys: [parsedkey]
+  } = await openpgp.key.readArmored(key)
   if (err) {
     throw err[0]
   }
   return parsedkey
 }
 // reliably sort an objects keys and merge everything into one String
-const sortedObjectString = (obj) => {
-  return Object.keys(obj).sort().reduce((arr, key) => { arr.push(`${key}:${obj[key]}`); return arr }, []).join('|')
+const sortedObjectString = obj => {
+  return Object.keys(obj)
+    .sort()
+    .reduce((arr, key) => {
+      arr.push(`${key}:${obj[key]}`)
+      return arr
+    }, [])
+    .join('|')
 }
 
 const Signer = (key, pk) => {
   const signer = {
-    sign: async (input) => {
+    sign: async input => {
       bugfix()
       assert(!_.isEmpty(input), 'Missing input')
       const text = typeof input === 'string' ? input : sortedObjectString(input)
@@ -39,7 +46,8 @@ const Signer = (key, pk) => {
       })
       return detachedSignature
     },
-    signature: async (input) => { // TODO: @deprecated
+    signature: async input => {
+      // TODO: @deprecated
       const s = await signer.sign(input)
       const hash = sha1(s)
       return {
@@ -80,7 +88,9 @@ const Verifier = (key, pk) => {
       if (signatures[0].valid) {
         return true
       } else {
-        throw new Error('The proof signature didn\'t match either this key or the challenge.')
+        throw new Error(
+          "The proof signature didn't match either this key or the challenge."
+        )
       }
     },
     fingerprint: async () => {
@@ -102,22 +112,6 @@ const KeyWrapper = (key, pk) => {
     // write: async (file) => fs.writeFile(file, JSON.stringify(key))
   }
 }
-// load from single json file
-/*
-const KeyLoader = (file) => {
-  const key = JSON.parse(fs.readFileSync(file))
-  return KeyWrapper(key)
-}
-*/
-
-// load from separate public.key and private.key files
-const KeyLoader = (dir) => {
-  const key = {
-    publicKeyArmored: fs.readFileSync(path.join(dir, 'public.key'), { encoding: 'utf-8' }),
-    privateKeyArmored: fs.readFileSync(path.join(dir, 'private.key'), { encoding: 'utf-8' })
-  }
-  return KeyWrapper(key)
-}
 
 const KeyGenerator = (userId = {}) => {
   bugfix()
@@ -132,4 +126,4 @@ const KeyGenerator = (userId = {}) => {
   }
 }
 
-export { Verifier, Signer, KeyLoader, KeyGenerator, KeyWrapper }
+export { Verifier, Signer, KeyGenerator, KeyWrapper }
