@@ -3,7 +3,7 @@ import { KeyGenerator, KeyWrapper } from '../../shared/crypto'
 // interface for keys
 
 const KeyManager = async store => {
-  const storedKeys = store.getKeys()
+  const storedKeys = await store.getKeys()
   let keys
   if (storedKeys) {
     log.info('Stored keys found')

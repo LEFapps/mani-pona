@@ -33,7 +33,7 @@ const defaultKeyStore = {
       const key = await AsyncStorage.getItem(storageKey)
       if (key !== null) {
         // key previously stored
-        return key
+        return JSON.parse(key)
       }
     } catch (e) {
       // error reading key
@@ -42,7 +42,7 @@ const defaultKeyStore = {
   },
   async saveKeys (keys) {
     try {
-      await AsyncStorage.setItem(storageKey, keys)
+      await AsyncStorage.setItem(storageKey, JSON.stringify(keys))
     } catch (e) {
       // saving error
       log(e)
