@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Text, TextInput, View, Dimensions, LogBox } from 'react-native'
 import { Authenticator } from 'aws-amplify-react-native'
 import { Amplify, Analytics } from 'aws-amplify'
+import log from 'loglevel'
 
 import SignIn from './src/screens/auth/signIn'
 import Drawer from './src/routes/drawer'
@@ -16,6 +17,8 @@ import './src/helpers/i18n'
 
 Amplify.configure(config)
 Analytics.configure({ disabled: true })
+
+log.enableAll()
 
 export default function App () {
   global.maniClient = new ManiClient({})
