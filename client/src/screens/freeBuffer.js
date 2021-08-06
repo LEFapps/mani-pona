@@ -3,13 +3,13 @@ import { View, Text, FlatList, Alert } from 'react-native'
 import { globalStyles } from '../styles/global'
 import IconButton from '../shared/buttons/iconButton'
 import Card from '../shared/bigCardWithDeleteAndEdit'
-import ManiClient from '../mani'
 import mani from '../../shared/mani'
 
 export default function FreeBuffer ({ navigation }) {
   const [issuedBuffers, setBuffers] = useState([])
   const [contacts, setContacts] = useState([])
   const [ready, setReady] = useState(false)
+  const ManiClient = global.maniClient
 
   useEffect(() => {
     loadData()

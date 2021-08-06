@@ -3,10 +3,10 @@ import { TextInput, View, Text, Alert } from 'react-native'
 import { globalStyles } from '../styles/global.js'
 import Button from '../shared/buttons/button'
 import { validateNotEmpty } from '../helpers/validation'
-import ManiClient from '../mani'
 
 export default function AddContact ({ route, navigation }) {
   const { type, data } = route.params
+  const ManiClient = global.maniClient
   const [state, setState] = useState({
     contactName: ''
   })

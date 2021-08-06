@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react'
 import { View, Text, StyleSheet } from 'react-native'
 import CustomButton from '../shared/buttons/button'
 import { globalStyles } from '../styles/global.js'
-import ManiClient from '../mani'
 import mani from '../../shared/mani'
 import { colors } from '../helpers/helper'
 const { DarkerBlue, CurrencyColor } = colors
@@ -11,6 +10,7 @@ export default function AccountBalance ({ navigation }) {
   const [demu, setDemu] = useState({})
   const [income, setIncome] = useState({})
   const [ready, setReady] = useState(false)
+  const ManiClient = global.maniClient
 
   useEffect(() => {
     loadData()
