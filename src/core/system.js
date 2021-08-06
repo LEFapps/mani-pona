@@ -1,6 +1,6 @@
 import util from 'util'
 import StateMachine from './statemachine'
-import { KeyGenerator, Verifier } from '../crypto'
+import { KeyGenerator, Verifier } from '../../client/shared/crypto'
 import { mani } from '../mani'
 
 const PARAMS_KEY = { ledger: 'system', entry: 'parameters' }
@@ -8,7 +8,7 @@ const PK_KEY = { ledger: 'system', entry: 'pk' }
 const logutil = util.debuglog('SystemCore') // activate by adding NODE_DEBUG=SystemCore to environment
 
 const SystemCore = (table, userpool) => {
-  const log = (msg) => {
+  const log = msg => {
     logutil(msg)
   }
   return {
@@ -33,10 +33,13 @@ const SystemCore = (table, userpool) => {
         .getSources({ ledger: 'system', destination: 'system' })
         .then(t => t.addAmount(mani(0)))
         .then(t => t.addSystemSignatures(keys))
-        .then(t => t.save()).catch(err => log(err, err.stack))
+        .then(t => t.save())
+        .catch(err => log(err, err.stack))
       log(`Database update:\n${JSON.stringify(trans.items(), null, 2)}`)
       await trans.execute()
-      return `SuMsy initialized with ${mani(100).format()} income and 5% demurrage.`
+      return `SuMsy initialized with ${mani(
+        100
+      ).format()} income and 5% demurrage.`
     },
     async challenge () {
       // provides the payload of the first transaction on a new ledger
@@ -61,7 +64,13 @@ const SystemCore = (table, userpool) => {
         .then(t => t.addSignatures({ ledger, ...registration }))
         .then(t => t.save())
       // log('Registration context:\n' + JSON.stringify(context, null, 2))
-      transaction.putItem({ ledger, entry: 'pk', publicKeyArmored, alias, challenge: payload })
+      transaction.putItem({
+        ledger,
+        entry: 'pk',
+        publicKeyArmored,
+        alias,
+        challenge: payload
+      })
       await transaction.execute()
       // log(`Database update:\n${JSON.stringify(transaction.items(), null, 2)}`)
       return ledger
@@ -72,7 +81,10 @@ const SystemCore = (table, userpool) => {
         demurrage: mani(0),
         income: mani(0)
       }
-      const parameters = await table.getItem(PARAMS_KEY, 'Missing system parameters')
+      const parameters = await table.getItem(
+        PARAMS_KEY,
+        'Missing system parameters'
+      )
       async function applyJubilee (ledger) {
         const transaction = table.transaction()
         log(`Applying DI to ${ledger}`)
@@ -94,7 +106,8 @@ const SystemCore = (table, userpool) => {
         await applyJubilee(ledger)
       } else {
         const users = await userpool.listJubileeUsers()
-        for (let { ledger } of users) { // these for loops allow await!
+        for (let { ledger } of users) {
+          // these for loops allow await!
           await applyJubilee(ledger)
         }
       }

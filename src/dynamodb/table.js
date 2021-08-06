@@ -1,22 +1,26 @@
 import { reduce } from 'lodash'
 import loglevel from 'loglevel'
-import tools from '../core/tools'
+import tools from '../../client/shared/tools'
 
 const methods = ['get', 'put', 'query', 'update']
 
 function table (db, TableName, options = {}) {
-  const t = reduce(methods, (table, method) => {
-    table[method] = async (param) => {
-      const arg = {
-        TableName,
-        ...param,
-        ...options
+  const t = reduce(
+    methods,
+    (table, method) => {
+      table[method] = async param => {
+        const arg = {
+          TableName,
+          ...param,
+          ...options
+        }
+        // console.log(`Executing ${method} on ${TableName} with ${JSON.stringify(param, null, 2)}`)
+        return db[method](arg)
       }
-      // console.log(`Executing ${method} on ${TableName} with ${JSON.stringify(param, null, 2)}`)
-      return db[method](arg)
-    }
-    return table
-  }, {})
+      return table
+    },
+    {}
+  )
   async function getItem (Key, errorMsg) {
     const result = await t.get({ Key })
     if (errorMsg && !result.Item) {
@@ -48,7 +52,8 @@ function table (db, TableName, options = {}) {
               TableName,
               Item: tools.toDb(input),
               ...options
-            } })
+            }
+          })
         },
         updateItem (Key, args) {
           TransactItems.push({

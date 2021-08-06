@@ -9,13 +9,22 @@ import { Mani } from '../mani'
 function pad (i) {
   return ('000000000000' + i).slice(-12)
 }
-function other (party) { return party === 'ledger' ? 'destination' : 'ledger' }
-function entryPath (entry) { return `/${pad(entry.sequence)}/${entry.uid}` }
-function path (entry) { return `/${entry.ledger}${entryPath(entry)}` }
-function sortKey (entry) { return `/${entry.date.toISOString()}${entryPath(entry)}` }
+function other (party) {
+  return party === 'ledger' ? 'destination' : 'ledger'
+}
+function entryPath (entry) {
+  return `/${pad(entry.sequence)}/${entry.uid}`
+}
+function path (entry) {
+  return `/${entry.ledger}${entryPath(entry)}`
+}
+function sortKey (entry) {
+  return `/${entry.date.toISOString()}${entryPath(entry)}`
+}
 function destructurePath (path) {
-  const match = new RegExp('/(?<ledger>[a-z0-9]+)/(?<sequence>[0-9]+)/(?<uid>[a-z0-9]+)')
-    .exec(path)
+  const match = new RegExp(
+    '/(?<ledger>[a-z0-9]+)/(?<sequence>[0-9]+)/(?<uid>[a-z0-9]+)'
+  ).exec(path)
   if (!match) {
     throw new Error('invalid path')
   }
@@ -24,7 +33,8 @@ function destructurePath (path) {
   return { ledger, sequence, uid }
 }
 function destructure (payload, flip = false) {
-  const full = '^/(?<date>[^/]+)/from(?<from>.+)(?=/to)/to(?<to>.+)(?=/)/(?<amount>[-0-9,ɱ ]+)'
+  const full =
+    '^/(?<date>[^/]+)/from(?<from>.+)(?=/to)/to(?<to>.+)(?=/)/(?<amount>[-0-9,ɱ ]+)'
   let match = new RegExp(full).exec(payload)
   if (match) {
     let { date, from, to, amount } = match.groups
@@ -70,10 +80,10 @@ function shadowEntry (ledger) {
   // this is the "shadow entry" that sits right before the first entry on a ledger
   return {
     ledger,
-    'entry': 'shadow',
-    'sequence': -1,
-    'next': 'init', // there is nothing before this entry
-    'balance': new Mani(0)
+    entry: 'shadow',
+    sequence: -1,
+    next: 'init', // there is nothing before this entry
+    balance: new Mani(0)
   }
 }
 function addSignature (entry, ledger, signature) {
@@ -92,7 +102,7 @@ function addSignature (entry, ledger, signature) {
   return result
 }
 function toDb (entry) {
-  return mapValues(entry, (value) => {
+  return mapValues(entry, value => {
     if (value instanceof Mani) {
       return value.format()
     }
@@ -113,7 +123,10 @@ function fromDb (entry) {
     if (key === 'date') {
       return new Date(value)
     }
-    if ((key === 'amount' || key === 'balance' || key === 'income') && isString(value)) {
+    if (
+      (key === 'amount' || key === 'balance' || key === 'income') &&
+      isString(value)
+    ) {
       return new Mani(value)
     }
     if (key === 'demurrage' && isString(value)) {
@@ -174,8 +187,40 @@ function check (entry) { // superficial integrity check
   return true
 }
 */
-export { pad, other, shadowEntry, addSignature, toDb, fromDb, isSigned, next, payload, destructure, destructurePath, challenge, toEntry, sortKey, flip }
+export {
+  pad,
+  other,
+  shadowEntry,
+  addSignature,
+  toDb,
+  fromDb,
+  isSigned,
+  next,
+  payload,
+  destructure,
+  destructurePath,
+  challenge,
+  toEntry,
+  sortKey,
+  flip
+}
 
-const tools = { pad, other, shadowEntry, addSignature, toDb, fromDb, isSigned, next, payload, destructure, destructurePath, challenge, toEntry, sortKey, flip }
+const tools = {
+  pad,
+  other,
+  shadowEntry,
+  addSignature,
+  toDb,
+  fromDb,
+  isSigned,
+  next,
+  payload,
+  destructure,
+  destructurePath,
+  challenge,
+  toEntry,
+  sortKey,
+  flip
+}
 
 export default tools

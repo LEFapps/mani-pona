@@ -1,5 +1,5 @@
 import { describe, expect, it, beforeAll } from '@jest/globals'
-import { KeyLoader } from '../../src/crypto'
+import { KeyLoader } from '../../client/shared/crypto'
 import { PENDING_TRANSACTION } from './queries'
 import { query, mutate, testQuery, cognitoMock } from './setup'
 

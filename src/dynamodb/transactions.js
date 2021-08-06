@@ -1,6 +1,6 @@
 import assert from 'assert'
 import { isObject } from 'lodash'
-import { challenge } from '../core/tools'
+import { challenge } from '../../client/shared/tools'
 import StateMachine from '../core/statemachine'
 
 const log = require('util').debuglog('Transactions')
@@ -11,7 +11,20 @@ const log = require('util').debuglog('Transactions')
 const TransactionsDynamo = (table, ledger, verification) => {
   assert(isObject(verification), 'Verification')
   // to reduce the size of the results, we limit the attributes requested (omitting the signatures)
-  const short = table.attributes(['ledger', 'destination', 'amount', 'balance', 'date', 'payload', 'next', 'sequence', 'uid', 'income', 'demurrage', 'challenge'])
+  const short = table.attributes([
+    'ledger',
+    'destination',
+    'amount',
+    'balance',
+    'date',
+    'payload',
+    'next',
+    'sequence',
+    'uid',
+    'income',
+    'demurrage',
+    'challenge'
+  ])
   return {
     table, // we allow access to the underlying table
     async current () {
@@ -25,7 +38,8 @@ const TransactionsDynamo = (table, ledger, verification) => {
     },
     async recent () {
       return table.queryItems({
-        KeyConditionExpression: 'ledger = :ledger AND begins_with(entry, :slash)',
+        KeyConditionExpression:
+          'ledger = :ledger AND begins_with(entry, :slash)',
         ExpressionAttributeValues: {
           ':ledger': ledger,
           ':slash': '/'
@@ -85,12 +99,22 @@ const TransactionsDynamo = (table, ledger, verification) => {
     async cancel (challenge) {
       const pending = await table.getItem({ ledger, entry: 'pending' })
       if (pending && pending.challenge === challenge) {
-        if (pending.destination === 'system') throw new Error('System transactions cannot be cancelled.')
-        const destination = await table.getItem({ ledger: pending.destination, entry: 'pending' })
-        if (!destination) throw new Error('No matching transaction found on destination ledger, please contact system administrators.')
+        if (pending.destination === 'system')
+          throw new Error('System transactions cannot be cancelled.')
+        const destination = await table.getItem({
+          ledger: pending.destination,
+          entry: 'pending'
+        })
+        if (!destination)
+          throw new Error(
+            'No matching transaction found on destination ledger, please contact system administrators.'
+          )
         const transaction = table.transaction()
         transaction.deleteItem({ ledger, entry: 'pending' })
-        transaction.deleteItem({ ledger: pending.destination, entry: 'pending' })
+        transaction.deleteItem({
+          ledger: pending.destination,
+          entry: 'pending'
+        })
         await transaction.execute()
         return 'Pending transaction successfully cancelled.'
       } else {
@@ -108,7 +132,7 @@ const TransactionsDynamo = (table, ledger, verification) => {
       assert(twin.ledger.ledger === ledger, 'Matching source ledger')
       assert(twin.destination.ledger === ledger, 'Matching destination ledger')
       const transaction = table.transaction()
-      twin.forEach((entry) => {
+      twin.forEach(entry => {
         verification.verifyEntry(entry)
         transaction.putItem(entry)
       })
@@ -120,7 +144,9 @@ const TransactionsDynamo = (table, ledger, verification) => {
       return {
         ...TransactionsDynamo(transaction, ledger, verification),
         transaction,
-        async execute () { return transaction.execute() }
+        async execute () {
+          return transaction.execute()
+        }
       }
     }
   }

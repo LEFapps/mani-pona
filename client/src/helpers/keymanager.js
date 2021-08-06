@@ -1,5 +1,5 @@
 import log from 'loglevel'
-import { KeyGenerator, KeyWrapper } from './crypto'
+import { KeyGenerator, KeyWrapper } from '../../shared/crypto'
 // interface for keys
 
 const KeyManager = async store => {

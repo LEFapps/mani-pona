@@ -1,5 +1,5 @@
 import { wrap } from '../util'
-import { Verifier } from '../../crypto'
+import { Verifier } from '../../../client/shared/crypto'
 
 const STATIC_CHALLENGE = 'This is my key, verify me'
 
@@ -18,8 +18,8 @@ const resolvers = {
       await indexDynamo.register({
         ledger: fingerprint,
         challenge: STATIC_CHALLENGE, // for prosperity
-        ...registration }
-      )
+        ...registration
+      })
       await indexDynamo.system.initLedger(fingerprint)
       return fingerprint
     })
