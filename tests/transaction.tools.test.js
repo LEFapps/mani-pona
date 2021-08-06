@@ -10,7 +10,7 @@ import {
   toEntry,
   flip
 } from '../client/shared/tools'
-import { mani } from '../src/mani'
+import { mani } from 'shared'
 
 describe('Transaction tools', () => {
   it('should pad numbers', () => {

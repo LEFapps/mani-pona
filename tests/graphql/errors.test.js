@@ -6,7 +6,7 @@ import {
   beforeEach,
   afterEach
 } from '@jest/globals'
-import { mani } from '../../src/mani'
+import { mani } from '../shared'
 import { KeyLoader } from '../keyLoader'
 // import fs from 'fs'
 import log from 'loglevel'

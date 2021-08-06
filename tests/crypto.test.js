@@ -1,4 +1,4 @@
-import { KeyGenerator } from '../client/shared/crypto'
+import { KeyGenerator } from 'shared'
 import { describe, expect, it } from '@jest/globals'
 
 describe('Crypto', () => {

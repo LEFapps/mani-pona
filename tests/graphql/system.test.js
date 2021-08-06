@@ -1,5 +1,5 @@
 import { jest, describe, expect, it, beforeAll, beforeEach, afterAll } from '@jest/globals'
-import { mani } from '../../src/mani'
+import { mani } from '../shared'
 import { INIT, SYSTEM_PARAMETERS, TIME } from './queries'
 import { testQuery, testMutate, cognitoMock } from './setup'
 

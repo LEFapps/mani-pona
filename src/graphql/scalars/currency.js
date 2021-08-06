@@ -1,5 +1,5 @@
 import { GraphQLScalarType } from 'graphql'
-import { mani, Mani } from '../../mani'
+import { mani, Mani } from '../../shared'
 import { Kind } from 'graphql/language'
 
 const currency = new GraphQLScalarType({

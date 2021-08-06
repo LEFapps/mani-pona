@@ -3,7 +3,7 @@ import AWS from 'aws-sdk-mock'
 import cognitoMock from './cognito.mock'
 import { testClient, testMutate, generateAlias } from './setup'
 import { INIT, JUBILEE } from './queries'
-import { mani } from '../../src/mani'
+import { mani } from '../shared'
 import { ManiClient } from '../../src/client/ManiClient'
 
 const log = require('util').debuglog('Transactions')

@@ -1,7 +1,6 @@
 import util from 'util'
 import StateMachine from './statemachine'
-import { KeyGenerator, Verifier } from '../../client/shared/crypto'
-import { mani } from '../mani'
+import { KeyGenerator, Verifier, mani } from '../shared'
 
 const PARAMS_KEY = { ledger: 'system', entry: 'parameters' }
 const PK_KEY = { ledger: 'system', entry: 'pk' }

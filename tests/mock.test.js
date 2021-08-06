@@ -1,6 +1,6 @@
 import { describe, expect, it } from '@jest/globals'
 import { MockClient } from '..'
-import { mani } from '../src/mani'
+import { mani } from 'shared'
 
 describe('mock notifications', () => {
   it('should provide three mocked notifications', async () => {

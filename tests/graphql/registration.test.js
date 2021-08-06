@@ -1,7 +1,6 @@
 import { jest, describe, expect, it, beforeAll } from '@jest/globals'
 import { mani } from '../../src/mani'
-import { KeyManager } from '../../src/client/KeyManager'
-import { flip } from '../../client/shared/tools'
+import { KeyManager, flip } from '../shared'
 import cognitoMock from './cognito.mock'
 // import fs from 'fs'
 import { REGISTER, CHALLENGE, FIND_KEY, RECENT, INIT } from './queries'

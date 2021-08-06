@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@jest/globals'
-import { mani, convertMani } from '../src/mani'
+import { mani, convertMani } from 'shared'
 
 describe('currency formatting', () => {
   it('should add the correct currency symbol and formatting', () => {

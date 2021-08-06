@@ -1,15 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 
-import { KeyWrapper } from '../client/shared/crypto'
-
-// load from single json file
-/*
-const KeyLoader = (file) => {
-  const key = JSON.parse(fs.readFileSync(file))
-  return KeyWrapper(key)
-}
-*/
+import { KeyWrapper } from 'shared'
 
 // load from separate public.key and private.key files
 // TODO: move to tests
