@@ -12,11 +12,10 @@
   },
   "dependencies": {
     "@apollo/client": "^3.4.1",
+    "@react-native-async-storage/async-storage": "^1.15.5",
     "@react-native-community/masked-view": "0.1.10",
     "@react-native-community/netinfo": "^5.9.9",
     "@react-native-picker/picker": "^1.9.2",
-    "@react-navigation/bottom-tabs": "^5.10.7",
-    "@react-navigation/drawer": "^5.10.7",
     "@react-navigation/native": "^5.8.7",
     "@react-navigation/stack": "^5.12.4",
     "aws-amplify": "^3.3.11",
@@ -41,6 +40,8 @@
     "react-native-screens": "~2.10.1",
     "react-native-svg": "^12.1.0",
     "react-native-web": "~0.13.12",
+    "react-navigation-bottom-tabs-no-warnings": "^5.11.3",
+    "react-navigation-drawer-no-warnings": "^5.11.5",
     "text-encoding-utf-8": "^1.0.2",
     "yup": "^0.29.3"
   },

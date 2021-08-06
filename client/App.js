@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react'
 import { Text, TextInput, View, Dimensions, LogBox } from 'react-native'
 import { Authenticator } from 'aws-amplify-react-native'
+import { Amplify, Analytics } from 'aws-amplify'
 
 import SignIn from './src/screens/auth/signIn'
 import Drawer from './src/routes/drawer'
 import Splash from './src/screens/splash'
+import ManiClient from './src/maniClient'
 
-import config from './aws-exports'
-
-import { Amplify, Analytics } from 'aws-amplify'
+import config from './aws-config'
 
 import * as Localization from 'expo-localization'
 import i18n from 'i18n-js'
@@ -18,6 +18,7 @@ Amplify.configure(config)
 Analytics.configure({ disabled: true })
 
 export default function App () {
+  global.maniClient = new ManiClient({})
   //fail: 'unknown_id'||'timeout'
 
   // LogBox.ignoreAllLogs();

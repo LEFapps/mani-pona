@@ -3,12 +3,12 @@ import { View, Text, FlatList } from 'react-native'
 
 import Card from '../shared/card'
 import { globalStyles } from '../styles/global'
-import ManiClient from '../mani'
 import mani from '../../shared/mani'
 
 export default function Home () {
   const [contributions, setContributions] = useState([])
   const [ready, setReady] = useState(false)
+  const ManiClient = global.maniClient
 
   useEffect(() => {
     loadData()

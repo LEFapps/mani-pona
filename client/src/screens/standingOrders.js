@@ -3,13 +3,13 @@ import { View, Text, FlatList, Alert } from 'react-native'
 import Card from '../shared/bigCardWithDeleteAndEdit'
 import IconButton from '../shared/buttons/iconButton'
 import { globalStyles } from '../styles/global'
-import ManiClient from '../mani'
 import mani from '../../shared/mani'
 
 export default function StandingOrder ({ navigation }) {
   const [standingOrders, setOrders] = useState([])
   const [contacts, setContacts] = useState([])
   const [ready, setReady] = useState(false)
+  const ManiClient = global.maniClient
 
   useEffect(() => {
     loadData()

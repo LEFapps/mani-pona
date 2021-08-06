@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react'
 import { View, Text, FlatList, TouchableOpacity } from 'react-native'
-import ManiClient from '../mani'
 
 import Card from '../shared/card'
 import HistoryButton from '../shared/buttons/historyButton'
@@ -11,6 +10,7 @@ export default function TransactionHitstory ({ navigation }) {
   const [transactionsToShow, setTransactionsToShow] = useState([])
   const [contacts, setContacts] = useState([])
   const [ready, setReady] = useState(false)
+  const ManiClient = global.maniClient
 
   useEffect(() => {
     loadData()

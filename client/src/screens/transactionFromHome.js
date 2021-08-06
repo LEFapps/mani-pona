@@ -1,11 +1,11 @@
 import React from 'react'
 import { Alert } from 'react-native'
 import Transaction from '../shared/transaction'
-import ManiClient from '../mani'
 import ManiError from '../helpers/error'
 
 export default function TransactionFromHome ({ route, navigation }) {
   const { contactId, peerId } = route.params
+  const ManiClient = global.maniClient
 
   async function cancelTransaction () {
     Alert.alert('Transactie geannuleerd')

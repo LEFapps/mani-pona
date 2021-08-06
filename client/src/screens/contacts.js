@@ -3,11 +3,11 @@ import { View, Text, FlatList, Alert } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 import Card from '../shared/bigCardWithDeleteAndEdit'
 import { globalStyles } from '../styles/global'
-import ManiClient from '../mani'
 
 export default function ContactList ({ navigation }) {
   const [contacts, setContacts] = useState([])
   const [ready, setReady] = useState(false)
+  const ManiClient = global.maniClient
 
   useEffect(() => {
     loadData()

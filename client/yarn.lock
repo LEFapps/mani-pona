@@ -2420,6 +2420,13 @@
   dependencies:
     "dequal" "^1.0.0"
 
+"@react-native-async-storage/async-storage@^1.15.5":
+  "integrity" "sha512-4AYehLH39B9a8UXCMf3ieOK+G61wGMP72ikx6/XSMA0DUnvx0PgaeaT2Wyt06kTrDTy8edewKnbrbeqwaM50TQ=="
+  "resolved" "https://registry.npmjs.org/@react-native-async-storage/async-storage/-/async-storage-1.15.5.tgz"
+  "version" "1.15.5"
+  dependencies:
+    "deep-assign" "^3.0.0"
+
 "@react-native-community/cli-debugger-ui@^4.9.0":
   "integrity" "sha512-fBFGamHm4VUrDqkBGnsrwQL8OC6Om7K6EBQb4xj0nWekpXt1HSa3ScylYHTTWwYcpRf9htGMRGiv4dQDY/odAw=="
   "resolved" "https://registry.npmjs.org/@react-native-community/cli-debugger-ui/-/cli-debugger-ui-4.9.0.tgz"
@@ -2554,14 +2561,6 @@
   "resolved" "https://registry.npmjs.org/@react-native-picker/picker/-/picker-1.9.2.tgz"
   "version" "1.9.2"
 
-"@react-navigation/bottom-tabs@^5.10.7":
-  "integrity" "sha512-tSWwy4GlqXXWmQks0Yo/xEYiKfjU9flkMzcASsX/SeASljod2vsiC+jZ7ga5zcPkrCNWfZhLXRvmPwQG0DweCA=="
-  "resolved" "https://registry.npmjs.org/@react-navigation/bottom-tabs/-/bottom-tabs-5.10.7.tgz"
-  "version" "5.10.7"
-  dependencies:
-    "color" "^3.1.3"
-    "react-native-iphone-x-helper" "^1.3.0"
-
 "@react-navigation/core@^5.14.1":
   "integrity" "sha512-eWJL8ICM+7MKYquCEBR5NBl1q3GJzEOKhtHsnsACWWidWSDGyMktrQq+9FVmozUi0USy6oGXeFHG2attYLUOOw=="
   "resolved" "https://registry.npmjs.org/@react-navigation/core/-/core-5.14.1.tgz"
@@ -2573,15 +2572,7 @@
     "query-string" "^6.13.6"
     "react-is" "^16.13.0"
 
-"@react-navigation/drawer@^5.10.7":
-  "integrity" "sha512-aiWrZpTuaLjUDZJ8r/j5V4H+oFcoJbLP/5NBvQ0a3U4riaXdELlqCIALTZKSj0CCaGN0k/74Q5tu+XQ+NQ2yuA=="
-  "resolved" "https://registry.npmjs.org/@react-navigation/drawer/-/drawer-5.10.7.tgz"
-  "version" "5.10.7"
-  dependencies:
-    "color" "^3.1.3"
-    "react-native-iphone-x-helper" "^1.3.0"
-
-"@react-navigation/native@^5.8.7":
+"@react-navigation/native@^5.0.5", "@react-navigation/native@^5.8.7":
   "integrity" "sha512-QdDdg5bKZYU5A2Jm73E9l5ODST6hre8kEgYRmoLQY+PBnzdaMozeextU8uarD/tJsgfe3dx4aF0Qw02qRMtPDQ=="
   "resolved" "https://registry.npmjs.org/@react-navigation/native/-/native-5.8.7.tgz"
   "version" "5.8.7"
@@ -6977,7 +6968,7 @@
   dependencies:
     "prop-types" "^15.7.2"
 
-"react-native-gesture-handler@~1.7.0":
+"react-native-gesture-handler@>= 1.0.0", "react-native-gesture-handler@~1.7.0":
   "integrity" "sha512-1CrjJf8Z6Iz2XWzfZknYtsm2sud5Lu/pLhhokkgBIKttxqGDtetDEVFDJOTJWJyKCrUPk0X5tnWi/diSF4q++w=="
   "resolved" "https://registry.npmjs.org/react-native-gesture-handler/-/react-native-gesture-handler-1.7.0.tgz"
   "version" "1.7.0"
@@ -7015,19 +7006,19 @@
     "prop-types" "^15.5.10"
     "qrcode" "^1.3.2"
 
-"react-native-reanimated@~1.13.0":
+"react-native-reanimated@>= 1.0.0", "react-native-reanimated@~1.13.0":
   "integrity" "sha512-3sF46jts9MbktgIasf0sTM8uhOYO5a5Q3YyQ4X1jjSE82n/fY2nW3XTFsLGfLEpK2ir4XSDhQWVgFHazaXZTww=="
   "resolved" "https://registry.npmjs.org/react-native-reanimated/-/react-native-reanimated-1.13.1.tgz"
   "version" "1.13.1"
   dependencies:
     "fbjs" "^1.0.0"
 
-"react-native-safe-area-context@3.1.4":
+"react-native-safe-area-context@>= 0.6.0", "react-native-safe-area-context@3.1.4":
   "integrity" "sha512-bXx3hqz4LovFoMnJIRGIWL2oJ/PHadXviBKvgZV9yNErtURQLJSn0yfQytVtiqslhaBMZOJwH4R6HiClyofvBg=="
   "resolved" "https://registry.npmjs.org/react-native-safe-area-context/-/react-native-safe-area-context-3.1.4.tgz"
   "version" "3.1.4"
 
-"react-native-screens@~2.10.1":
+"react-native-screens@>= 2.0.0-alpha.0 || >= 2.0.0-beta.0 || >= 2.0.0", "react-native-screens@~2.10.1":
   "integrity" "sha512-Z2kKSk4AwWRQNCBmTjViuBQK0/Lx0jc25TZptn/2gKYUCOuVRvCekoA26u0Tsb3BIQ8tWDsZW14OwDlFUXW1aw=="
   "resolved" "https://registry.npmjs.org/react-native-screens/-/react-native-screens-2.10.1.tgz"
   "version" "2.10.1"
@@ -7055,7 +7046,7 @@
     "prop-types" "^15.6.0"
     "react-timer-mixin" "^0.13.4"
 
-"react-native@https://github.com/expo/react-native/archive/sdk-39.0.4.tar.gz":
+"react-native@*", "react-native@^0.60.6 || ^0.61.5 || ^0.62.2 || ^0.63.2 || ^0.64.0 || 1000.0.0", "react-native@https://github.com/expo/react-native/archive/sdk-39.0.4.tar.gz":
   "integrity" "sha512-SHhcKW3LF+6Lx8zEbFNeWEuLKcSLv3seeKhEctdfl8Ey19HWdCzQMlDDKhFELBeyLFjrzhpvl4jVTM4h/Sw+YQ=="
   "resolved" "https://github.com/expo/react-native/archive/sdk-39.0.4.tar.gz"
   dependencies:
@@ -7087,6 +7078,22 @@
     "use-subscription" "^1.0.0"
     "whatwg-fetch" "^3.0.0"
 
+"react-navigation-bottom-tabs-no-warnings@^5.11.3":
+  "integrity" "sha512-BSOaxPd5lQ1Ime6f90HxDDmEXBXDJB7G6L16id5ALmfd6kFHB5o5+Rysx8PN+8OohllofKO9hmSQXOMCiX/lWQ=="
+  "resolved" "https://registry.npmjs.org/react-navigation-bottom-tabs-no-warnings/-/react-navigation-bottom-tabs-no-warnings-5.11.3.tgz"
+  "version" "5.11.3"
+  dependencies:
+    "color" "^3.1.3"
+    "react-native-iphone-x-helper" "^1.3.0"
+
+"react-navigation-drawer-no-warnings@^5.11.5":
+  "integrity" "sha512-Rpl7L7+GFd6h+BCVmE6yfPCt5MQhC0e08yrq4Y+MkIVmR4zoUP0/v7tfnwWUeE1/QFnhpmmb8Vbj4a6/U93BKA=="
+  "resolved" "https://registry.npmjs.org/react-navigation-drawer-no-warnings/-/react-navigation-drawer-no-warnings-5.11.5.tgz"
+  "version" "5.11.5"
+  dependencies:
+    "color" "^3.1.3"
+    "react-native-iphone-x-helper" "^1.3.0"
+
 "react-refresh@^0.4.0":
   "integrity" "sha512-Hwln1VNuGl/6bVwnd0Xdn1e84gT/8T9aYNL+HAKDArLCS7LWjwr7StE30IEYbIkx0Vi3vs+coQxe+SQDbGbbpA=="
   "resolved" "https://registry.npmjs.org/react-refresh/-/react-refresh-0.4.3.tgz"
@@ -7097,7 +7104,7 @@
   "resolved" "https://registry.npmjs.org/react-timer-mixin/-/react-timer-mixin-0.13.4.tgz"
   "version" "0.13.4"
 
-"react@^16.8.0 || ^17.0.0", "react@16.13.1":
+"react@*", "react@^16.8.0 || ^17.0.0", "react@16.13.1":
   "integrity" "sha512-YMZQQq32xHLX0bz5Mnibv1/LHb3Sqzngu7xstSM+vrkE5Kzr9xE0yMByK5kMoTK30YVJE61WfbxIFFvfeDKT1w=="
   "resolved" "https://registry.npmjs.org/react/-/react-16.13.1.tgz"
   "version" "16.13.1"
