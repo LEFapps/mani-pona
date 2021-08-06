@@ -1,6 +1,6 @@
 import React from 'react'
 import { View, Text } from 'react-native'
-import mani from '../helpers/currency'
+import mani from '../../shared/mani'
 import { globalStyles } from '../styles/global'
 import Card from '../shared/card'
 

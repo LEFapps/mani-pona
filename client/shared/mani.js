@@ -81,7 +81,7 @@ class Mani {
 const mani = value => new Mani(value)
 
 // convert mani values to formatted strings
-const convertMani = (input) => {
+const convertMani = input => {
   if (_.isObject(input)) {
     const clone = _.clone(input)
     _.forEach(clone, (value, key) => {

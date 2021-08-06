@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { StyleSheet, View, Text } from 'react-native'
 import { globalStyles } from '../styles/global.js'
 import { Picker } from '@react-native-picker/picker'
-import mani from '../helpers/currency'
+import mani from '../../shared/mani'
 import { colors } from '../helpers/helper'
 const { CurrencyColor } = colors
 

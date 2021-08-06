@@ -2,7 +2,7 @@ import React from 'react'
 import { Text, View, StyleSheet, FlatList, Alert } from 'react-native'
 import { globalStyles } from '../styles/global'
 import InfoButton from '../shared/buttons/infoButton'
-import mani from '../helpers/currency'
+import mani from '../../shared/mani'
 import { colors } from '../helpers/helper'
 const { DarkerBlue, CurrencyColor } = colors
 

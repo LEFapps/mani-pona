@@ -4,7 +4,7 @@ import { globalStyles } from '../styles/global'
 import IconButton from '../shared/buttons/iconButton'
 import Card from '../shared/bigCardWithDeleteAndEdit'
 import ManiClient from '../mani'
-import mani from '../helpers/currency'
+import mani from '../../shared/mani'
 
 export default function FreeBuffer ({ navigation }) {
   const [issuedBuffers, setBuffers] = useState([])

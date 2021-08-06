@@ -4,7 +4,7 @@ import Card from '../shared/bigCardWithDeleteAndEdit'
 import IconButton from '../shared/buttons/iconButton'
 import { globalStyles } from '../styles/global'
 import ManiClient from '../mani'
-import mani from '../helpers/currency'
+import mani from '../../shared/mani'
 
 export default function StandingOrder ({ navigation }) {
   const [standingOrders, setOrders] = useState([])

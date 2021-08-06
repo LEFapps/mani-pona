@@ -4,7 +4,7 @@ import { View, Text, FlatList } from 'react-native'
 import Card from '../shared/card'
 import { globalStyles } from '../styles/global'
 import ManiClient from '../mani'
-import mani from '../helpers/currency'
+import mani from '../../shared/mani'
 
 export default function Home () {
   const [contributions, setContributions] = useState([])

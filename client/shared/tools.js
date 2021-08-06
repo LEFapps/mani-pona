@@ -1,7 +1,7 @@
 import { isString, isArray, mapValues, map } from 'lodash'
 import assert from 'assert'
 import sha1 from 'sha1'
-import { Mani } from '../mani'
+import { Mani } from './mani'
 /**
  * In many ways, this is the heart of the system. Thread carefully.
  */

@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import ManiError from './helpers/error'
-import mani from './helpers/currency'
+import mani from './shared/mani'
 
 const frequencies = {
   DAGELIJKS: 'dagelijks',
