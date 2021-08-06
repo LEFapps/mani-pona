@@ -22,13 +22,13 @@ const SystemCore = (table, userpool) => {
         log('System already initialized')
         return // idempotency
       }
+      // initializing fresh system:
       const trans = table.transaction()
       keys = await KeyGenerator().generate()
-      log('Keys generated')
+      log('System keys generated')
       const { publicKeyArmored, privateKeyArmored } = keys
       trans.putItem({ ...PK_KEY, publicKeyArmored, privateKeyArmored })
-      trans.putItem({ ...PARAMS_KEY, income: mani(100), demurrage: 5.0 })
-      log('Keys and parameters stored')
+      trans.putItem({ ...PARAMS_KEY, income: mani(100), demurrage: 5.0 }) // TODO: replace hardcoded values
       await StateMachine(trans)
         .getSources({ ledger: 'system', destination: 'system' })
         .then(t => t.addAmount(mani(0)))
@@ -36,6 +36,7 @@ const SystemCore = (table, userpool) => {
         .then(t => t.save())
         .catch(err => log(err, err.stack))
       log(`Database update:\n${JSON.stringify(trans.items(), null, 2)}`)
+      log('System keys and parameters stored')
       await trans.execute()
       return `SuMsy initialized with ${mani(
         100
