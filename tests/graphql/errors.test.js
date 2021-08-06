@@ -7,7 +7,7 @@ import {
   afterEach
 } from '@jest/globals'
 import { mani } from '../../src/mani'
-import { KeyLoader } from '../../client/shared/crypto'
+import { KeyLoader } from '../keyLoader'
 // import fs from 'fs'
 import log from 'loglevel'
 import { ALL_TRANSACTIONS, REGISTER, JUBILEE } from './queries'
