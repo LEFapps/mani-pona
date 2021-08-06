@@ -94,3 +94,4 @@ const convertMani = input => {
 }
 
 export { mani, convertMani, Mani }
+export default mani

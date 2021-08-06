@@ -1,7 +1,8 @@
 import { get } from 'lodash'
 import loglevel from 'loglevel'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import { KeyManager } from './helpers/keymanager'
-import { flip, fromDb } from './helpers/tools'
+import { flip, fromDb } from '../shared/tools'
 import {
   REGISTER,
   SYSTEM_CHALLENGE,
@@ -21,15 +22,31 @@ import {
 
 const log = msg => loglevel.error(msg)
 
+const storageKey = 'myKey'
+
 function defaultContext () {
   return {}
 }
 const defaultKeyStore = {
   async getKeys () {
-    // TODO
+    try {
+      const key = await AsyncStorage.getItem(storageKey)
+      if (key !== null) {
+        // key previously stored
+        return key
+      }
+    } catch (e) {
+      // error reading key
+      log(e)
+    }
   },
   async saveKeys (keys) {
-    // TODO
+    try {
+      await AsyncStorage.setItem(storageKey, keys)
+    } catch (e) {
+      // saving error
+      log(e)
+    }
   }
 }
 
