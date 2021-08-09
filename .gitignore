@@ -3,3 +3,4 @@ package-lock.json
 tests/test.keys
 tests/seeds
 .dynamodb/
+client/.expo

@@ -16,7 +16,7 @@ export default function StandingOrder ({ navigation }) {
   }, [])
 
   async function loadData () {
-    await ManiClient.standingOrders.all().then(standingOrders => {
+    await ManiClient.transactions.pending().then(standingOrders => {
       setOrders(standingOrders)
     })
     await ManiClient.contacts.all().then(contacts => {
