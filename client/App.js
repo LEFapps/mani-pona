@@ -8,6 +8,7 @@ import SignIn from './src/screens/auth/signIn'
 import Drawer from './src/routes/drawer'
 import Splash from './src/screens/splash'
 import ManiClient from './src/maniClient'
+import graphqlClient from './apollo/client'
 
 import config from './aws-config'
 
@@ -21,7 +22,6 @@ Analytics.configure({ disabled: true })
 log.enableAll()
 
 export default function App () {
-  global.maniClient = new ManiClient({})
   //fail: 'unknown_id'||'timeout'
 
   // LogBox.ignoreAllLogs();
@@ -33,10 +33,9 @@ export default function App () {
   TextInput.defaultProps.allowFontScaling = false
   const [isSplashFinished, setIsSplashFinished] = useState(false)
 
-  useEffect(() => {
-    setTimeout(() => {
-      setIsSplashFinished(true)
-    }, 4000)
+  useEffect(async () => {
+    global.maniClient = await ManiClient({ graphqlClient })
+    setIsSplashFinished(global.maniClient)
   }, [])
 
   if (isSplashFinished) {
