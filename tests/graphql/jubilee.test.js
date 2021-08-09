@@ -1,10 +1,9 @@
 import { jest, describe, expect, it, beforeAll } from '@jest/globals'
 import AWS from 'aws-sdk-mock'
 import cognitoMock from './cognito.mock'
-import { testClient, testMutate, generateAlias } from './setup'
+import { testMutate, generateAlias, TestManiClient } from './setup'
 import { INIT, JUBILEE } from './queries'
 import { mani } from '../shared'
-import { ManiClient } from '../../src/client/ManiClient'
 
 const log = require('util').debuglog('Transactions')
 
@@ -13,8 +12,8 @@ describe('Jubilee', () => {
 
   beforeAll(async () => {
     jest.setTimeout(10000)
-    verifiedUser = await ManiClient(testClient)
-    unverifiedUser = await ManiClient(testClient)
+    verifiedUser = await TestManiClient()
+    unverifiedUser = await TestManiClient()
     cognitoMock.setAdmin(true)
     await testMutate({ mutation: INIT })
     cognitoMock.setAdmin(false)
@@ -24,7 +23,8 @@ describe('Jubilee', () => {
   })
 
   it('should put mani in a verified account', async () => {
-    expect.assertions(17)
+    expect.assertions(18)
+    expect(verifiedUser.id).not.toEqual(unverifiedUser.id)
     AWS.mock('CognitoIdentityServiceProvider', 'listUsers', function (params, callback) {
       callback(null, {
         data: {

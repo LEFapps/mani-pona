@@ -22,7 +22,7 @@ import {
 
 const log = msg => loglevel.error(msg)
 
-const storageKey = 'myKey'
+const storageKey = 'mani_client_key'
 
 function defaultContext () {
   return {}

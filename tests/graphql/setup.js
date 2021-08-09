@@ -9,6 +9,7 @@ import { IndexDynamo } from '../../src/dynamodb/'
 import typeDefs from '../../src/graphql/typeDefs'
 import resolvers from '../../src/graphql/resolvers'
 import { CognitoUserPool } from '../../src/cognito/userpool'
+import { ManiClient } from '../shared'
 import cognitoMock from './cognito.mock'
 import log from 'loglevel'
 
@@ -64,4 +65,20 @@ const generateLastName = createGenerator(lastNames)
 const generateAlias = () => {
   return `${generateFirstName()} ${generateLastName()}`
 }
-export { server, query, mutate, testQuery, testMutate, cognitoMock, generateAlias, testClient }
+
+const MemoryKeyStorage = () => {
+  let keys
+  return {
+    getKeys: () => keys,
+    saveKeys: (newKeys) => {
+      keys = newKeys
+    }
+  }
+}
+
+const TestManiClient = async () => {
+  let keyStore = MemoryKeyStorage()
+  return ManiClient({ graphqlClient: testClient, keyStore })
+}
+
+export { server, query, mutate, testQuery, testMutate, cognitoMock, generateAlias, testClient, TestManiClient, MemoryKeyStorage }

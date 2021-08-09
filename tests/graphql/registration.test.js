@@ -3,7 +3,7 @@ import { mani, KeyManager, flip } from '../shared'
 import cognitoMock from './cognito.mock'
 // import fs from 'fs'
 import { REGISTER, CHALLENGE, FIND_KEY, RECENT, INIT } from './queries'
-import { query, testMutate, testQuery, generateAlias } from './setup'
+import { query, testMutate, testQuery, generateAlias, MemoryKeyStorage } from './setup'
 
 describe('GraphQL registration', () => {
   beforeAll(async () => {
@@ -28,7 +28,7 @@ describe('GraphQL registration', () => {
         )
       )
     )
-    const keyManager = await KeyManager()
+    const keyManager = await KeyManager(MemoryKeyStorage())
     const newKeys = await keyManager.getKeys()
     const fingerprint = await keyManager.fingerprint()
     const payload = challenge.replace('<fingerprint>', fingerprint)

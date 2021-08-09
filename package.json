@@ -7,7 +7,7 @@
     "sumsy": "./dist/cli.js"
   },
   "scripts": {
-    "test": "JEST_CIRCUS=1 LEDGER=manipona NODE_DEBUG=Transactions jest --bail",
+    "test": "JEST_CIRCUS=1 LEDGER=manipona jest --bail",
     "test:dynamodb": "NODE_ENV=development sls dynamodb start --inMemory",
     "offline": "sls offline start"
   },
@@ -41,8 +41,8 @@
   },
   "dependencies": {
     "@apollo/client": "^3.3.9",
-    "apollo-server": "^2.19.0",
-    "apollo-server-lambda": "^2.19.0",
+    "apollo-server": "^3.1.2",
+    "apollo-server-lambda": "^3.1.2",
     "aws-sdk": "^2.799.0",
     "babel-plugin-graphql-tag": "^3.1.0",
     "currency.js": "^2.0.3",

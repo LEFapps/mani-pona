@@ -1,7 +1,7 @@
 import Storage from 'dom-storage'
 import log from 'loglevel'
 /**
- * For demonstration: we fake a LocalStorage such a what you'd find in a browser.
+ * For demonstration and testing purposes: we fake a LocalStorage such as what you'd find in a browser.
  */
 const KeyStorage = (path = './.manipona.keys.json') => {
   const localStorage = new Storage(path, { strict: false })
