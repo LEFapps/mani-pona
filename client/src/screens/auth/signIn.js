@@ -29,6 +29,8 @@ export default function SignIn (props) {
   const [requirePass, setRequirePass] = useState(false)
   const [passControle, setPassControle] = useState(false)
 
+  const { changeAuthState } = props
+
   function showResetPass () {
     setRequirePass(true)
   }
@@ -137,10 +139,10 @@ export default function SignIn (props) {
         <Text style={globalStyles.authTitle}>Log In</Text>
         <View style={globalStyles.main}>
           <View>
-            <Text style={globalStyles.label}>Email</Text>
+            <Text style={globalStyles.label}>E-mail</Text>
             <TextInput
               style={globalStyles.input}
-              placeholder='Email'
+              placeholder='E-mail'
               onChangeText={email => {
                 setState({ ...state, email: email.toLowerCase() })
                 setErrors({})

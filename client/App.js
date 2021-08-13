@@ -5,6 +5,7 @@ import { Amplify, Analytics } from 'aws-amplify'
 import log from 'loglevel'
 
 import SignIn from './src/screens/auth/signIn'
+import SignUp from './src/screens/auth/signUp'
 import Drawer from './src/routes/drawer'
 import Splash from './src/screens/splash'
 import ManiClient from './src/maniClient'
@@ -31,11 +32,15 @@ export default function App () {
   Text.defaultProps.allowFontScaling = false
   TextInput.defaultProps = Text.defaultProps || {}
   TextInput.defaultProps.allowFontScaling = false
+
   const [isSplashFinished, setIsSplashFinished] = useState(false)
 
-  useEffect(async () => {
-    global.maniClient = await ManiClient({ graphqlClient })
-    setIsSplashFinished(global.maniClient)
+  useEffect(() => {
+    const setupClient = async () => {
+      global.maniClient = await ManiClient({ graphqlClient })
+      setIsSplashFinished(!!global.maniClient)
+    }
+    setupClient()
   }, [])
 
   if (isSplashFinished) {
@@ -53,10 +58,11 @@ export default function App () {
           </View>
         )}
         hideDefault={true}
-        authState='signedIn'
+        authState={'signIn'}
         onStateChange={authState => console.log('authState', authState)}
       >
         <SignIn />
+        <SignUp />
         <Drawer />
       </Authenticator>
     )
