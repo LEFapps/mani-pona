@@ -1,16 +1,20 @@
 import assert from 'assert'
 import { isObject } from 'lodash'
-import { challenge } from '../../client/shared/tools'
 import StateMachine from '../core/statemachine'
 
 const log = require('util').debuglog('Transactions')
 
 /**
- * Transactions are the way a user sees the ledger.
+ * Transactions are the way a user sees a ledger.
+ *
+ * Arguments:
+ * - table: singular DynamoDB table
+ * - ledger: fingerprint of public key, essentially an 'account number'
+ * - verification:
  */
 const TransactionsDynamo = (table, ledger, verification) => {
   assert(isObject(verification), 'Verification')
-  // to reduce the size of the results, we limit the attributes requested (omitting the signatures)
+  // to reduce the size of the results, we can limit the attributes requested (omitting the signatures, which are fairly large text fields).
   const short = table.attributes([
     'ledger',
     'destination',
@@ -99,16 +103,18 @@ const TransactionsDynamo = (table, ledger, verification) => {
     async cancel (challenge) {
       const pending = await table.getItem({ ledger, entry: 'pending' })
       if (pending && pending.challenge === challenge) {
-        if (pending.destination === 'system')
+        if (pending.destination === 'system') {
           throw new Error('System transactions cannot be cancelled.')
+        }
         const destination = await table.getItem({
           ledger: pending.destination,
           entry: 'pending'
         })
-        if (!destination)
+        if (!destination) {
           throw new Error(
             'No matching transaction found on destination ledger, please contact system administrators.'
           )
+        }
         const transaction = table.transaction()
         transaction.deleteItem({ ledger, entry: 'pending' })
         transaction.deleteItem({

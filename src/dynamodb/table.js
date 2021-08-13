@@ -4,6 +4,12 @@ import tools from '../../client/shared/tools'
 
 const methods = ['get', 'put', 'query', 'update']
 
+/**
+ * This helps significantly reduce the amount of DynamoDB code duplication. Essentially, it reuses the TableName and automatically constructs typical DynamoDB commands from input parameters and regular methods.
+ *
+ * By using `transaction()`, a similar set of functions is available, except the entire transaction (set of commands) needs to be executed at the end.
+ */
+
 function table (db, TableName, options = {}) {
   const t = reduce(
     methods,
