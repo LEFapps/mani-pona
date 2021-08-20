@@ -1,6 +1,5 @@
 import assert from 'assert'
 import sha1 from 'sha1'
-import util from 'util'
 import { mapValues } from 'lodash'
 // import log from 'loglevel'
 import { KeyWrapper, Verifier } from '../../client/shared/crypto'
@@ -14,8 +13,9 @@ import {
   sortKey,
   payload
 } from '../../client/shared/tools'
+import { getLogger } from 'server-log'
 
-const log = util.debuglog('ManiCore') // activate by adding NODE_DEBUG=ManiCore to environment
+const log = getLogger('core:transactions')
 
 async function mapValuesAsync (object, asyncFn) {
   return Object.fromEntries(
@@ -37,7 +37,7 @@ async function mapValuesAsync (object, asyncFn) {
  *  - destination: 'system'
  */
 async function getSources (table, input) {
-  log('Getting sources')
+  log.debug('Getting sources for %j', input)
   return mapValuesAsync(input, async (ledger, role, input) => {
     const current = await table.getItem({ ledger, entry: '/current' })
     if (current) return current
@@ -56,7 +56,7 @@ async function getPayloadSources (table, { payloads }) {
   return mapValuesAsync(
     payloads,
     async ({ from: { ledger } }, role, payloads) => {
-      log(`Getting current on ${role} ${ledger}`)
+      log.debug('Getting current on %s %s', role, ledger)
       return table.getItem(
         { ledger, entry: '/current' },
         `No current entry on ledger ${ledger}`
@@ -79,8 +79,7 @@ async function getNextTargets (table, { sources }) {
         ledger: source.ledger,
         entry: 'pending'
       })
-      if (pending)
-        throw new Error(`Ledger ${source.ledger} already has a pending entry`)
+      if (pending) { throw new Error(`Ledger ${source.ledger} already has a pending entry`) }
     }
     return {
       ...next(source),
@@ -105,8 +104,7 @@ function addAmount ({ targets: { ledger, destination } }, amount) {
     to: destination,
     amount
   })
-  if (ledger.ledger !== 'system' && ledger.balance.value < 0)
-    throw new Error(`Amount not available on ${ledger.ledger}`)
+  if (ledger.ledger !== 'system' && ledger.balance.value < 0) { throw new Error(`Amount not available on ${ledger.ledger}`) }
   const complement = amount.multiply(-1)
   destination.amount = complement
   destination.balance = destination.balance.add(complement)
@@ -116,10 +114,11 @@ function addAmount ({ targets: { ledger, destination } }, amount) {
     to: ledger,
     amount: complement
   })
-  if (destination.ledger !== 'system' && destination.balance.value < 0)
+  if (destination.ledger !== 'system' && destination.balance.value < 0) {
     throw new Error(
       `Amount ${complement.format()} not available on ${destination.ledger}`
     )
+  }
   return { ledger, destination }
 }
 /**
@@ -248,7 +247,7 @@ function addSignature (
 async function addSystemSignatures (table, { sources, targets }, keys) {
   // autosigning system side
   // happens during system init, UBI and creation of new ledger
-  log(`Autosigning system`)
+  log.info(`Autosigning system (only during init)`)
   assert(
     targets.destination.ledger === 'system' &&
       targets.ledger.destination === 'system',
