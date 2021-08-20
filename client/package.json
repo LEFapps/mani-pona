@@ -48,6 +48,7 @@
   },
   "devDependencies": {
     "@babel/core": "~7.9.0",
+    "chalk": "^2.4.2",
     "s3-sync": "git+ssh://git@github.com:LEFapps/s3-sync.git"
   },
   "private": true

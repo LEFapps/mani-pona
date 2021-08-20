@@ -16,12 +16,15 @@ export default function Cam (props) {
   const [scanned, setScanned] = useState(false)
 
   useEffect(() => {
-    ;(async () => {
-      // TODO: get actual permission
-      setHasPermission(true)
-      // const { status } = await BarCodeScanner.requestPermissionsAsync()
-      // setHasPermission(status === 'granted')
-    })()
+    const requestPermission = async () => {
+      if (BarCodeScanner && (await BarCodeScanner.isAvailableAsync())) {
+        const { status } = await BarCodeScanner.requestPermissionsAsync()
+        setHasPermission(status === 'granted')
+      } else {
+        setHasPermission(true)
+      }
+    }
+    requestPermission()
   }, [])
 
   if (hasPermission === null) {
