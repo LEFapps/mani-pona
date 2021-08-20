@@ -1,7 +1,7 @@
 import { reduce } from 'lodash'
-import loglevel from 'loglevel'
+import { getLogger } from 'server-log'
 import tools from '../../client/shared/tools'
-
+const log = getLogger('dynamodb:table')
 const methods = ['get', 'put', 'query', 'update']
 
 /**
@@ -86,7 +86,7 @@ function table (db, TableName, options = {}) {
         async execute () {
           const result = await db.transactWrite({ TransactItems })
           if (result.err) {
-            loglevel.error(JSON.stringify(result.err, null, 2))
+            log.error('Error executing transaction: %j', result.err)
             throw result.err
           }
           return TransactItems.length

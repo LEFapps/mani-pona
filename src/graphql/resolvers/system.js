@@ -1,7 +1,9 @@
 import { ForbiddenError } from 'apollo-server'
-import { wrap } from '../util'
+import { wrap } from './util'
 import SystemCore from '../../core/system'
-import log from 'loglevel'
+import { getLogger } from 'server-log'
+
+const log = getLogger('graphql:system')
 
 const SystemResolvers = {
   Query: {

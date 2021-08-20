@@ -8,10 +8,10 @@ import { mani } from '../shared'
 const log = require('util').debuglog('Transactions')
 
 describe('Jubilee', () => {
+  jest.setTimeout(20000)
   let verifiedUser, unverifiedUser, alias
 
   beforeAll(async () => {
-    jest.setTimeout(10000)
     verifiedUser = await TestManiClient()
     unverifiedUser = await TestManiClient()
     cognitoMock.setAdmin(true)

@@ -1,19 +1,19 @@
 import { ApolloServer } from 'apollo-server-lambda'
 import { DynamoPlus } from 'dynamo-plus'
-import log from 'loglevel'
 import { IndexDynamo } from '../dynamodb/index'
-import typeDefs from '../graphql/typeDefs'
-import resolvers from '../graphql/resolvers'
+import typeDefs from '../graphql/typeDefs/index'
+import resolvers from '../graphql/resolvers/index'
 import { CognitoUserPool } from '../cognito/userpool'
 import { OfflineUserPool } from './offlineuserpool'
+import { getLogger } from 'server-log'
 
-log.setLevel('info')
+const log = getLogger('lambda:handler')
 
 function contextProcessor (event) {
   const { headers } = event
   // fake the cognito interface if offline
   let claims = process.env.IS_OFFLINE ? JSON.parse(headers['x-claims']) : event.requestContext.authorizer.claims
-  console.log(`User claims ${JSON.stringify(claims)}`)
+  log.debug('User claims: %j', claims)
   let userpool = process.env.IS_OFFLINE ? OfflineUserPool() : CognitoUserPool(process.env.USER_POOL)
   return {
     userpool,
@@ -23,12 +23,14 @@ function contextProcessor (event) {
   }
 }
 
+log.info(`Starting ApolloServer with DEBUG = ${process.env.DEBUG}`)
 const server = new ApolloServer({
   debug: process.env.DEBUG === 'true',
+  introspection: process.env.DEBUG === 'true',
   typeDefs,
   resolvers,
   formatError: err => {
-    console.error(err, err.stack)
+    log.error(err, err.stack)
     return err
   },
   context: async ({ event, context }) => {

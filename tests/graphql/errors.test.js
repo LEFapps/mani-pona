@@ -9,9 +9,11 @@ import {
 import { mani } from '../shared'
 import { KeyLoader } from '../keyLoader'
 // import fs from 'fs'
-import log from 'loglevel'
 import { ALL_TRANSACTIONS, REGISTER, JUBILEE } from './queries'
 import { query, mutate, cognitoMock } from './setup'
+import { getLogger } from 'server-log'
+
+const log = getLogger('test:errors')
 
 // Bugfix, see: https://github.com/openpgpjs/openpgpjs/issues/1036
 // and https://github.com/facebook/jest/issues/9983

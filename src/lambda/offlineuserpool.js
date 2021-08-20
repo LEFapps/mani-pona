@@ -1,5 +1,7 @@
 import fs from 'fs'
-import log from 'loglevel'
+import { getLogger } from 'server-log'
+
+const log = getLogger('lambda:offlineuserpool')
 
 /**
  * For offline development only!
@@ -10,7 +12,7 @@ import log from 'loglevel'
  */
 const OfflineUserPool = (path = '.jubilee.users.json') => {
   const contents = fs.readFileSync(path, { encoding: 'utf-8' })
-  if (!contents) console.log(`Please make sure ${path} is present`)
+  if (!contents) log.error(`Please make sure ${path} is present`)
   const jubilee = JSON.parse(contents)
   log.info(`Loaded jubilee users from ${path}`)
   return {

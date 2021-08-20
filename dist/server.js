@@ -11,14 +11,13 @@ var sha1 = require('sha1');
 var currency$1 = require('currency.js');
 var util = require('util');
 var openpgp = require('openpgp');
-var fs = require('fs');
-require('path');
 var merge = require('@graphql-tools/merge');
 var graphqlScalars = require('graphql-scalars');
 var graphql = require('graphql');
 var language = require('graphql/language');
 var apolloServer = require('apollo-server');
 var AWS = require('aws-sdk');
+var fs = require('fs');
 
 function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
 
@@ -28,8 +27,8 @@ var assert__default = /*#__PURE__*/_interopDefaultLegacy(assert);
 var sha1__default = /*#__PURE__*/_interopDefaultLegacy(sha1);
 var currency__default = /*#__PURE__*/_interopDefaultLegacy(currency$1);
 var util__default = /*#__PURE__*/_interopDefaultLegacy(util);
-var fs__default = /*#__PURE__*/_interopDefaultLegacy(fs);
 var AWS__default = /*#__PURE__*/_interopDefaultLegacy(AWS);
+var fs__default = /*#__PURE__*/_interopDefaultLegacy(fs);
 
 const wrap = value => {
   if (value instanceof Mani) {
@@ -117,13 +116,22 @@ const mani = value => new Mani(value);
 function pad (i) {
   return ('000000000000' + i).slice(-12)
 }
-function other (party) { return party === 'ledger' ? 'destination' : 'ledger' }
-function entryPath (entry) { return `/${pad(entry.sequence)}/${entry.uid}` }
-function path (entry) { return `/${entry.ledger}${entryPath(entry)}` }
-function sortKey (entry) { return `/${entry.date.toISOString()}${entryPath(entry)}` }
+function other (party) {
+  return party === 'ledger' ? 'destination' : 'ledger'
+}
+function entryPath (entry) {
+  return `/${pad(entry.sequence)}/${entry.uid}`
+}
+function path (entry) {
+  return `/${entry.ledger}${entryPath(entry)}`
+}
+function sortKey (entry) {
+  return `/${entry.date.toISOString()}${entryPath(entry)}`
+}
 function destructurePath (path) {
-  const match = new RegExp('/(?<ledger>[a-z0-9]+)/(?<sequence>[0-9]+)/(?<uid>[a-z0-9]+)')
-    .exec(path);
+  const match = new RegExp(
+    '/(?<ledger>[a-z0-9]+)/(?<sequence>[0-9]+)/(?<uid>[a-z0-9]+)'
+  ).exec(path);
   if (!match) {
     throw new Error('invalid path')
   }
@@ -132,7 +140,8 @@ function destructurePath (path) {
   return { ledger, sequence, uid }
 }
 function destructure (payload, flip = false) {
-  const full = '^/(?<date>[^/]+)/from(?<from>.+)(?=/to)/to(?<to>.+)(?=/)/(?<amount>[-0-9,ɱ ]+)';
+  const full =
+    '^/(?<date>[^/]+)/from(?<from>.+)(?=/to)/to(?<to>.+)(?=/)/(?<amount>[-0-9,ɱ ]+)';
   let match = new RegExp(full).exec(payload);
   if (match) {
     let { date, from, to, amount } = match.groups;
@@ -178,10 +187,10 @@ function shadowEntry (ledger) {
   // this is the "shadow entry" that sits right before the first entry on a ledger
   return {
     ledger,
-    'entry': 'shadow',
-    'sequence': -1,
-    'next': 'init', // there is nothing before this entry
-    'balance': new Mani(0)
+    entry: 'shadow',
+    sequence: -1,
+    next: 'init', // there is nothing before this entry
+    balance: new Mani(0)
   }
 }
 function addSignature (entry, ledger, signature) {
@@ -200,7 +209,7 @@ function addSignature (entry, ledger, signature) {
   return result
 }
 function toDb (entry) {
-  return _.mapValues(entry, (value) => {
+  return _.mapValues(entry, value => {
     if (value instanceof Mani) {
       return value.format()
     }
@@ -221,7 +230,10 @@ function fromDb (entry) {
     if (key === 'date') {
       return new Date(value)
     }
-    if ((key === 'amount' || key === 'balance' || key === 'income') && _.isString(value)) {
+    if (
+      (key === 'amount' || key === 'balance' || key === 'income') &&
+      _.isString(value)
+    ) {
       return new Mani(value)
     }
     if (key === 'demurrage' && _.isString(value)) {
@@ -248,23 +260,49 @@ function challenge ({ date, source, target, amount }) {
   return payload({ date, from: next(source), to: next(target), amount })
 }
 
-const tools = { pad, other, shadowEntry, addSignature, toDb, fromDb, isSigned, next, payload, destructure, destructurePath, challenge, toEntry, sortKey, flip };
+const tools = {
+  pad,
+  other,
+  shadowEntry,
+  addSignature,
+  toDb,
+  fromDb,
+  isSigned,
+  next,
+  payload,
+  destructure,
+  destructurePath,
+  challenge,
+  toEntry,
+  sortKey,
+  flip
+};
 
 const methods = ['get', 'put', 'query', 'update'];
 
+/**
+ * This helps significantly reduce the amount of DynamoDB code duplication. Essentially, it reuses the TableName and automatically constructs typical DynamoDB commands from input parameters and regular methods.
+ *
+ * By using `transaction()`, a similar set of functions is available, except the entire transaction (set of commands) needs to be executed at the end.
+ */
+
 function table (db, TableName, options = {}) {
-  const t = _.reduce(methods, (table, method) => {
-    table[method] = async (param) => {
-      const arg = {
-        TableName,
-        ...param,
-        ...options
+  const t = _.reduce(
+    methods,
+    (table, method) => {
+      table[method] = async param => {
+        const arg = {
+          TableName,
+          ...param,
+          ...options
+        };
+        // console.log(`Executing ${method} on ${TableName} with ${JSON.stringify(param, null, 2)}`)
+        return db[method](arg)
       };
-      // console.log(`Executing ${method} on ${TableName} with ${JSON.stringify(param, null, 2)}`)
-      return db[method](arg)
-    };
-    return table
-  }, {});
+      return table
+    },
+    {}
+  );
   async function getItem (Key, errorMsg) {
     const result = await t.get({ Key });
     if (errorMsg && !result.Item) {
@@ -296,7 +334,8 @@ function table (db, TableName, options = {}) {
               TableName,
               Item: tools.toDb(input),
               ...options
-            } });
+            }
+          });
         },
         updateItem (Key, args) {
           TransactItems.push({
@@ -375,28 +414,37 @@ const system = function (table) {
 };
 
 function bugfix () {
-// Bugfix, see: https://github.com/openpgpjs/openpgpjs/issues/1036
-// and https://github.com/facebook/jest/issues/9983
+  // Bugfix, see: https://github.com/openpgpjs/openpgpjs/issues/1036
+  // and https://github.com/facebook/jest/issues/9983
   const textEncoding = require('text-encoding-utf-8');
   global.TextEncoder = textEncoding.TextEncoder;
   global.TextDecoder = textEncoding.TextDecoder;
 }
 
-const unpack = async (key) => {
-  const { err, keys: [parsedkey] } = await openpgp.key.readArmored(key);
+const unpack = async key => {
+  const {
+    err,
+    keys: [parsedkey]
+  } = await openpgp.key.readArmored(key);
   if (err) {
     throw err[0]
   }
   return parsedkey
 };
 // reliably sort an objects keys and merge everything into one String
-const sortedObjectString = (obj) => {
-  return Object.keys(obj).sort().reduce((arr, key) => { arr.push(`${key}:${obj[key]}`); return arr }, []).join('|')
+const sortedObjectString = obj => {
+  return Object.keys(obj)
+    .sort()
+    .reduce((arr, key) => {
+      arr.push(`${key}:${obj[key]}`);
+      return arr
+    }, [])
+    .join('|')
 };
 
 const Signer = (key, pk) => {
   const signer = {
-    sign: async (input) => {
+    sign: async input => {
       bugfix();
       assert__default['default'](!___default['default'].isEmpty(input), 'Missing input');
       const text = typeof input === 'string' ? input : sortedObjectString(input);
@@ -408,7 +456,8 @@ const Signer = (key, pk) => {
       });
       return detachedSignature
     },
-    signature: async (input) => { // TODO: @deprecated
+    signature: async input => {
+      // TODO: @deprecated
       const s = await signer.sign(input);
       const hash = sha1__default['default'](s);
       return {
@@ -449,7 +498,9 @@ const Verifier = (key, pk) => {
       if (signatures[0].valid) {
         return true
       } else {
-        throw new Error('The proof signature didn\'t match either this key or the challenge.')
+        throw new Error(
+          "The proof signature didn't match either this key or the challenge."
+        )
       }
     },
     fingerprint: async () => {
@@ -523,10 +574,16 @@ function getPayloads (payload) {
 }
 // used during regular transaction creation
 async function getPayloadSources (table, { payloads }) {
-  return mapValuesAsync(payloads, async ({ from: { ledger } }, role, payloads) => {
-    log(`Getting current on ${role} ${ledger}`);
-    return table.getItem({ ledger, entry: '/current' }, `No current entry on ledger ${ledger}`)
-  })
+  return mapValuesAsync(
+    payloads,
+    async ({ from: { ledger } }, role, payloads) => {
+      log(`Getting current on ${role} ${ledger}`);
+      return table.getItem(
+        { ledger, entry: '/current' },
+        `No current entry on ledger ${ledger}`
+      )
+    }
+  )
 }
 
 /**
@@ -537,9 +594,14 @@ async function getPayloadSources (table, { payloads }) {
 async function getNextTargets (table, { sources }) {
   const date = new Date(Date.now());
   return mapValuesAsync(sources, async (source, role, sources) => {
-    if (source.ledger !== 'system') { // the system ledger never has pending items
-      const pending = await table.getItem({ ledger: source.ledger, entry: 'pending' });
-      if (pending) throw new Error(`Ledger ${source.ledger} already has a pending entry`)
+    if (source.ledger !== 'system') {
+      // the system ledger never has pending items
+      const pending = await table.getItem({
+        ledger: source.ledger,
+        entry: 'pending'
+      });
+      if (pending)
+        throw new Error(`Ledger ${source.ledger} already has a pending entry`)
     }
     return {
       ...next(source),
@@ -558,13 +620,27 @@ async function getNextTargets (table, { sources }) {
 function addAmount ({ targets: { ledger, destination } }, amount) {
   ledger.amount = amount;
   ledger.balance = ledger.balance.add(amount);
-  ledger.challenge = payload({ date: ledger.date, from: ledger, to: destination, amount });
-  if (ledger.ledger !== 'system' && ledger.balance.value < 0) throw new Error(`Amount not available on ${ledger.ledger}`)
+  ledger.challenge = payload({
+    date: ledger.date,
+    from: ledger,
+    to: destination,
+    amount
+  });
+  if (ledger.ledger !== 'system' && ledger.balance.value < 0)
+    throw new Error(`Amount not available on ${ledger.ledger}`)
   const complement = amount.multiply(-1);
   destination.amount = complement;
   destination.balance = destination.balance.add(complement);
-  destination.challenge = payload({ date: ledger.date, from: destination, to: ledger, amount: complement });
-  if (destination.ledger !== 'system' && destination.balance.value < 0) throw new Error(`Amount ${complement.format()} not available on ${destination.ledger}`)
+  destination.challenge = payload({
+    date: ledger.date,
+    from: destination,
+    to: ledger,
+    amount: complement
+  });
+  if (destination.ledger !== 'system' && destination.balance.value < 0)
+    throw new Error(
+      `Amount ${complement.format()} not available on ${destination.ledger}`
+    )
   return { ledger, destination }
 }
 /**
@@ -575,12 +651,24 @@ function addDI ({ targets: { ledger, destination } }, { demurrage, income }) {
   ledger.income = income;
   ledger.amount = ledger.income.subtract(ledger.demurrage);
   ledger.balance = ledger.balance.subtract(ledger.demurrage).add(ledger.income);
-  ledger.challenge = payload({ date: ledger.date, from: ledger, to: destination, amount: ledger.amount });
+  ledger.challenge = payload({
+    date: ledger.date,
+    from: ledger,
+    to: destination,
+    amount: ledger.amount
+  });
   destination.demurrage = ledger.demurrage.multiply(-1);
   destination.income = ledger.income.multiply(-1);
   destination.amount = destination.income.subtract(destination.demurrage);
-  destination.balance = destination.balance.subtract(destination.demurrage).add(destination.income);
-  destination.challenge = payload({ date: ledger.date, from: destination, to: ledger, amount: destination.amount });
+  destination.balance = destination.balance
+    .subtract(destination.demurrage)
+    .add(destination.income);
+  destination.challenge = payload({
+    date: ledger.date,
+    from: destination,
+    to: ledger,
+    amount: destination.amount
+  });
   return { ledger, destination }
 }
 /**
@@ -589,9 +677,15 @@ function addDI ({ targets: { ledger, destination } }, { demurrage, income }) {
  */
 function getPayloadTargets ({ payloads, sources }) {
   return _.mapValues(payloads, (payload, role, payloads) => {
-    const { date, from: { ledger, sequence, uid }, to: { ledger: destination }, challenge, amount } = payload;
+    const {
+      date,
+      from: { ledger, sequence, uid },
+      to: { ledger: destination },
+      challenge,
+      amount
+    } = payload;
     const { sequence: sourceSequence, next, balance } = sources[role];
-    assert__default['default'](sequence === (sourceSequence + 1), 'Matching sequence');
+    assert__default['default'](sequence === sourceSequence + 1, 'Matching sequence');
     assert__default['default'](uid === next, 'Matching next uid');
     return {
       ledger,
@@ -611,9 +705,17 @@ function getPayloadTargets ({ payloads, sources }) {
  */
 async function getPendingTargets (table, { payloads }) {
   return mapValuesAsync(payloads, async (payload, role, payloads) => {
-    const { date, from: { ledger, sequence, uid }, to: { ledger: destination }, amount } = payload;
+    const {
+      date,
+      from: { ledger, sequence, uid },
+      to: { ledger: destination },
+      amount
+    } = payload;
     if (ledger === 'system') {
-      const matching = await table.getItem({ ledger, entry: `/${date.toISOString()}/${sequence}/${uid}` }); // already made permanent
+      const matching = await table.getItem({
+        ledger,
+        entry: `/${date.toISOString()}/${sequence}/${uid}`
+      }); // already made permanent
       if (matching) return matching
       const current = await table.getItem({ ledger, entry: '/current' });
       if (current) {
@@ -623,7 +725,10 @@ async function getPendingTargets (table, { payloads }) {
       }
       throw new Error(`Matching system entry not found`)
     } else {
-      const pending = await table.getItem({ ledger, entry: 'pending' }, `No pending entry found on ledger ${ledger}`);
+      const pending = await table.getItem(
+        { ledger, entry: 'pending' },
+        `No pending entry found on ledger ${ledger}`
+      );
       assert__default['default'](date.getTime() === pending.date.getTime(), 'Matching date');
       assert__default['default'](destination === pending.destination, 'Matching destination');
       assert__default['default'](sequence === pending.sequence, 'Matching sequence');
@@ -639,7 +744,10 @@ async function getPendingTargets (table, { payloads }) {
 async function getPendingSources (table, { targets }) {
   return mapValuesAsync(targets, async (target, role, targets) => {
     if (target.ledger !== 'system') {
-      const current = await table.getItem({ ledger: target.ledger, entry: '/current' }, `No current entry found on ledger ${target.ledger}`);
+      const current = await table.getItem(
+        { ledger: target.ledger, entry: '/current' },
+        `No current entry found on ledger ${target.ledger}`
+      );
       assert__default['default'](target.uid === current.next, 'Sequential uid');
       assert__default['default'](target.sequence === current.sequence + 1, 'Sequence');
       return current
@@ -648,7 +756,10 @@ async function getPendingSources (table, { targets }) {
   })
 }
 
-function addSignature$1 ({ ledger, destination }, { signature, counterSignature }) {
+function addSignature$1 (
+  { ledger, destination },
+  { signature, counterSignature }
+) {
   ledger.signature = signature;
   ledger.next = sha1__default['default'](signature);
   destination.counterSignature = counterSignature;
@@ -659,24 +770,40 @@ async function addSystemSignatures (table, { sources, targets }, keys) {
   // autosigning system side
   // happens during system init, UBI and creation of new ledger
   log(`Autosigning system`);
-  assert__default['default'](targets.destination.ledger === 'system' && targets.ledger.destination === 'system', 'System destination');
+  assert__default['default'](
+    targets.destination.ledger === 'system' &&
+      targets.ledger.destination === 'system',
+    'System destination'
+  );
   if (!keys) {
-    keys = KeyWrapper(await table.getItem({ ledger: 'system', entry: 'pk' }, 'System keys not found'));
+    keys = KeyWrapper(
+      await table.getItem(
+        { ledger: 'system', entry: 'pk' },
+        'System keys not found'
+      )
+    );
   }
   // log(JSON.stringify(targets, null, 2))
-  targets.destination.signature = await keys.privateKey.sign(targets.destination.challenge);
+  targets.destination.signature = await keys.privateKey.sign(
+    targets.destination.challenge
+  );
   const next = sha1__default['default'](targets.destination.signature);
   targets.destination.next = next;
   if (targets.ledger.ledger === 'system') {
     // system init
-    assert__default['default'](targets.destination.challenge === targets.ledger.challenge, 'Oroborous system init');
+    assert__default['default'](
+      targets.destination.challenge === targets.ledger.challenge,
+      'Oroborous system init'
+    );
     const signature = targets.destination.signature;
     targets.ledger.signature = signature;
     targets.ledger.counterSignature = signature;
     targets.ledger.next = next;
     targets.destination.counterSignature = signature;
   } else {
-    targets.ledger.counterSignature = await keys.privateKey.sign(targets.ledger.challenge);
+    targets.ledger.counterSignature = await keys.privateKey.sign(
+      targets.ledger.challenge
+    );
   }
   return targets
 }
@@ -684,11 +811,15 @@ async function addSystemSignatures (table, { sources, targets }, keys) {
  * Add signatures, autosigning system entries.
  * This automatically saves entries.
  */
-async function addSignatures (table, { targets }, { ledger, signature, counterSignature, publicKeyArmored }) {
+async function addSignatures (
+  table,
+  { targets },
+  { ledger, signature, counterSignature, publicKeyArmored }
+) {
   if (ledger) {
     assert__default['default'](ledger === targets.ledger.ledger, 'Target ledger');
     if (!publicKeyArmored) {
-      ({ publicKeyArmored } = await table.getItem({ ledger, entry: 'pk' }));
+({ publicKeyArmored } = await table.getItem({ ledger, entry: 'pk' }));
       if (!publicKeyArmored) throw new Error(`Unkown ledger ${ledger}`)
     }
     const verifier = Verifier(publicKeyArmored);
@@ -722,12 +853,19 @@ function transition (table, { source, target }) {
  * Save the targets, transitioning entry states where relevant.
  */
 function saveResults (table, { sources, targets }) {
-  if (sources.ledger.ledger !== 'system') { // only happens during system init
+  if (sources.ledger.ledger !== 'system') {
+    // only happens during system init
     transition(table, { source: sources.ledger, target: targets.ledger });
   } else {
-    assert__default['default'](targets.destination.challenge === targets.ledger.challenge, 'Oroborous system init');
+    assert__default['default'](
+      targets.destination.challenge === targets.ledger.challenge,
+      'Oroborous system init'
+    );
   }
-  transition(table, { source: sources.destination, target: targets.destination });
+  transition(table, {
+    source: sources.destination,
+    target: targets.destination
+  });
 }
 
 // const log = require('util').debuglog('Transactions')
@@ -808,12 +946,30 @@ const StateMachine = (table) => {
 const log$1 = require('util').debuglog('Transactions');
 
 /**
- * Transactions are the way a user sees the ledger.
+ * Transactions are the way a user sees a ledger.
+ *
+ * Arguments:
+ * - table: singular DynamoDB table
+ * - ledger: fingerprint of public key, essentially an 'account number'
+ * - verification:
  */
 const TransactionsDynamo = (table, ledger, verification) => {
   assert__default['default'](_.isObject(verification), 'Verification');
-  // to reduce the size of the results, we limit the attributes requested (omitting the signatures)
-  const short = table.attributes(['ledger', 'destination', 'amount', 'balance', 'date', 'payload', 'next', 'sequence', 'uid', 'income', 'demurrage', 'challenge']);
+  // to reduce the size of the results, we can limit the attributes requested (omitting the signatures, which are fairly large text fields).
+  const short = table.attributes([
+    'ledger',
+    'destination',
+    'amount',
+    'balance',
+    'date',
+    'payload',
+    'next',
+    'sequence',
+    'uid',
+    'income',
+    'demurrage',
+    'challenge'
+  ]);
   return {
     table, // we allow access to the underlying table
     async current () {
@@ -827,7 +983,8 @@ const TransactionsDynamo = (table, ledger, verification) => {
     },
     async recent () {
       return table.queryItems({
-        KeyConditionExpression: 'ledger = :ledger AND begins_with(entry, :slash)',
+        KeyConditionExpression:
+          'ledger = :ledger AND begins_with(entry, :slash)',
         ExpressionAttributeValues: {
           ':ledger': ledger,
           ':slash': '/'
@@ -887,12 +1044,24 @@ const TransactionsDynamo = (table, ledger, verification) => {
     async cancel (challenge) {
       const pending = await table.getItem({ ledger, entry: 'pending' });
       if (pending && pending.challenge === challenge) {
-        if (pending.destination === 'system') throw new Error('System transactions cannot be cancelled.')
-        const destination = await table.getItem({ ledger: pending.destination, entry: 'pending' });
-        if (!destination) throw new Error('No matching transaction found on destination ledger, please contact system administrators.')
+        if (pending.destination === 'system') {
+          throw new Error('System transactions cannot be cancelled.')
+        }
+        const destination = await table.getItem({
+          ledger: pending.destination,
+          entry: 'pending'
+        });
+        if (!destination) {
+          throw new Error(
+            'No matching transaction found on destination ledger, please contact system administrators.'
+          )
+        }
         const transaction = table.transaction();
         transaction.deleteItem({ ledger, entry: 'pending' });
-        transaction.deleteItem({ ledger: pending.destination, entry: 'pending' });
+        transaction.deleteItem({
+          ledger: pending.destination,
+          entry: 'pending'
+        });
         await transaction.execute();
         return 'Pending transaction successfully cancelled.'
       } else {
@@ -910,7 +1079,7 @@ const TransactionsDynamo = (table, ledger, verification) => {
       assert__default['default'](twin.ledger.ledger === ledger, 'Matching source ledger');
       assert__default['default'](twin.destination.ledger === ledger, 'Matching destination ledger');
       const transaction = table.transaction();
-      twin.forEach((entry) => {
+      twin.forEach(entry => {
         verification.verifyEntry(entry);
         transaction.putItem(entry);
       });
@@ -922,16 +1091,20 @@ const TransactionsDynamo = (table, ledger, verification) => {
       return {
         ...TransactionsDynamo(transaction, ledger, verification),
         transaction,
-        async execute () { return transaction.execute() }
+        async execute () {
+          return transaction.execute()
+        }
       }
     }
   }
 };
 
-const verification = (table) => {
+const verification = table => {
   const verification = {
     async getVerifier (ledger) {
-      const result = await table.attributes(['publicKeyArmored']).getItem({ ledger, entry: 'pk' });
+      const result = await table
+        .attributes(['publicKeyArmored'])
+        .getItem({ ledger, entry: 'pk' });
       if (!result || !result.publicKeyArmored) {
         throw new Error(`No public key found for ${ledger}`)
       }
@@ -940,7 +1113,9 @@ const verification = (table) => {
         // check fingerprint
         const fingerprint = await ver.fingerprint();
         if (fingerprint !== ledger) {
-          throw new Error(`Mismatch between ledger ${ledger} and its public key`)
+          throw new Error(
+            `Mismatch between ledger ${ledger} and its public key`
+          )
         }
       }
       return ver
@@ -949,10 +1124,16 @@ const verification = (table) => {
       // note that this simply throws errors if anything is amis
       const payload = entry.payload;
       if (entry.signature) {
-        await (await verification.getVerifier(entry.ledger)).verify(payload, entry.signature);
+        await (await verification.getVerifier(entry.ledger)).verify(
+          payload,
+          entry.signature
+        );
       }
       if (entry.counterSignature) {
-        await (await verification.getVerifier(entry.destination)).verify(payload, entry.counterSignature);
+        await (await verification.getVerifier(entry.destination)).verify(
+          payload,
+          entry.counterSignature
+        );
       }
     }
   };
@@ -965,7 +1146,14 @@ const IndexDynamo = (db, tableName) => {
   return {
     table: T,
     system: system(T),
-    transactions: (ledger) => TransactionsDynamo(T, ledger, verify),
+    transactions: (ledger) => {
+      log__default['default'].warn(`Deprecated, please use ledgers.mani(account) instead`);
+      TransactionsDynamo(T, ledger, verify);
+    },
+    ledgers: {
+      mani: (account) => TransactionsDynamo(T, `/${account}/mani`, verify),
+      telo: (account) => TransactionsDynamo(T, `/${account}/telo`, verify)
+    },
     findkey: async (ledger) => {
       return T.attributes(['ledger', 'publicKeyArmored', 'alias']).getItem({ ledger, entry: 'pk' })
     }
@@ -1157,7 +1345,7 @@ const PK_KEY$1 = { ledger: 'system', entry: 'pk' };
 const logutil = util__default['default'].debuglog('SystemCore'); // activate by adding NODE_DEBUG=SystemCore to environment
 
 const SystemCore = (table, userpool) => {
-  const log = (msg) => {
+  const log = msg => {
     logutil(msg);
   };
   return {
@@ -1171,21 +1359,25 @@ const SystemCore = (table, userpool) => {
         log('System already initialized');
         return // idempotency
       }
+      // initializing fresh system:
       const trans = table.transaction();
       keys = await KeyGenerator().generate();
-      log('Keys generated');
+      log('System keys generated');
       const { publicKeyArmored, privateKeyArmored } = keys;
       trans.putItem({ ...PK_KEY$1, publicKeyArmored, privateKeyArmored });
-      trans.putItem({ ...PARAMS_KEY$1, income: mani(100), demurrage: 5.0 });
-      log('Keys and parameters stored');
+      trans.putItem({ ...PARAMS_KEY$1, income: mani(100), demurrage: 5.0 }); // TODO: replace hardcoded values
       await StateMachine(trans)
         .getSources({ ledger: 'system', destination: 'system' })
         .then(t => t.addAmount(mani(0)))
         .then(t => t.addSystemSignatures(keys))
-        .then(t => t.save()).catch(err => log(err, err.stack));
+        .then(t => t.save())
+        .catch(err => log(err, err.stack));
       log(`Database update:\n${JSON.stringify(trans.items(), null, 2)}`);
+      log('System keys and parameters stored');
       await trans.execute();
-      return `SuMsy initialized with ${mani(100).format()} income and 5% demurrage.`
+      return `SuMsy initialized with ${mani(
+        100
+      ).format()} income and 5% demurrage.`
     },
     async challenge () {
       // provides the payload of the first transaction on a new ledger
@@ -1210,7 +1402,13 @@ const SystemCore = (table, userpool) => {
         .then(t => t.addSignatures({ ledger, ...registration }))
         .then(t => t.save());
       // log('Registration context:\n' + JSON.stringify(context, null, 2))
-      transaction.putItem({ ledger, entry: 'pk', publicKeyArmored, alias, challenge: payload });
+      transaction.putItem({
+        ledger,
+        entry: 'pk',
+        publicKeyArmored,
+        alias,
+        challenge: payload
+      });
       await transaction.execute();
       // log(`Database update:\n${JSON.stringify(transaction.items(), null, 2)}`)
       return ledger
@@ -1221,7 +1419,10 @@ const SystemCore = (table, userpool) => {
         demurrage: mani(0),
         income: mani(0)
       };
-      const parameters = await table.getItem(PARAMS_KEY$1, 'Missing system parameters');
+      const parameters = await table.getItem(
+        PARAMS_KEY$1,
+        'Missing system parameters'
+      );
       async function applyJubilee (ledger) {
         const transaction = table.transaction();
         log(`Applying DI to ${ledger}`);
@@ -1243,7 +1444,8 @@ const SystemCore = (table, userpool) => {
         await applyJubilee(ledger);
       } else {
         const users = await userpool.listJubileeUsers();
-        for (let { ledger } of users) { // these for loops allow await!
+        for (let { ledger } of users) {
+          // these for loops allow await!
           await applyJubilee(ledger);
         }
       }
@@ -1305,7 +1507,7 @@ const TransactionResolvers = {
         log__default['default'].error(err);
         throw new apolloServer.ForbiddenError(err)
       }
-      return indexDynamo.transactions(id)
+      return indexDynamo.ledgers.mani(id)
     }
   },
   'TransactionQuery': {
@@ -1418,9 +1620,10 @@ function contextProcessor (event) {
     admin: claims.admin
   }
 }
-
+console.log(`Starting ApolloServer with DEBUG = ${process.env.DEBUG}`);
 const server = new apolloServerLambda.ApolloServer({
   debug: process.env.DEBUG === 'true',
+  introspection: process.env.DEBUG === 'true',
   typeDefs,
   resolvers: IndexResolvers,
   formatError: err => {

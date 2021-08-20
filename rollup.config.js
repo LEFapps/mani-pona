@@ -7,7 +7,7 @@ export default [{
     format: 'cjs'
   }
 }, {
-  input: 'src/cli/index.js',
+  input: 'cli/index.js',
   output: {
     file: 'dist/cli.js',
     format: 'cjs'

@@ -9,6 +9,12 @@ provider:
     apiGateway: ${env:XRAY, self:custom.debug}
   logs:
     restApi: ${env:LOG_REST_API, self:custom.debug} # Adds a log stream (we could turn this off).
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - lambda:InvokeAsync
+        - lambda:InvokeFunction
+      Resource: '*'
 
 plugins:
   # - serverless-webpack
@@ -44,7 +50,7 @@ functions:
     #    claims:
     #      - email
     #      - nickname
-    #
+    
     # If you are creating the Cognito User Pool in the resources section of the same template, you can refer to the ARN using the Fn::GetAtt attribute from CloudFormation. To do so, you must give your authorizer a name and specify a type of COGNITO_USER_POOLS:
     #
     # authorizer:
@@ -71,7 +77,7 @@ resources:
 
 # Warning: the dynamodb shell does NOT work in Firefox, only in Chrome
 custom:
-  debug: ${env:DEBUG, false} # debug mode (string values or 0|1 are converted)
+  debug: ${env:DEBUG, true} # debug mode (string values or 0|1 are converted)
   dotenv:
     basePath: env/
   output:

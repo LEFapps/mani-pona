@@ -7,9 +7,10 @@
     "sumsy": "./dist/cli.js"
   },
   "scripts": {
+    "build": "rollup -c",
     "test": "JEST_CIRCUS=1 LEDGER=manipona jest --bail",
     "test:dynamodb": "NODE_ENV=development sls dynamodb start --inMemory",
-    "offline": "sls offline start"
+    "offline": "npm run build && DEBUG=true sls offline start"
   },
   "keywords": [
     "sumsy",
@@ -57,6 +58,7 @@
     "loglevel": "^1.7.1",
     "openpgp": "^4.10.8",
     "rollup-plugin-hashbang": "^2.2.2",
+    "server-log": "file:log_module",
     "serverless-dotenv-plugin": "^3.3.0",
     "sha1": "^1.1.1"
   }

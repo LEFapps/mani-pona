@@ -3,9 +3,9 @@
 import inquirer from 'inquirer'
 import log from 'loglevel'
 import { ApolloClient, InMemoryCache } from '@apollo/client/core'
-import { ManiClient } from '../client/ManiClient'
+import { ManiClient } from '../client/src/maniClient'
 import KeyStorage from './keystorage'
-import { mani } from '../mani'
+import { mani } from '../client/shared/mani'
 
 global.fetch = require('node-fetch')
 

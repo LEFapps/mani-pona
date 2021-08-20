@@ -1,8 +1,8 @@
 import assert from 'assert'
 import { isObject } from 'lodash'
 import StateMachine from '../core/statemachine'
-
-const log = require('util').debuglog('Transactions')
+import { getLogger } from 'server-log'
+const log = getLogger('dynamodb:index')
 
 /**
  * Transactions are the way a user sees a ledger.
@@ -14,6 +14,7 @@ const log = require('util').debuglog('Transactions')
  */
 const TransactionsDynamo = (table, ledger, verification) => {
   assert(isObject(verification), 'Verification')
+  log.trace('Transactions dynamo')
   // to reduce the size of the results, we can limit the attributes requested (omitting the signatures, which are fairly large text fields).
   const short = table.attributes([
     'ledger',
@@ -41,6 +42,7 @@ const TransactionsDynamo = (table, ledger, verification) => {
       return table.getItem({ ledger, entry: 'pending' })
     },
     async recent () {
+      log.debug('ledger = %s AND begins_with(entry,/)', ledger)
       return table.queryItems({
         KeyConditionExpression:
           'ledger = :ledger AND begins_with(entry, :slash)',
@@ -59,7 +61,7 @@ const TransactionsDynamo = (table, ledger, verification) => {
     async create (proof) {
       const existing = await table.getItem({ ledger, entry: 'pending' })
       if (existing && existing.challenge === proof.payload) {
-        console.log(`Transaction ${proof.payload} was already created`)
+        log.info(`Transaction ${proof.payload} was already created`)
         return existing.next // idempotency
       }
       let next
@@ -82,7 +84,7 @@ const TransactionsDynamo = (table, ledger, verification) => {
       // proof contains signature, counterSignature, payload
       const existing = await table.getItem({ ledger, entry: '/current' })
       if (existing && existing.challenge === proof.payload) {
-        console.log(`Transaction ${proof.payload} was already confirmed`)
+        log.info(`Transaction ${proof.payload} was already confirmed`)
         return existing.next // idempotency
       }
       let next
@@ -97,7 +99,7 @@ const TransactionsDynamo = (table, ledger, verification) => {
         })
         .then(t => t.save())
       await transaction.execute()
-      log(`Database update:\n${JSON.stringify(transaction.items(), null, 2)}`)
+      log.debug(`Database update:\n${JSON.stringify(transaction.items(), null, 2)}`)
       return next
     },
     async cancel (challenge) {

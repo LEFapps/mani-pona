@@ -1,7 +1,8 @@
 import { ForbiddenError } from 'apollo-server'
 import { isEmpty } from 'lodash'
-import log from 'loglevel'
-import { wrap } from '../util'
+import { wrap } from './util'
+import { getLogger } from 'server-log'
+const log = getLogger('graphql:transactions')
 
 const TransactionResolvers = {
   Query: {
@@ -34,6 +35,7 @@ const TransactionResolvers = {
       }
     },
     'recent': wrap(async (transactions, arg) => {
+      log.debug('recent transactions requested for %j', arg)
       return transactions.recent()
     }),
     'challenge': wrap(async (transactions, { destination, amount }) => {

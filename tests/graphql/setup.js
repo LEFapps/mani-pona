@@ -11,7 +11,9 @@ import resolvers from '../../src/graphql/resolvers'
 import { CognitoUserPool } from '../../src/cognito/userpool'
 import { ManiClient } from '../shared'
 import cognitoMock from './cognito.mock'
-import log from 'loglevel'
+import { apolloLogPlugin, getLogger } from 'server-log'
+
+const log = getLogger('graphql-test')
 
 // Bugfix, see: https://github.com/openpgpjs/openpgpjs/issues/1036
 const textEncoding = require('text-encoding-utf-8')
@@ -23,8 +25,10 @@ AWS.config.region = 'eu-west-1'
 
 const server = new ApolloServer({
   debug: true,
+  introspection: true,
   typeDefs,
   resolvers,
+  plugins: [apolloLogPlugin],
   context: async () => {
     return {
       indexDynamo: IndexDynamo(

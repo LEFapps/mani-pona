@@ -1,0 +1,15 @@
+{
+  "name": "server-log",
+  "version": "1.0.0",
+  "description": "A util.debuglog based logging framework",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "logging",
+    "debuglog"
+  ],
+  "author": "Thomas Goorden <tg@eenwereldmetlef.be>",
+  "license": "ISC"
+}

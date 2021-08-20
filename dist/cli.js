@@ -5,13 +5,13 @@ var inquirer = require('inquirer');
 var log$1 = require('loglevel');
 var core = require('@apollo/client/core');
 var _ = require('lodash');
+var AsyncStorage = require('@react-native-async-storage/async-storage');
 var openpgp = require('openpgp');
-require('fs');
-require('path');
 var assert = require('assert');
 var sha1 = require('sha1');
 var currency = require('currency.js');
-var apolloServer = require('apollo-server');
+require('react');
+var client = require('@apollo/client');
 var Storage = require('dom-storage');
 
 function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
@@ -19,34 +19,44 @@ function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'defau
 var inquirer__default = /*#__PURE__*/_interopDefaultLegacy(inquirer);
 var log__default = /*#__PURE__*/_interopDefaultLegacy(log$1);
 var ___default = /*#__PURE__*/_interopDefaultLegacy(_);
+var AsyncStorage__default = /*#__PURE__*/_interopDefaultLegacy(AsyncStorage);
 var assert__default = /*#__PURE__*/_interopDefaultLegacy(assert);
 var sha1__default = /*#__PURE__*/_interopDefaultLegacy(sha1);
 var currency__default = /*#__PURE__*/_interopDefaultLegacy(currency);
 var Storage__default = /*#__PURE__*/_interopDefaultLegacy(Storage);
 
 function bugfix () {
-// Bugfix, see: https://github.com/openpgpjs/openpgpjs/issues/1036
-// and https://github.com/facebook/jest/issues/9983
+  // Bugfix, see: https://github.com/openpgpjs/openpgpjs/issues/1036
+  // and https://github.com/facebook/jest/issues/9983
   const textEncoding = require('text-encoding-utf-8');
   global.TextEncoder = textEncoding.TextEncoder;
   global.TextDecoder = textEncoding.TextDecoder;
 }
 
-const unpack = async (key) => {
-  const { err, keys: [parsedkey] } = await openpgp.key.readArmored(key);
+const unpack = async key => {
+  const {
+    err,
+    keys: [parsedkey]
+  } = await openpgp.key.readArmored(key);
   if (err) {
     throw err[0]
   }
   return parsedkey
 };
 // reliably sort an objects keys and merge everything into one String
-const sortedObjectString = (obj) => {
-  return Object.keys(obj).sort().reduce((arr, key) => { arr.push(`${key}:${obj[key]}`); return arr }, []).join('|')
+const sortedObjectString = obj => {
+  return Object.keys(obj)
+    .sort()
+    .reduce((arr, key) => {
+      arr.push(`${key}:${obj[key]}`);
+      return arr
+    }, [])
+    .join('|')
 };
 
 const Signer = (key, pk) => {
   const signer = {
-    sign: async (input) => {
+    sign: async input => {
       bugfix();
       assert__default['default'](!___default['default'].isEmpty(input), 'Missing input');
       const text = typeof input === 'string' ? input : sortedObjectString(input);
@@ -58,7 +68,8 @@ const Signer = (key, pk) => {
       });
       return detachedSignature
     },
-    signature: async (input) => { // TODO: @deprecated
+    signature: async input => {
+      // TODO: @deprecated
       const s = await signer.sign(input);
       const hash = sha1__default['default'](s);
       return {
@@ -99,7 +110,9 @@ const Verifier = (key, pk) => {
       if (signatures[0].valid) {
         return true
       } else {
-        throw new Error('The proof signature didn\'t match either this key or the challenge.')
+        throw new Error(
+          "The proof signature didn't match either this key or the challenge."
+        )
       }
     },
     fingerprint: async () => {
@@ -137,8 +150,8 @@ const KeyGenerator = (userId = {}) => {
 
 // interface for keys
 
-const KeyManager = async (store) => {
-  const storedKeys = store.getKeys();
+const KeyManager = async store => {
+  const storedKeys = await store.getKeys();
   let keys;
   if (storedKeys) {
     log__default['default'].info('Stored keys found');
@@ -253,11 +266,16 @@ const mani = value => new Mani(value);
 function pad (i) {
   return ('000000000000' + i).slice(-12)
 }
-function entryPath (entry) { return `/${pad(entry.sequence)}/${entry.uid}` }
-function path (entry) { return `/${entry.ledger}${entryPath(entry)}` }
+function entryPath (entry) {
+  return `/${pad(entry.sequence)}/${entry.uid}`
+}
+function path (entry) {
+  return `/${entry.ledger}${entryPath(entry)}`
+}
 function destructurePath (path) {
-  const match = new RegExp('/(?<ledger>[a-z0-9]+)/(?<sequence>[0-9]+)/(?<uid>[a-z0-9]+)')
-    .exec(path);
+  const match = new RegExp(
+    '/(?<ledger>[a-z0-9]+)/(?<sequence>[0-9]+)/(?<uid>[a-z0-9]+)'
+  ).exec(path);
   if (!match) {
     throw new Error('invalid path')
   }
@@ -266,7 +284,8 @@ function destructurePath (path) {
   return { ledger, sequence, uid }
 }
 function destructure (payload, flip = false) {
-  const full = '^/(?<date>[^/]+)/from(?<from>.+)(?=/to)/to(?<to>.+)(?=/)/(?<amount>[-0-9,ɱ ]+)';
+  const full =
+    '^/(?<date>[^/]+)/from(?<from>.+)(?=/to)/to(?<to>.+)(?=/)/(?<amount>[-0-9,ɱ ]+)';
   let match = new RegExp(full).exec(payload);
   if (match) {
     let { date, from, to, amount } = match.groups;
@@ -302,7 +321,10 @@ function fromDb (entry) {
     if (key === 'date') {
       return new Date(value)
     }
-    if ((key === 'amount' || key === 'balance' || key === 'income') && _.isString(value)) {
+    if (
+      (key === 'amount' || key === 'balance' || key === 'income') &&
+      _.isString(value)
+    ) {
       return new Mani(value)
     }
     if (key === 'demurrage' && _.isString(value)) {
@@ -312,19 +334,21 @@ function fromDb (entry) {
   })
 }
 
-const REGISTER = apolloServer.gql`
-  query ($registration: LedgerRegistration!) {
+const REGISTER = client.gql`
+  query($registration: LedgerRegistration!) {
     system {
       register(registration: $registration)
     }
-  }`;
-const SYSTEM_CHALLENGE = apolloServer.gql`
+  }
+`;
+const SYSTEM_CHALLENGE = client.gql`
   query {
     system {
       challenge
     }
-  }`;
-const CURRENT = apolloServer.gql`
+  }
+`;
+const CURRENT = client.gql`
   query ledger($id: String!) {
     ledger(id: $id) {
       transactions {
@@ -339,8 +363,9 @@ const CURRENT = apolloServer.gql`
         }
       }
     }
-  }`;
-const PENDING = apolloServer.gql`
+  }
+`;
+const PENDING = client.gql`
   query ledger($id: String!) {
     ledger(id: $id) {
       transactions {
@@ -358,42 +383,47 @@ const PENDING = apolloServer.gql`
         }
       }
     }
-  }`;
-const CHALLENGE = apolloServer.gql`
+  }
+`;
+const CHALLENGE = client.gql`
   query challenge($id: String!, $destination: String!, $amount: Currency!) {
     ledger(id: $id) {
       transactions {
         challenge(destination: $destination, amount: $amount)
       }
     }
-  }`;
-const CREATE = apolloServer.gql`
+  }
+`;
+const CREATE = client.gql`
   query ledger($id: String!, $proof: Proof!) {
     ledger(id: $id) {
       transactions {
         create(proof: $proof)
       }
     }
-  }`;
-const CONFIRM = apolloServer.gql`
+  }
+`;
+const CONFIRM = client.gql`
   query ledger($id: String!, $proof: Proof!) {
     ledger(id: $id) {
       transactions {
         confirm(proof: $proof)
       }
     }
-  }`;
-const CANCEL = apolloServer.gql`
+  }
+`;
+const CANCEL = client.gql`
   query ledger($id: String!, $challenge: String!) {
     ledger(id: $id) {
       transactions {
         cancel(challenge: $challenge)
       }
     }
-  }`;
-const FIND_KEY = apolloServer.gql`
-  query findkey ($id: String!) {
-    system { 
+  }
+`;
+const FIND_KEY = client.gql`
+  query findkey($id: String!) {
+    system {
       findkey(id: $id) {
         alias
         publicKeyArmored
@@ -401,7 +431,7 @@ const FIND_KEY = apolloServer.gql`
     }
   }
 `;
-const JUBILEE = apolloServer.gql`
+const JUBILEE = client.gql`
   mutation jubilee($ledger: String) {
     admin {
       jubilee(ledger: $ledger) {
@@ -412,7 +442,7 @@ const JUBILEE = apolloServer.gql`
     }
   }
 `;
-const SYSTEM_PARAMETERS = apolloServer.gql`
+const SYSTEM_PARAMETERS = client.gql`
   query {
     system {
       parameters {
@@ -422,7 +452,7 @@ const SYSTEM_PARAMETERS = apolloServer.gql`
     }
   }
 `;
-const INIT = apolloServer.gql`
+const INIT = client.gql`
   mutation init {
     admin {
       init
@@ -432,69 +462,112 @@ const INIT = apolloServer.gql`
 
 // const log = require('util').debuglog('Transactions')
 
-const log = (msg) => log__default['default'].error(msg);
+const log = msg => log__default['default'].error(msg);
 
-function defaultContext () { return {} }
+const storageKey = 'mani_client_key';
+
+function defaultContext () {
+  return {}
+}
 const defaultKeyStore = {
   async getKeys () {
-    // TODO
+    try {
+      const key = await AsyncStorage__default['default'].getItem(storageKey);
+      if (key !== null) {
+        // key previously stored
+        return JSON.parse(key)
+      }
+    } catch (e) {
+      // error reading key
+      log(e);
+    }
   },
   async saveKeys (keys) {
-    // TODO
+    try {
+      await AsyncStorage__default['default'].setItem(storageKey, JSON.stringify(keys));
+    } catch (e) {
+      // saving error
+      log(e);
+    }
   }
 };
 
-const ManiClient = async ({ graphqlClient, keyStore = defaultKeyStore, fail = true, contextProvider = defaultContext }) => {
+const ManiClient = async ({
+  graphqlClient,
+  keyStore = defaultKeyStore,
+  fail = true,
+  contextProvider = defaultContext
+}) => {
   const keyManager = await KeyManager(keyStore);
   const id = await keyManager.fingerprint();
   async function query (query, path, variables = {}, required = true) {
-    const result = await graphqlClient.query({ query, variables, context: contextProvider(), fetchPolicy: 'no-cache' });
+    const result = await graphqlClient.query({
+      query,
+      variables,
+      context: contextProvider(),
+      fetchPolicy: 'no-cache'
+    });
     if (result.errors) {
       log(result.errors);
       if (fail) throw new Error(result.errors)
     }
     const obj = _.get(result.data, path);
     if (required && fail && !obj) {
-      throw new Error(`Could not find ${path} in\n${JSON.stringify(result.data)}`)
+      throw new Error(
+        `Could not find ${path} in\n${JSON.stringify(result.data)}`
+      )
     }
     return obj
   }
   async function find (ledger) {
-    return query(FIND_KEY, 'system.findkey.alias', { id: ledger }, false)
+    return await query(FIND_KEY, 'system.findkey.alias', { id: ledger }, false)
   }
   async function register (alias) {
     const challenge = await query(SYSTEM_CHALLENGE, 'system.challenge');
     const payload = challenge.replace('<fingerprint>', id);
-    return query(REGISTER, 'system.register', {
+    return await query(REGISTER, 'system.register', {
       registration: {
         publicKeyArmored: (await keyManager.getKeys()).publicKeyArmored,
         alias,
         signature: await keyManager.sign(payload),
         counterSignature: await keyManager.sign(flip(payload)),
         payload
-      } })
+      }
+    })
   }
   const transactions = {
     async current () {
-      const current = await query(CURRENT, 'ledger.transactions.current', { id });
+      const current = await query(CURRENT, 'ledger.transactions.current', {
+        id
+      });
       // log(JSON.stringify(current, null, 2))
       return fromDb(current)
     },
     async pending () {
-      const pending = await query(PENDING, 'ledger.transactions.pending', { id }, false);
+      const pending = await query(
+        PENDING,
+        'ledger.transactions.pending',
+        { id },
+        false
+      );
       return fromDb(pending)
     },
     async confirm (challenge) {
-      return query(CONFIRM, 'ledger.transactions.confirm', {
+      return await query(CONFIRM, 'ledger.transactions.confirm', {
         id,
         proof: {
           signature: await keyManager.sign(challenge),
           counterSignature: await keyManager.sign(flip(challenge)),
           payload: challenge
-        } })
+        }
+      })
     },
     async challenge (destination, amount) {
-      return query(CHALLENGE, 'ledger.transactions.challenge', { id, destination, amount: amount.format() })
+      return await query(CHALLENGE, 'ledger.transactions.challenge', {
+        id,
+        destination,
+        amount: amount.format()
+      })
     },
     async create (challenge) {
       return query(CREATE, 'ledger.transactions.create', {
@@ -503,15 +576,29 @@ const ManiClient = async ({ graphqlClient, keyStore = defaultKeyStore, fail = tr
           signature: await keyManager.sign(challenge),
           counterSignature: await keyManager.sign(flip(challenge)),
           payload: challenge
-        } })
+        }
+      })
     },
     async cancel (challenge) {
-      return query(CANCEL, 'ledger.transactions.cancel', { id, challenge })
+      return await query(CANCEL, 'ledger.transactions.cancel', {
+        id,
+        challenge
+      })
+    },
+    async all () {
+      return []
+    }
+  };
+  const contacts = {
+    async all () {
+      return {}
     }
   };
   const system = {
     async parameters () {
-      return fromDb(await query(SYSTEM_PARAMETERS, 'system.parameters', {}, false))
+      return fromDb(
+        await query(SYSTEM_PARAMETERS, 'system.parameters', {}, false)
+      )
     }
   };
   const admin = {
@@ -519,7 +606,7 @@ const ManiClient = async ({ graphqlClient, keyStore = defaultKeyStore, fail = tr
       return fromDb(await query(JUBILEE, 'admin.jubilee', { ledger: id }))
     },
     async init () {
-      return query(INIT, 'admin.init')
+      return await query(INIT, 'admin.init')
     }
   };
   return {
@@ -527,13 +614,14 @@ const ManiClient = async ({ graphqlClient, keyStore = defaultKeyStore, fail = tr
     register,
     find,
     transactions,
+    contacts,
     system,
     admin
   }
 };
 
 /**
- * For demonstration: we fake a LocalStorage such a what you'd find in a browser.
+ * For demonstration and testing purposes: we fake a LocalStorage such as what you'd find in a browser.
  */
 const KeyStorage = (path = './.manipona.keys.json') => {
   const localStorage = new Storage__default['default'](path, { strict: false });
