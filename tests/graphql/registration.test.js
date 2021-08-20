@@ -1,24 +1,15 @@
-import { jest, describe, expect, it, beforeAll, afterAll } from '@jest/globals'
-import fs from 'fs'
+import { jest, describe, expect, it, beforeAll } from '@jest/globals'
 import { mani, KeyManager, flip } from '../shared'
 import cognitoMock from './cognito.mock'
 // import fs from 'fs'
 import { REGISTER, CHALLENGE, FIND_KEY, RECENT, INIT } from './queries'
 import { query, testMutate, testQuery, generateAlias, MemoryKeyStorage } from './setup'
-import log from './log'
 
 describe('GraphQL registration', () => {
-  const logStream = fs.createWriteStream('./logs/registration.test.log', { flags: 'as' })
-  logStream.write('Log created')
   beforeAll(async () => {
     cognitoMock.setAdmin(true)
     await testMutate({ mutation: INIT })
     cognitoMock.setAdmin(false)
-    log.setLog((msg) => { logStream.write(msg) })
-  })
-
-  afterAll(() => {
-    log.resetLog()
   })
 
   it('should register a public key as a new ledger', async () => {

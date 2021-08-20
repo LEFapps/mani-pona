@@ -20,7 +20,6 @@ function table (db, TableName, options = {}) {
           ...param,
           ...options
         }
-        // console.log(`Executing ${method} on ${TableName} with ${JSON.stringify(param, null, 2)}`)
         return db[method](arg)
       }
       return table

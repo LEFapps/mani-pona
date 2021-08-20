@@ -16,7 +16,9 @@ import {
 import { getLogger } from 'server-log'
 
 const log = getLogger('core:transactions')
-
+/**
+ * Note that the 'table' listed below should always be a core/ledgerTable object
+ */
 async function mapValuesAsync (object, asyncFn) {
   return Object.fromEntries(
     await Promise.all(
@@ -39,7 +41,7 @@ async function mapValuesAsync (object, asyncFn) {
 async function getSources (table, input) {
   log.debug('Getting sources for %j', input)
   return mapValuesAsync(input, async (ledger, role, input) => {
-    const current = await table.getItem({ ledger, entry: '/current' })
+    const current = await table.current(ledger)
     if (current) return current
     return shadowEntry(ledger)
   })
@@ -57,10 +59,7 @@ async function getPayloadSources (table, { payloads }) {
     payloads,
     async ({ from: { ledger } }, role, payloads) => {
       log.debug('Getting current on %s %s', role, ledger)
-      return table.getItem(
-        { ledger, entry: '/current' },
-        `No current entry on ledger ${ledger}`
-      )
+      return table.current(ledger, `No current entry on ledger ${ledger}`)
     }
   )
 }
@@ -75,10 +74,7 @@ async function getNextTargets (table, { sources }) {
   return mapValuesAsync(sources, async (source, role, sources) => {
     if (source.ledger !== 'system') {
       // the system ledger never has pending items
-      const pending = await table.getItem({
-        ledger: source.ledger,
-        entry: 'pending'
-      })
+      const pending = await table.pending(source.ledger)
       if (pending) { throw new Error(`Ledger ${source.ledger} already has a pending entry`) }
     }
     return {
@@ -190,12 +186,9 @@ async function getPendingTargets (table, { payloads }) {
       amount
     } = payload
     if (ledger === 'system') {
-      const matching = await table.getItem({
-        ledger,
-        entry: `/${date.toISOString()}/${sequence}/${uid}`
-      }) // already made permanent
+      const matching = await table.entry(ledger, `/${date.toISOString()}/${sequence}/${uid}`) // already made permanent
       if (matching) return matching
-      const current = await table.getItem({ ledger, entry: '/current' })
+      const current = await table.current(ledger)
       if (current) {
         assert(date.getTime() === current.date.getTime(), 'Matching dates')
         assert(amount.equals(current.amount), 'Matching amounts')
@@ -203,10 +196,7 @@ async function getPendingTargets (table, { payloads }) {
       }
       throw new Error(`Matching system entry not found`)
     } else {
-      const pending = await table.getItem(
-        { ledger, entry: 'pending' },
-        `No pending entry found on ledger ${ledger}`
-      )
+      const pending = await table.pending(ledger, `No pending entry found on ledger ${ledger}`)
       assert(date.getTime() === pending.date.getTime(), 'Matching date')
       assert(destination === pending.destination, 'Matching destination')
       assert(sequence === pending.sequence, 'Matching sequence')
@@ -222,10 +212,7 @@ async function getPendingTargets (table, { payloads }) {
 async function getPendingSources (table, { targets }) {
   return mapValuesAsync(targets, async (target, role, targets) => {
     if (target.ledger !== 'system') {
-      const current = await table.getItem(
-        { ledger: target.ledger, entry: '/current' },
-        `No current entry found on ledger ${target.ledger}`
-      )
+      const current = await table.current(target.ledger, `No current entry found on ledger ${target.ledger}`)
       assert(target.uid === current.next, 'Sequential uid')
       assert(target.sequence === current.sequence + 1, 'Sequence')
       return current
@@ -255,10 +242,7 @@ async function addSystemSignatures (table, { sources, targets }, keys) {
   )
   if (!keys) {
     keys = KeyWrapper(
-      await table.getItem(
-        { ledger: 'system', entry: 'pk' },
-        'System keys not found'
-      )
+      await table.pk('system', 'System keys not found')
     )
   }
   // log(JSON.stringify(targets, null, 2))
@@ -297,8 +281,8 @@ async function addSignatures (
   if (ledger) {
     assert(ledger === targets.ledger.ledger, 'Target ledger')
     if (!publicKeyArmored) {
-      ;({ publicKeyArmored } = await table.getItem({ ledger, entry: 'pk' }))
-      if (!publicKeyArmored) throw new Error(`Unkown ledger ${ledger}`)
+      ;({ publicKeyArmored } = await table.pk(ledger, `Unkown ledger: ${ledger}`))
+      if (!publicKeyArmored) throw new Error(`Missing PK:  ${ledger}`)
     }
     const verifier = Verifier(publicKeyArmored)
     await verifier.verify(targets.ledger.challenge, signature) // throws error if wrong
@@ -313,18 +297,18 @@ async function addSignatures (
 function transition (table, { source, target }) {
   if (target.entry === 'pending' && isSigned(target)) {
     target.entry = '/current'
-    table.putItem(target)
+    table.putEntry(target)
     if (target.ledger !== 'system') {
-      table.deleteItem({ ledger: target.ledger, entry: 'pending' })
+      table.deleteEntry({ ledger: target.ledger, entry: 'pending' })
     }
     if (source && source.entry === '/current') {
       // bump to a permanent state
       source.entry = sortKey(source)
-      table.putItem(source)
+      table.putEntry(source)
     }
   } else {
     // no state transition, we just save the target
-    table.putItem(target)
+    table.putEntry(target)
   }
 }
 /**

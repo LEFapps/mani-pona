@@ -1,5 +1,7 @@
 import { ApolloError } from 'apollo-server'
-import log from 'loglevel'
+import { getLogger } from 'server-log'
+
+const log = getLogger('graphql:resolvers')
 
 /**
  * Since Apollo Server has its own ideas about error logging, we intercept them early.

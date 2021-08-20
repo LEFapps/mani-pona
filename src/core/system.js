@@ -1,4 +1,5 @@
 import StateMachine from './statemachine'
+import ledgerTable from './ledgerTable'
 import { KeyGenerator, Verifier, mani } from '../shared'
 import { getLogger } from 'server-log'
 
@@ -26,7 +27,8 @@ const SystemCore = (table, userpool) => {
       const { publicKeyArmored, privateKeyArmored } = keys
       trans.putItem({ ...PK_KEY, publicKeyArmored, privateKeyArmored })
       trans.putItem({ ...PARAMS_KEY, income: mani(100), demurrage: 5.0 }) // TODO: replace hardcoded values
-      await StateMachine(trans)
+      const maniTable = ledgerTable(trans, '') // TODO: change prefix
+      await StateMachine(maniTable)
         .getSources({ ledger: 'system', destination: 'system' })
         .then(t => t.addAmount(mani(0)))
         .then(t => t.addSystemSignatures(keys))
@@ -42,7 +44,8 @@ const SystemCore = (table, userpool) => {
     async challenge () {
       // provides the payload of the first transaction on a new ledger
       // clients have to replace '<fingerprint>'
-      return StateMachine(table)
+      const maniTable = ledgerTable(table, '') // TODO: change prefix
+      return StateMachine(maniTable)
         .getSources({ ledger: '<fingerprint>', destination: 'system' })
         .then(t => t.addAmount(mani(0)))
         .then(t => t.getPrimaryEntry().challenge)
@@ -56,8 +59,9 @@ const SystemCore = (table, userpool) => {
         return ledger // idempotency!
       }
       const transaction = table.transaction()
+      const maniTable = ledgerTable(transaction, '') // TODO: change prefix
       // TODO: assert amount = 0
-      await StateMachine(transaction)
+      await StateMachine(maniTable)
         .getPayloads(payload)
         .getSources({ ledger, destination: 'system' })
         .then(t => t.continuePayload())
@@ -88,9 +92,10 @@ const SystemCore = (table, userpool) => {
         'Missing system parameters'
       )
       async function applyJubilee (ledger) {
+        log.debug('Applying jubilee to ledger %s', ledger)
         const transaction = table.transaction()
-        log.info(`Applying DI to ${ledger}`)
-        await StateMachine(transaction)
+        const maniTable = ledgerTable(transaction, '') // TODO: change prefix
+        await StateMachine(maniTable)
           .getSources({ ledger, destination: 'system' })
           .then(t => t.addDI(parameters))
           .then(t => {
@@ -102,7 +107,9 @@ const SystemCore = (table, userpool) => {
           })
           .then(t => t.addSystemSignatures())
           .then(t => t.save())
+          .catch(log.error)
         await transaction.execute()
+        log.debug('Jubilee succesfully applied to ledger %s', ledger)
       }
       if (ledger) {
         await applyJubilee(ledger)
