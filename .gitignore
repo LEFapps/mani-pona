@@ -4,3 +4,6 @@ tests/test.keys
 tests/seeds
 .dynamodb/
 client/.expo
+client/sls-output*.json
+.serverless
+client/amplify
