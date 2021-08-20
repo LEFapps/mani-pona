@@ -1,6 +1,4 @@
-// import config from './aws-exports.json'
-
-const config = {}
+import config from './sls-output.json'
 
 export default {
   Auth: {
