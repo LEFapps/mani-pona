@@ -6,6 +6,7 @@ import log from 'loglevel'
 
 import SignIn from './src/screens/auth/signIn'
 import SignUp from './src/screens/auth/signUp'
+import ConfirmSignUp from './src/screens/auth/confirmSignUp'
 import Drawer from './src/routes/drawer'
 import Splash from './src/screens/splash'
 import ManiClient from './src/maniClient'
@@ -61,8 +62,9 @@ export default function App () {
         authState={'signIn'}
         onStateChange={authState => console.log('authState', authState)}
       >
-        <SignIn />
-        <SignUp />
+        <SignIn override={'SignIn'} />
+        <SignUp override={'SignUp'} />
+        <ConfirmSignUp override={'confirmSignUp'} />
         <Drawer />
       </Authenticator>
     )
