@@ -19,9 +19,9 @@ export default function StandingOrder ({ navigation }) {
     await ManiClient.transactions.pending().then(standingOrders => {
       setOrders(standingOrders)
     })
-    await ManiClient.contacts.all().then(contacts => {
-      setContacts(contacts)
-    })
+    // await ManiClient.contacts.all().then(contacts => {
+    //   setContacts(contacts)
+    // })
     setReady(true)
   }
 
@@ -70,9 +70,9 @@ export default function StandingOrder ({ navigation }) {
                   <Text style={globalStyles.cardPropertyText}>Mededeling:</Text>
                 </View>
                 <View style={globalStyles.cardValues}>
-                  <Text style={globalStyles.cardValueText}>
+                  {/* <Text style={globalStyles.cardValueText}>
                     {getContact(item.contactId)}
-                  </Text>
+                  </Text> */}
                   <Text style={globalStyles.cardValueText}>
                     {mani(item.amount).format()}
                   </Text>

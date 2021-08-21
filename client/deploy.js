@@ -8,7 +8,7 @@ var {
   ClientBucket,
   Region,
   GraphqlLambdaFunctionQualifiedArn
-} = require('./aws-exports.json')
+} = require('./sls-output.json')
 
 var s3SyncOptions = {
   aws: {

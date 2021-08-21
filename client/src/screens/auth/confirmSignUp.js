@@ -6,20 +6,21 @@ import Auth from '@aws-amplify/auth'
 import {
   validateEmail,
   validatePassword,
-  validatePasswordLogIn
+  validatePasswordLogIn,
+  validateVerificationCode
 } from '../../helpers/validation'
-import { GotoSignUp, GotoConfirmSignUp } from './StateManagers.js'
+import { GotoSignUp, GotoSignIn } from './StateManagers.js'
 import i18n from 'i18n-js'
 import Dialog from 'react-native-dialog'
 
-export default function SignIn (props) {
+export default function confirmSignUp (props) {
   const [state, setState] = useState({
     email: '',
-    password: ''
+    verificationCode: ''
   })
   const [errors, setErrors] = useState({
     email: '',
-    password: ''
+    verificationCode: ''
   })
 
   const [user, setUser] = useState('')
@@ -30,103 +31,22 @@ export default function SignIn (props) {
   const [requirePass, setRequirePass] = useState(false)
   const [passControle, setPassControle] = useState(false)
 
-  const { changeAuthState } = props
-
-  function showResetPass () {
-    setRequirePass(true)
-  }
-
-  function hideResetCancel () {
-    setRequirePass(false)
-    setNewPassFirst('')
-  }
-
-  function hideReset () {
-    setRequirePass(false)
-  }
-
-  function hideControle () {
-    setPassControle(false)
-  }
-
-  function showPasswordControle () {
-    setPassControle(true)
-  }
-
-  async function newPassword (newPass) {
-    console.log('user', user)
-    try {
-      const changePassword = await Auth.completeNewPassword(user, newPass)
-    } catch (error) {
-      Alert.alert(error.message)
-    }
-  }
-
   async function onSubmit () {
     const emailError = validateEmail(state.email)
-    const passwordError = validatePasswordLogIn(state.password)
+    const verificationCodeError = validateVerificationCode(
+      state.verificationCode
+    )
 
-    if (emailError || passwordError) {
-      setErrors({ email: emailError, password: passwordError })
+    if (emailError || verificationCodeError) {
+      setErrors({ email: emailError, verificationCode: verificationCodeError })
     } else {
       setState({
         email: '',
-        password: ''
+        verificationCode: ''
       })
       try {
-        const user = await Auth.signIn({
-          username: state.email,
-          password: state.password
-        })
-
-        setUser(user)
-
-        if (user.challengeName === 'NEW_PASSWORD_REQUIRED') {
-          if (Platform.OS === 'ios') {
-            Alert.prompt(
-              'Nieuw wachtwoord vereist',
-              'Aangezien dit de eerste keer is dat u probeert in te loggen, dient u een nieuw wachtwoord in te voeren.',
-              [
-                {
-                  text: 'Annuleren',
-                  onPress: () =>
-                    Alert.alert('Nieuw wachtwoord instellen geannuleerd')
-                },
-                {
-                  text: 'OK',
-                  onPress: newPassFirst => {
-                    if (!validatePassword(newPassFirst)) {
-                      Alert.prompt(
-                        'Nieuw wachtwoord opnieuw',
-                        'Geef het wachtwoord opnieuw in voor controle',
-                        [
-                          {
-                            text: 'OK',
-                            onPress: newPassSecond => {
-                              if (newPassFirst === newPassSecond) {
-                                newPassword(newPassFirst)
-                              } else {
-                                Alert.alert(
-                                  'Wachtwoorden niet hetzelfde, probeer opnieuw'
-                                )
-                              }
-                            }
-                          }
-                        ],
-                        'secure-text'
-                      )
-                    } else {
-                      Alert.alert(validatePassword(newPassFirst))
-                    }
-                  }
-                }
-              ],
-              'secure-text'
-            )
-          } else if (Platform.OS === 'android') {
-            showResetPass()
-          }
-        }
+        await Auth.confirmSignUp(state.email, state.verificationCode)
+        props.onStateChange('signIn', {})
       } catch (error) {
         console.log(error)
         Alert.alert(i18n.t(error.code))
@@ -134,7 +54,7 @@ export default function SignIn (props) {
     }
   }
 
-  if (props.authState === 'signIn') {
+  if (props.authState === 'confirmSignUp') {
     return (
       <View style={globalStyles.container}>
         <Text style={globalStyles.authTitle}>Log In</Text>
@@ -155,26 +75,27 @@ export default function SignIn (props) {
               <Text style={globalStyles.errorText}>{errors.email}</Text>
             )}
 
-            <Text style={globalStyles.label}>Wachtwoord</Text>
+            <Text style={globalStyles.label}>Verificatiecode</Text>
             <TextInput
-              secureTextEntry={true}
               style={globalStyles.input}
-              placeholder='Wachtwoord'
-              onChangeText={password => {
-                setState({ ...state, password: password })
+              placeholder='123456'
+              onChangeText={verificationCode => {
+                setState({ ...state, verificationCode: verificationCode })
                 setErrors({})
               }}
-              value={state.password}
+              value={state.verificationCode}
             />
 
-            {!!errors.password && (
-              <Text style={globalStyles.errorText}>{errors.password}</Text>
+            {!!errors.verificationCode && (
+              <Text style={globalStyles.errorText}>
+                {errors.verificationCode}
+              </Text>
             )}
 
-            <Button text='Bevestigen' onPress={() => onSubmit()} />
+            <Button text='Verifiëren' onPress={() => onSubmit()} />
 
+            <GotoSignIn {...props} />
             <GotoSignUp {...props} />
-            <GotoConfirmSignUp {...props} />
 
             <Dialog.Container visible={requirePass}>
               <Dialog.Title>Nieuw wachtwoord vereist</Dialog.Title>

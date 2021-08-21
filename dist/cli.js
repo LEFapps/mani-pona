@@ -16,10 +16,31 @@ var Storage = require('dom-storage');
 
 function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
 
+function _interopNamespace(e) {
+  if (e && e.__esModule) return e;
+  var n = Object.create(null);
+  if (e) {
+    Object.keys(e).forEach(function (k) {
+      if (k !== 'default') {
+        var d = Object.getOwnPropertyDescriptor(e, k);
+        Object.defineProperty(n, k, d.get ? d : {
+          enumerable: true,
+          get: function () {
+            return e[k];
+          }
+        });
+      }
+    });
+  }
+  n['default'] = e;
+  return Object.freeze(n);
+}
+
 var inquirer__default = /*#__PURE__*/_interopDefaultLegacy(inquirer);
 var log__default = /*#__PURE__*/_interopDefaultLegacy(log$1);
 var ___default = /*#__PURE__*/_interopDefaultLegacy(_);
 var AsyncStorage__default = /*#__PURE__*/_interopDefaultLegacy(AsyncStorage);
+var openpgp__namespace = /*#__PURE__*/_interopNamespace(openpgp);
 var assert__default = /*#__PURE__*/_interopDefaultLegacy(assert);
 var sha1__default = /*#__PURE__*/_interopDefaultLegacy(sha1);
 var currency__default = /*#__PURE__*/_interopDefaultLegacy(currency);
@@ -37,7 +58,7 @@ const unpack = async key => {
   const {
     err,
     keys: [parsedkey]
-  } = await openpgp.key.readArmored(key);
+  } = await openpgp__namespace.key.readArmored(key);
   if (err) {
     throw err[0]
   }
@@ -61,8 +82,8 @@ const Signer = (key, pk) => {
       assert__default['default'](!___default['default'].isEmpty(input), 'Missing input');
       const text = typeof input === 'string' ? input : sortedObjectString(input);
       pk = pk === undefined ? await unpack(key) : pk; // lazy loaded
-      const { signature: detachedSignature } = await openpgp.sign({
-        message: openpgp.cleartext.fromText(text),
+      const { signature: detachedSignature } = await openpgp__namespace.sign({
+        message: openpgp__namespace.cleartext.fromText(text),
         privateKeys: [pk],
         detached: true
       });
@@ -102,9 +123,9 @@ const Verifier = (key, pk) => {
       bugfix();
       const text = typeof input === 'string' ? input : sortedObjectString(input);
       pk = pk === undefined ? await unpack(key) : pk;
-      const { signatures } = await openpgp.verify({
-        message: openpgp.cleartext.fromText(text),
-        signature: await openpgp.signature.readArmored(signature),
+      const { signatures } = await openpgp__namespace.verify({
+        message: openpgp__namespace.cleartext.fromText(text),
+        signature: await openpgp__namespace.signature.readArmored(signature),
         publicKeys: [pk]
       });
       if (signatures[0].valid) {
@@ -139,7 +160,7 @@ const KeyGenerator = (userId = {}) => {
   bugfix();
   return {
     generate: async () => {
-      const key = await openpgp.generateKey({
+      const key = await openpgp__namespace.generateKey({
         userIds: [userId],
         rsaBits: 4096
       });

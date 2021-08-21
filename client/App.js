@@ -6,6 +6,7 @@ import log from 'loglevel'
 
 import SignIn from './src/screens/auth/signIn'
 import SignUp from './src/screens/auth/signUp'
+import ConfirmSignUp from './src/screens/auth/confirmSignUp'
 import Drawer from './src/routes/drawer'
 import Splash from './src/screens/splash'
 import ManiClient from './src/maniClient'
@@ -21,13 +22,15 @@ Amplify.configure(config)
 Analytics.configure({ disabled: true })
 
 log.enableAll()
+log.debug('App imported')
 
 export default function App () {
-  //fail: 'unknown_id'||'timeout'
+  log.debug('App mounted')
+  // fail: 'unknown_id'||'timeout'
 
   // LogBox.ignoreAllLogs();
 
-  i18n.locale = 'nl-BE' //Localization.locale;
+  i18n.locale = 'nl-BE' // Localization.locale;
   Text.defaultProps = Text.defaultProps || {}
   Text.defaultProps.allowFontScaling = false
   TextInput.defaultProps = Text.defaultProps || {}
@@ -37,6 +40,7 @@ export default function App () {
 
   useEffect(() => {
     const setupClient = async () => {
+      log.debug('Starting ManiClient')
       global.maniClient = await ManiClient({ graphqlClient })
       setIsSplashFinished(!!global.maniClient)
     }
@@ -57,12 +61,13 @@ export default function App () {
             {children}
           </View>
         )}
-        hideDefault={true}
+        hideDefault
         authState={'signIn'}
         onStateChange={authState => console.log('authState', authState)}
       >
-        <SignIn />
-        <SignUp />
+        <SignIn override={'SignIn'} />
+        <SignUp override={'SignUp'} />
+        <ConfirmSignUp override={'confirmSignUp'} />
         <Drawer />
       </Authenticator>
     )

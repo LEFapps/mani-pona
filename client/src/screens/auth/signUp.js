@@ -8,6 +8,7 @@ import {
   validatePassword,
   validatePasswordRepeat
 } from '../../helpers/validation'
+import { GotoConfirmSignUp, GotoSignIn } from './StateManagers.js'
 import i18n from 'i18n-js'
 
 export default function signUp (props) {
@@ -45,7 +46,7 @@ export default function signUp (props) {
           username: state.email,
           password: state.password,
           attributes: {
-            // insert fingerprint here ?
+            // ledger: fingerprint // insert fingerprint here ?
           }
         })
 
@@ -60,7 +61,7 @@ export default function signUp (props) {
     }
   }
 
-  if (props.authState === 'signIn') {
+  if (props.authState === 'signUp') {
     return (
       <View style={globalStyles.container}>
         <Text style={globalStyles.authTitle}>Registreren</Text>
@@ -114,6 +115,9 @@ export default function signUp (props) {
             )}
 
             <Button text='Registreren' onPress={() => onSubmit()} />
+
+            <GotoSignIn {...props} />
+            <GotoConfirmSignUp {...props} />
           </View>
         </View>
       </View>

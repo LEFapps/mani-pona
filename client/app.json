@@ -1,6 +1,7 @@
 {
   "expo": {
     "name": "loreco",
+    "entryPoint": "./src/entry",
     "slug": "loreco",
     "version": "1.0.0",
     "orientation": "portrait",

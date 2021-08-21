@@ -1,5 +1,5 @@
 {
-  "main": "node_modules/expo/AppEntry.js",
+  "main": "src/entry.js",
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
@@ -12,14 +12,17 @@
   },
   "dependencies": {
     "@apollo/client": "^3.4.1",
+    "@hapi/topo": "^3.1.5",
     "@react-native-async-storage/async-storage": "^1.15.5",
     "@react-native-community/masked-view": "0.1.10",
-    "@react-native-community/netinfo": "^5.9.9",
+    "@react-native-community/netinfo": "5.9.6",
     "@react-native-picker/picker": "^1.9.2",
     "@react-navigation/native": "^5.8.7",
     "@react-navigation/stack": "^5.12.4",
+    "assert": "^2.0.0",
     "aws-amplify": "^3.3.11",
     "aws-amplify-react-native": "^4.2.9",
+    "currency.js": "^2.0.4",
     "expo": "^39.0.4",
     "expo-barcode-scanner": "~9.0.0",
     "expo-camera": "~9.0.0",
@@ -28,6 +31,8 @@
     "formik": "^2.2.3",
     "graphql": "^14.0.0",
     "i18n-js": "^3.8.0",
+    "loglevel": "^1.7.1",
+    "openpgp": "^4.10.8",
     "react": "16.13.1",
     "react-dom": "16.13.1",
     "react-native": "^0.63.4",
@@ -38,15 +43,17 @@
     "react-native-reanimated": "~1.13.0",
     "react-native-safe-area-context": "3.1.4",
     "react-native-screens": "~2.10.1",
-    "react-native-svg": "^12.1.0",
+    "react-native-svg": "12.1.0",
     "react-native-web": "~0.13.12",
     "react-navigation-bottom-tabs-no-warnings": "^5.11.3",
     "react-navigation-drawer-no-warnings": "^5.11.5",
+    "sha1": "^1.1.1",
     "text-encoding-utf-8": "^1.0.2",
     "yup": "^0.29.3"
   },
   "devDependencies": {
     "@babel/core": "~7.9.0",
+    "chalk": "^2.4.2",
     "s3-sync": "git+ssh://git@github.com:LEFapps/s3-sync.git"
   },
   "private": true
