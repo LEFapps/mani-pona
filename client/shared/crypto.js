@@ -1,26 +1,5 @@
-import * as openpgp from 'openpgp'
-import assert from 'assert'
-import _ from 'lodash'
-import sha1 from 'sha1'
+import { readKey, readPrivateKey, sign, verify, createMessage, readSignature, generateKey } from 'openpgp'
 
-function bugfix () {
-  // Bugfix, see: https://github.com/openpgpjs/openpgpjs/issues/1036
-  // and https://github.com/facebook/jest/issues/9983
-  const textEncoding = require('text-encoding-utf-8')
-  global.TextEncoder = textEncoding.TextEncoder
-  global.TextDecoder = textEncoding.TextDecoder
-}
-
-const unpack = async key => {
-  const {
-    err,
-    keys: [parsedkey]
-  } = await openpgp.key.readArmored(key)
-  if (err) {
-    throw err[0]
-  }
-  return parsedkey
-}
 // reliably sort an objects keys and merge everything into one String
 const sortedObjectString = obj => {
   return Object.keys(obj)
@@ -31,29 +10,20 @@ const sortedObjectString = obj => {
     }, [])
     .join('|')
 }
-
-const Signer = (key, pk) => {
+/**
+ * Sign with private key. You can pass the already parse privateKey if you have it, otherwise it will be lazy loaded from the armored version.
+ */
+const Signer = (armoredPrivateKey, privateKey) => {
   const signer = {
     sign: async input => {
-      bugfix()
-      assert(!_.isEmpty(input), 'Missing input')
+      // assert(!_.isEmpty(input), 'Missing input')
       const text = typeof input === 'string' ? input : sortedObjectString(input)
-      pk = pk === undefined ? await unpack(key) : pk // lazy loaded
-      const { signature: detachedSignature } = await openpgp.sign({
-        message: openpgp.cleartext.fromText(text),
-        privateKeys: [pk],
+      privateKey = privateKey === undefined ? await readPrivateKey({ armoredKey: armoredPrivateKey }) : privateKey // lazy loaded
+      return sign({
+        message: await createMessage({ text }),
+        signingKeys: privateKey,
         detached: true
       })
-      return detachedSignature
-    },
-    signature: async input => {
-      // TODO: @deprecated
-      const s = await signer.sign(input)
-      const hash = sha1(s)
-      return {
-        signature: s,
-        hash
-      }
     }
   }
   return signer
@@ -67,7 +37,7 @@ const Signer = (key, pk) => {
  *
  * @param {string} key - An armored OpenPGP (public) key
  */
-const Verifier = (key, pk) => {
+const Verifier = (armoredPublicKey, publicKey) => {
   let fingerprint
   return {
     /**
@@ -76,52 +46,52 @@ const Verifier = (key, pk) => {
      * @returns true is the signature matches
      * @throws An error if the input (key or signature) is not in a valid format or if the signature doesn't match.
      */
-    verify: async (input, signature) => {
-      bugfix()
+    verify: async (input, armoredSignature) => {
       const text = typeof input === 'string' ? input : sortedObjectString(input)
-      pk = pk === undefined ? await unpack(key) : pk
-      const { signatures } = await openpgp.verify({
-        message: openpgp.cleartext.fromText(text),
-        signature: await openpgp.signature.readArmored(signature),
-        publicKeys: [pk]
+      publicKey = publicKey === undefined ? await readKey({ armoredKey: armoredPublicKey }) : publicKey // lazy loaded
+      await verify({
+        message: await createMessage({ text }),
+        signature: await readSignature({ armoredSignature }),
+        verificationKeys: publicKey,
+        expectSigned: true // automatically throws an error
       })
-      if (signatures[0].valid) {
-        return true
-      } else {
-        throw new Error(
-          "The proof signature didn't match either this key or the challenge."
-        )
-      }
+      return true
     },
     fingerprint: async () => {
       if (!fingerprint) {
-        pk = pk === undefined ? await unpack(key) : pk
-        fingerprint = await pk.getFingerprint()
+        publicKey = publicKey === undefined ? await readKey({ armoredKey: armoredPublicKey }) : publicKey // lazy loaded
+        fingerprint = publicKey.getFingerprint()
       }
       return fingerprint
     }
   }
 }
 
-const KeyWrapper = (key, pk) => {
+const KeyWrapper = (key) => {
   return {
-    publicKey: Verifier(key.publicKeyArmored, pk),
+    publicKey: Verifier(key.publicKeyArmored),
     publicKeyArmored: key.publicKeyArmored,
-    privateKey: Signer(key.privateKeyArmored, pk),
+    privateKey: Signer(key.privateKeyArmored),
     privateKeyArmored: key.privateKeyArmored
-    // write: async (file) => fs.writeFile(file, JSON.stringify(key))
   }
 }
 
 const KeyGenerator = (userId = {}) => {
-  bugfix()
   return {
     generate: async () => {
-      const key = await openpgp.generateKey({
-        userIds: [userId],
-        rsaBits: 4096
+      // simply add 'passphrase' as an option here to protect the key:
+      const key = await generateKey({
+        userIDs: userId,
+        type: 'rsa',
+        rsaBits: 4096,
+        format: 'object'
       })
-      return KeyWrapper(key, key.key)
+      return {
+        publicKey: Verifier(key.publicKey.armor(), key.publicKey),
+        publicKeyArmored: key.publicKey.armor(),
+        privateKey: Signer(key.privateKey.armor(), key.privateKey),
+        privateKeyArmored: key.privateKey.armor()
+      }
     }
   }
 }
