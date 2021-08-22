@@ -59,7 +59,7 @@
     "inquirer": "^7.3.3",
     "lodash": "^4.17.20",
     "loglevel": "^1.7.1",
-    "openpgp": "^4.10.8",
+    "openpgp": "^5.0.0-6",
     "server-log": "file:log_module",
     "serverless-dotenv-plugin": "^3.3.0",
     "sha1": "^1.1.1"
