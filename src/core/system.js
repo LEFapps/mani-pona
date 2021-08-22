@@ -14,17 +14,19 @@ const SystemCore = (table, userpool) => {
       return table.getItem(PARAMS_KEY)
     },
     async init () {
-      log.info('System init')
+      log.info('System init requested')
       let keys = await table.getItem(PK_KEY)
+      log.info('Checking keys')
       if (keys) {
         log.info('System already initialized')
         return // idempotency
       }
+      log.info('Generating system keys')
       // initializing fresh system:
-      const trans = table.transaction()
-      keys = await KeyGenerator().generate()
+      keys = await KeyGenerator({ name: 'System' }, log.info).generate()
       log.info('System keys generated')
       const { publicKeyArmored, privateKeyArmored } = keys
+      const trans = table.transaction()
       trans.putItem({ ...PK_KEY, publicKeyArmored, privateKeyArmored })
       trans.putItem({ ...PARAMS_KEY, income: mani(100), demurrage: 5.0 }) // TODO: replace hardcoded values
       const maniTable = ledgerTable(trans, '') // TODO: change prefix
@@ -33,7 +35,7 @@ const SystemCore = (table, userpool) => {
         .then(t => t.addAmount(mani(0)))
         .then(t => t.addSystemSignatures(keys))
         .then(t => t.save())
-        .catch(err => log(err, err.stack))
+        .catch(err => log.error('System initialization failed\n%j', err))
       log.debug('Database update: %j', trans.items())
       log.info('System keys and parameters stored')
       await trans.execute()

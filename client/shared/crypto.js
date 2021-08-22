@@ -76,16 +76,18 @@ const KeyWrapper = (key) => {
   }
 }
 
-const KeyGenerator = (userId = {}) => {
+const KeyGenerator = (userId = {}, log = () => {}) => {
   return {
     generate: async () => {
       // simply add 'passphrase' as an option here to protect the key:
+      log('Generating keys')
       const key = await generateKey({
         userIDs: userId,
         type: 'rsa',
         rsaBits: 4096,
         format: 'object'
       })
+      log('Keys generated')
       return {
         publicKey: Verifier(key.publicKey.armor(), key.publicKey),
         publicKeyArmored: key.publicKey.armor(),

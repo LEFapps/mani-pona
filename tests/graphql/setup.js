@@ -1,4 +1,5 @@
 import AWS from 'aws-sdk'
+import http from 'http'
 import { ApolloServer } from 'apollo-server'
 import { createTestClient } from 'apollo-server-testing'
 import { DynamoPlus } from 'dynamo-plus'
@@ -13,15 +14,36 @@ import { ManiClient } from '../shared'
 import cognitoMock from './cognito.mock'
 import { apolloLogPlugin, getLogger } from 'server-log'
 
-const log = getLogger('graphql-test')
-
-// Bugfix, see: https://github.com/openpgpjs/openpgpjs/issues/1036
-const textEncoding = require('text-encoding-utf-8')
-global.TextEncoder = textEncoding.TextEncoder
-global.TextDecoder = textEncoding.TextDecoder
+const log = getLogger('tests:graphql')
 
 // We can mock AWS methods, but still need to suppy a 'dummy' region
 AWS.config.region = 'eu-west-1'
+
+// The new version of DynamoPlus didn't work for offline http DynamoDB connections anymore, prompting the introduction of a http Agent here:
+const db = DynamoPlus({
+  region: 'localhost',
+  endpoint: 'http://localhost:8000',
+  maxRetries: 3,
+  httpOptions: {
+    agent: new http.Agent({
+      keepAlive: true
+    })
+  }
+})
+
+// sanity check
+
+db.original_get({
+  TableName: 'manipona',
+  Key: {
+    ledger: 'system',
+    entry: 'pk'
+  }
+}, (err, data) => {
+  if (err) {
+    log.error('Error connecting to DynamoBD: %j', err)
+  }
+})
 
 const server = new ApolloServer({
   debug: true,
@@ -31,13 +53,7 @@ const server = new ApolloServer({
   plugins: [apolloLogPlugin],
   context: async () => {
     return {
-      indexDynamo: IndexDynamo(
-        DynamoPlus({
-          region: 'localhost',
-          endpoint: 'http://localhost:8000'
-        }),
-        'manipona'
-      ),
+      indexDynamo: IndexDynamo(db, 'manipona'),
       userpool: CognitoUserPool('mock-pool'),
       ...cognitoMock.context()
     }

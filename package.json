@@ -9,6 +9,7 @@
   "scripts": {
     "build": "rollup -c",
     "test": "JEST_CIRCUS=1 LEDGER=manipona jest --bail",
+    "test:debug": "NODE_DEBUG=sumsy* LOG_LEVEL=debug JEST_CIRCUS=1 LEDGER=manipona jest --bail",
     "test:dynamodb": "NODE_ENV=development sls dynamodb start --inMemory",
     "offline": "npm run build && DEBUG=true sls offline start",
     "deploy": "npm run build && sls deploy",
@@ -48,19 +49,18 @@
   "dependencies": {
     "apollo-server": "^3.1.2",
     "apollo-server-lambda": "^3.1.2",
-    "aws-sdk": "^2.799.0",
+    "aws-sdk": "^2.973.0",
     "babel-plugin-graphql-tag": "^3.1.0",
     "currency.js": "^2.0.3",
     "dom-storage": "^2.1.0",
-    "dynamo-plus": "^1.5.3",
+    "dynamo-plus": "^1.7.0",
     "graphql": "^15.5.0",
     "graphql-scalars": "^1.6.1",
     "graphql-tools": "^7.0.2",
     "inquirer": "^7.3.3",
     "lodash": "^4.17.20",
-    "loglevel": "^1.7.1",
     "openpgp": "^5.0.0-6",
-    "server-log": "file:log_module",
+    "server-log": "file:./log_module",
     "serverless-dotenv-plugin": "^3.3.0",
     "sha1": "^1.1.1"
   }

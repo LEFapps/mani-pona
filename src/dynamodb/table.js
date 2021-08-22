@@ -27,11 +27,18 @@ function table (db, TableName, options = {}) {
     {}
   )
   async function getItem (Key, errorMsg) {
-    const result = await t.get({ Key })
-    if (errorMsg && !result.Item) {
-      throw errorMsg
+    log.debug('Getting item: \n%j', Key)
+    try {
+      const result = await t.get({ Key })
+      if (errorMsg && !result.Item) {
+        throw errorMsg
+      }
+      log.debug('Found item: %o', result.Item)
+      return tools.fromDb(result.Item)
+    } catch (err) {
+      log.error(err)
+      throw err
     }
-    return tools.fromDb(result.Item)
   }
   async function queryItems (query) {
     const items = (await t.query(query)).Items

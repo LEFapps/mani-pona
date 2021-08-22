@@ -1,5 +1,6 @@
 
 module.exports = {
+  'setupFilesAfterEnv': ['./tests/fixTextencoder.js'],
   'moduleDirectories': [
     'node_modules',
     'src'

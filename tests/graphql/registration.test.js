@@ -4,11 +4,17 @@ import cognitoMock from './cognito.mock'
 // import fs from 'fs'
 import { REGISTER, CHALLENGE, FIND_KEY, RECENT, INIT } from './queries'
 import { query, testMutate, testQuery, generateAlias, MemoryKeyStorage } from './setup'
+import { getLogger } from 'server-log'
+
+const log = getLogger('tests:graphql:registration')
 
 describe('GraphQL registration', () => {
+  jest.setTimeout(10000)
   beforeAll(async () => {
     cognitoMock.setAdmin(true)
+    log.debug('Initializing system')
     await testMutate({ mutation: INIT })
+    log.debug('System initialized')
     cognitoMock.setAdmin(false)
   })
 
