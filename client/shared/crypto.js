@@ -83,8 +83,9 @@ const KeyGenerator = (userId = {}, log = () => {}) => {
       log('Generating keys')
       const key = await generateKey({
         userIDs: userId,
-        type: 'rsa',
-        rsaBits: 4096,
+        //        type: 'rsa',
+        // rsaBits: 4096,
+        type: 'ecc',
         format: 'object'
       })
       log('Keys generated')

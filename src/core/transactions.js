@@ -245,6 +245,8 @@ async function addSystemSignatures (table, { sources, targets }, keys) {
       await table.pk('system', 'System keys not found')
     )
   }
+  log.debug('Signing targets %j', targets)
+  log.debug('with keys %j', keys)
   // log(JSON.stringify(targets, null, 2))
   targets.destination.signature = await keys.privateKey.sign(
     targets.destination.challenge

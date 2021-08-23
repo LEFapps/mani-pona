@@ -23,7 +23,7 @@ const SystemCore = (table, userpool) => {
       }
       log.info('Generating system keys')
       // initializing fresh system:
-      keys = await KeyGenerator({ name: 'System' }, log.info).generate()
+      keys = await KeyGenerator({}, log.info).generate()
       log.info('System keys generated')
       const { publicKeyArmored, privateKeyArmored } = keys
       const trans = table.transaction()

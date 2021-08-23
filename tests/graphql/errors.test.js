@@ -90,7 +90,7 @@ describe('GraphQL error testing', () => {
       mutation: JUBILEE
     })
     expect(result.errors).toBeDefined()
-    expect(result.errors[0].message).toEqual('ForbiddenError: Access denied')
+    expect(result.errors[0].message).toEqual('Access denied')
     // note: error logs are called all the time, so we can't rely on the mock intercept
     // expect(mockErrorLog.mock.calls.length).toBe(1)
   })

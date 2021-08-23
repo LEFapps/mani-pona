@@ -1,6 +1,5 @@
 import { ForbiddenError } from 'apollo-server'
 import { isEmpty } from 'lodash'
-import { wrap } from './util'
 import { getLogger } from 'server-log'
 const log = getLogger('graphql:transactions')
 
@@ -34,22 +33,22 @@ const TransactionResolvers = {
         }
       }
     },
-    'recent': wrap(async (transactions, arg) => {
+    'recent': async (transactions, arg) => {
       log.debug('recent transactions requested for %j', arg)
       return transactions.recent()
-    }),
-    'challenge': wrap(async (transactions, { destination, amount }) => {
+    },
+    'challenge': async (transactions, { destination, amount }) => {
       return transactions.challenge(destination, amount)
-    }),
-    'create': wrap(async (transactions, { proof }) => {
+    },
+    'create': async (transactions, { proof }) => {
       return transactions.create(proof)
-    }),
-    'confirm': wrap(async (transactions, { proof }) => {
+    },
+    'confirm': async (transactions, { proof }) => {
       return transactions.confirm(proof)
-    }),
-    'cancel': wrap(async (transactions, { challenge }) => {
+    },
+    'cancel': async (transactions, { challenge }) => {
       return transactions.cancel(challenge)
-    })
+    }
   }
 }
 
