@@ -39,7 +39,8 @@ const logStream = (() => {
  * Get a logger for a subsystem (e.g. graphql, dynamodb, apollo or test).
  */
 function getLogger (subsystem) {
-  const logger = logStream(subsystem)
+  //  const logger = logStream(subsystem)
+  const logger = util.debuglog(logPrefix + subsystem)
   // assemble a logger with a logging function for every level,
   // when the LOG_LEVEL is higher than the level of the function,
   // an empty function is used

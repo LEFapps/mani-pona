@@ -78,12 +78,12 @@ const ManiClient = async ({
     return obj
   }
   async function find (ledger) {
-    return await query(FIND_KEY, 'system.findkey.alias', { id: ledger }, false)
+    return query(FIND_KEY, 'system.findkey.alias', { id: ledger }, false)
   }
   async function register (alias) {
     const challenge = await query(SYSTEM_CHALLENGE, 'system.challenge')
     const payload = challenge.replace('<fingerprint>', id)
-    return await query(REGISTER, 'system.register', {
+    return query(REGISTER, 'system.register', {
       registration: {
         publicKeyArmored: (await keyManager.getKeys()).publicKeyArmored,
         alias,
@@ -111,7 +111,7 @@ const ManiClient = async ({
       return fromDb(pending)
     },
     async confirm (challenge) {
-      return await query(CONFIRM, 'ledger.transactions.confirm', {
+      return query(CONFIRM, 'ledger.transactions.confirm', {
         id,
         proof: {
           signature: await keyManager.sign(challenge),
@@ -121,7 +121,7 @@ const ManiClient = async ({
       })
     },
     async challenge (destination, amount) {
-      return await query(CHALLENGE, 'ledger.transactions.challenge', {
+      return query(CHALLENGE, 'ledger.transactions.challenge', {
         id,
         destination,
         amount: amount.format()
@@ -138,7 +138,7 @@ const ManiClient = async ({
       })
     },
     async cancel (challenge) {
-      return await query(CANCEL, 'ledger.transactions.cancel', {
+      return query(CANCEL, 'ledger.transactions.cancel', {
         id,
         challenge
       })
@@ -164,7 +164,7 @@ const ManiClient = async ({
       return fromDb(await query(JUBILEE, 'admin.jubilee', { ledger: id }))
     },
     async init () {
-      return await query(INIT, 'admin.init')
+      return query(INIT, 'admin.init')
     }
   }
   return {

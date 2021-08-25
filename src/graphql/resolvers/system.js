@@ -1,46 +1,43 @@
 import { ForbiddenError } from 'apollo-server'
-import SystemCore from '../../core/system'
 import { getLogger } from 'server-log'
 
 const log = getLogger('graphql:system')
 
-const SystemResolvers = {
+export default {
   Query: {
-    'system': (_, args, { indexDynamo, userpool }) => {
-      return SystemCore(indexDynamo.table, userpool)
+    'system': (_, args, { core }) => {
+      return core.system()
     }
   },
   'Mutation': {
-    'admin': (_, args, { indexDynamo, admin, userpool, ledger }) => {
+    'admin': (_, args, { core, admin, ledger }) => {
       if (!admin) {
         log.error(`Illegal system access attempt by ${ledger}`)
         throw new ForbiddenError('Access denied')
       }
-      return SystemCore(indexDynamo.table, userpool)
+      return core.system()
     }
   },
   'System': {
-    'register': async (SystemCore, { registration }, { indexDynamo }) => {
-      return SystemCore.register(registration)
+    'register': async (system, { registration }) => {
+      return system.register(registration)
     },
-    'parameters': async (SystemCore, args, { indexDynamo }) => {
-      return SystemCore.parameters()
+    'parameters': async (system) => {
+      return system.parameters()
     },
-    'challenge': async (SystemCore) => {
-      return SystemCore.challenge()
+    'challenge': async (system) => {
+      return system.challenge()
     },
-    'findkey': async (SystemCore, { id }, { indexDynamo }) => {
-      return indexDynamo.findkey(id)
+    'findkey': async (system, { id }) => {
+      return system.findkey(id)
     }
   },
   'Admin': {
-    'init': async (SystemCore, noargs, { admin }) => {
-      return SystemCore.init()
+    'init': async (system) => {
+      return system.init()
     },
-    'jubilee': async (SystemCore, { ledger }, { userpool, admin }) => {
-      return SystemCore.jubilee(ledger)
+    'jubilee': async (system, { ledger }) => {
+      return system.jubilee(ledger)
     }
   }
 }
-
-export { SystemResolvers }

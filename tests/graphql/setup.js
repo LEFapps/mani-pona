@@ -6,7 +6,7 @@ import { DynamoPlus } from 'dynamo-plus'
 import { createGenerator } from '@faykah/core'
 import { firstNames } from '@faykah/first-names-en'
 import { lastNames } from '@faykah/last-names-en'
-import { IndexDynamo } from '../../src/dynamodb/'
+import Core from '../../src/core/'
 import typeDefs from '../../src/graphql/typeDefs'
 import resolvers from '../../src/graphql/resolvers'
 import { CognitoUserPool } from '../../src/cognito/userpool'
@@ -53,8 +53,7 @@ const server = new ApolloServer({
   plugins: [apolloLogPlugin],
   context: async () => {
     return {
-      indexDynamo: IndexDynamo(db, 'manipona'),
-      userpool: CognitoUserPool('mock-pool'),
+      core: Core(db, CognitoUserPool('mock-pool')),
       ...cognitoMock.context()
     }
   }

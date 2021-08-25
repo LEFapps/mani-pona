@@ -1,10 +1,11 @@
 import { getSources, getPayloads, getNextTargets, addAmount, addDI,
   getPayloadSources, getPayloadTargets, getPendingTargets, getPendingSources,
-  addSignatures, addSystemSignatures, saveResults } from './transactions'
+  addSignatures, addSystemSignatures, saveResults } from './util'
 
-// const log = require('util').debuglog('Transactions')
 /**
  * This is the way.
+ *
+ * (table is actually a core/ledgers object)
  */
 const StateMachine = (table) => {
   const context = {}

@@ -1,10 +1,10 @@
 import { DateTimeResolver, NonNegativeFloatResolver } from 'graphql-scalars'
 import { merge } from 'lodash'
 import Currency from '../scalars/currency'
-import { SystemResolvers } from './system'
-import { TransactionResolvers } from './transactions'
+import system from './system'
+import transactions from './transactions'
 
-const IndexResolvers = merge(
+export default merge(
   {
     DateTime: DateTimeResolver,
     NonNegativeFloat: NonNegativeFloatResolver
@@ -15,8 +15,6 @@ const IndexResolvers = merge(
       time: () => new Date(Date.now())
     }
   },
-  SystemResolvers,
-  TransactionResolvers
+  system,
+  transactions
 )
-
-export default IndexResolvers

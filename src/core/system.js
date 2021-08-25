@@ -1,6 +1,6 @@
 import StateMachine from './statemachine'
-import ledgerTable from './ledgerTable'
 import { KeyGenerator, Verifier, mani } from '../shared'
+import Ledgers from '../dynamodb/ledgers'
 import { getLogger } from 'server-log'
 
 const PARAMS_KEY = { ledger: 'system', entry: 'parameters' }
@@ -8,10 +8,13 @@ const PK_KEY = { ledger: 'system', entry: 'pk' }
 
 const log = getLogger('core:system')
 
-const SystemCore = (table, userpool) => {
+export default function (table, userpool) {
   return {
     async parameters () {
       return table.getItem(PARAMS_KEY)
+    },
+    async findkey (fingerprint) {
+      return table.attributes(['ledger', 'publicKeyArmored', 'alias']).getItem({ ledger: fingerprint, entry: 'pk' })
     },
     async init () {
       log.info('System init requested')
@@ -29,8 +32,8 @@ const SystemCore = (table, userpool) => {
       const trans = table.transaction()
       trans.putItem({ ...PK_KEY, publicKeyArmored, privateKeyArmored })
       trans.putItem({ ...PARAMS_KEY, income: mani(100), demurrage: 5.0 }) // TODO: replace hardcoded values
-      const maniTable = ledgerTable(trans, '') // TODO: change prefix
-      await StateMachine(maniTable)
+      const ledgers = Ledgers(trans, '')
+      await StateMachine(ledgers)
         .getSources({ ledger: 'system', destination: 'system' })
         .then(t => t.addAmount(mani(0)))
         .then(t => t.addSystemSignatures(keys))
@@ -46,8 +49,8 @@ const SystemCore = (table, userpool) => {
     async challenge () {
       // provides the payload of the first transaction on a new ledger
       // clients have to replace '<fingerprint>'
-      const maniTable = ledgerTable(table, '') // TODO: change prefix
-      return StateMachine(maniTable)
+      const ledgers = Ledgers(table, '')
+      return StateMachine(ledgers)
         .getSources({ ledger: '<fingerprint>', destination: 'system' })
         .then(t => t.addAmount(mani(0)))
         .then(t => t.getPrimaryEntry().challenge)
@@ -61,16 +64,15 @@ const SystemCore = (table, userpool) => {
         return ledger // idempotency!
       }
       const transaction = table.transaction()
-      const maniTable = ledgerTable(transaction, '') // TODO: change prefix
+      const ledgers = Ledgers(transaction, '')
       // TODO: assert amount = 0
-      await StateMachine(maniTable)
+      await StateMachine(ledgers)
         .getPayloads(payload)
         .getSources({ ledger, destination: 'system' })
         .then(t => t.continuePayload())
         .then(t => t.addSystemSignatures())
         .then(t => t.addSignatures({ ledger, ...registration }))
         .then(t => t.save())
-      // log('Registration context:\n' + JSON.stringify(context, null, 2))
       transaction.putItem({
         ledger,
         entry: 'pk',
@@ -79,7 +81,6 @@ const SystemCore = (table, userpool) => {
         challenge: payload
       })
       await transaction.execute()
-      // log(`Database update:\n${JSON.stringify(transaction.items(), null, 2)}`)
       log.info('Registered ledger %s', ledger)
       return ledger
     },
@@ -96,8 +97,8 @@ const SystemCore = (table, userpool) => {
       async function applyJubilee (ledger) {
         log.debug('Applying jubilee to ledger %s', ledger)
         const transaction = table.transaction()
-        const maniTable = ledgerTable(transaction, '') // TODO: change prefix
-        await StateMachine(maniTable)
+        const ledgers = Ledgers(transaction, '')
+        await StateMachine(ledgers)
           .getSources({ ledger, destination: 'system' })
           .then(t => t.addDI(parameters))
           .then(t => {
@@ -122,10 +123,7 @@ const SystemCore = (table, userpool) => {
           await applyJubilee(ledger)
         }
       }
-      // log(`Database update:\n${JSON.stringify(transaction.items(), null, 2)}`)
       return results
     }
   }
 }
-
-export default SystemCore

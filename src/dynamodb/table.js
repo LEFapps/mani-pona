@@ -10,7 +10,7 @@ const methods = ['get', 'put', 'query', 'update']
  * By using `transaction()`, a similar set of functions is available, except the entire transaction (set of commands) needs to be executed at the end.
  */
 
-function table (db, TableName, options = {}) {
+const table = function (db, TableName, options = {}) {
   const t = reduce(
     methods,
     (table, method) => {
@@ -95,7 +95,11 @@ function table (db, TableName, options = {}) {
             log.error('Error executing transaction: %j', result.err)
             throw result.err
           }
+          log.debug('Database updated:\n%j', TransactItems)
           return TransactItems.length
+        },
+        transaction () {
+          throw new Error(`Already in a transaction`)
         }
       }
     }

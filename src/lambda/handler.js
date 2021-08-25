@@ -1,6 +1,6 @@
 import { ApolloServer } from 'apollo-server-lambda'
 import { DynamoPlus } from 'dynamo-plus'
-import { IndexDynamo } from '../dynamodb/index'
+import Core from '../core/'
 import typeDefs from '../graphql/typeDefs/index'
 import resolvers from '../graphql/resolvers/index'
 import { CognitoUserPool } from '../cognito/userpool'
@@ -14,9 +14,7 @@ function contextProcessor (event) {
   // fake the cognito interface if offline
   let claims = process.env.IS_OFFLINE ? JSON.parse(headers['x-claims']) : event.requestContext.authorizer.claims
   log.debug('User claims: %j', claims)
-  let userpool = process.env.IS_OFFLINE ? OfflineUserPool() : CognitoUserPool(process.env.USER_POOL)
   return {
-    userpool,
     ledger: claims.sub,
     verified: claims.verified,
     admin: claims.admin
@@ -35,12 +33,12 @@ const server = new ApolloServer({
   },
   context: async ({ event, context }) => {
     return {
-      indexDynamo: IndexDynamo(
+      core: Core(
         DynamoPlus({
           region: process.env.DYN_REGION,
           endpoint: process.env.DYN_ENDPOINT
         }),
-        process.env.DYN_TABLE
+        process.env.IS_OFFLINE ? OfflineUserPool() : CognitoUserPool(process.env.USER_POOL)
       ),
       ...contextProcessor(event)
     }

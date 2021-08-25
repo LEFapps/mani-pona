@@ -8,8 +8,8 @@
   },
   "scripts": {
     "build": "rollup -c",
-    "test": "JEST_CIRCUS=1 LEDGER=manipona jest --bail",
-    "test:debug": "NODE_DEBUG=sumsy* LOG_LEVEL=debug JEST_CIRCUS=1 LEDGER=manipona jest --bail",
+    "test": "LOG_PREFIX=sumsy NODE_DEBUG=sumsy* LOG_LEVEL=error JEST_CIRCUS=1 LEDGER=manipona jest --bail",
+    "test:debug": "LOG_PREFIX=sumsy NODE_DEBUG=sumsy* LOG_LEVEL=debug JEST_CIRCUS=1 LEDGER=manipona jest --bail",
     "test:dynamodb": "NODE_ENV=development sls dynamodb start --inMemory",
     "offline": "npm run build && DEBUG=true sls offline start",
     "deploy": "npm run build && sls deploy",

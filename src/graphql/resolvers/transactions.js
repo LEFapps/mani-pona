@@ -3,27 +3,27 @@ import { isEmpty } from 'lodash'
 import { getLogger } from 'server-log'
 const log = getLogger('graphql:transactions')
 
-const TransactionResolvers = {
+export default {
   Query: {
     ledger: (_, { id }) => {
       return id // optional: check if this even exists?
     }
   },
   'LedgerQuery': {
-    'transactions': (id, arg, { indexDynamo, ledger, verified }) => {
+    'transactions': (id, arg, { core, ledger }) => {
       if (id !== ledger) {
         const err = `Illegal access attempt detected from ${ledger} on ${id}`
         log.error(err)
         throw new ForbiddenError(err)
       }
-      return indexDynamo.transactions(id)
+      return core.mani(id)
     }
   },
   'TransactionQuery': {
-    'current': async (transactions, arg) => {
-      return transactions.current()
+    'current': async (transactions) => {
+      return transactions.short().current()
     },
-    'pending': async (transactions, arg) => {
+    'pending': async (transactions) => {
       const pending = await transactions.pending()
       if (pending) {
         return {
@@ -33,8 +33,8 @@ const TransactionResolvers = {
         }
       }
     },
-    'recent': async (transactions, arg) => {
-      log.debug('recent transactions requested for %j', arg)
+    'recent': async (transactions) => {
+      log.debug('recent transactions requested for %s', transactions.fingerprint)
       return transactions.recent()
     },
     'challenge': async (transactions, { destination, amount }) => {
@@ -51,5 +51,3 @@ const TransactionResolvers = {
     }
   }
 }
-
-export { TransactionResolvers }
