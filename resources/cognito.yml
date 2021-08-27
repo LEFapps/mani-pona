@@ -18,6 +18,10 @@ Resources:
           RequireSymbols: true
           RequireUppercase: true
       Schema:
+        - Name: alias
+          AttributeDataType: String
+          Mutable: true
+          Required: true
         - Name: email
           AttributeDataType: String
           Mutable: false

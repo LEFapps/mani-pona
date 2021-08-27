@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { TextInput, View, Text, Alert, Platform } from 'react-native'
 import { globalStyles } from '../../styles/global.js'
 import Button from '../../shared/buttons/button'
+import { KeyManager } from '../../helpers/keymanager'
 import Auth from '@aws-amplify/auth'
 import {
   validateEmail,
@@ -14,16 +15,10 @@ import i18n from 'i18n-js'
 export default function signUp (props) {
   const ManiClient = global.maniClient
 
-  const [state, setState] = useState({
-    email: '',
-    password: '',
-    password2: ''
-  })
-  const [errors, setErrors] = useState({
-    email: '',
-    password: '',
-    password2: ''
-  })
+  const defaultState = { alias: '', email: '', password: '', password2: '' }
+
+  const [state, setState] = useState(defaultState)
+  const [errors, setErrors] = useState(defaultState)
 
   const [user, setUser] = useState('')
 
@@ -36,17 +31,15 @@ export default function signUp (props) {
     if (emailError || passwordError) {
       setErrors({ email: emailError, password: passwordError })
     } else {
-      setState({
-        email: '',
-        password: '',
-        password2: ''
-      })
+      setState(defaultState)
       try {
+        const signature = await KeyManager.getKeys()
         await Auth.signUp({
           username: state.email,
           password: state.password,
           attributes: {
-            // ledger: fingerprint // insert fingerprint here ?
+            alias: state.alias,
+            ledger: signature.fingerprint
           }
         })
 
@@ -67,6 +60,21 @@ export default function signUp (props) {
         <Text style={globalStyles.authTitle}>Registreren</Text>
         <View style={globalStyles.main}>
           <View>
+            <Text style={globalStyles.label}>Schermnaam</Text>
+            <TextInput
+              style={globalStyles.input}
+              placeholder='Eigennaam of bedrijfsnaam'
+              onChangeText={alias => {
+                setState({ ...state, alias })
+                setErrors({})
+              }}
+              value={state.alias}
+            />
+
+            {!!errors.alias && (
+              <Text style={globalStyles.errorText}>{errors.alias}</Text>
+            )}
+
             <Text style={globalStyles.label}>E-mail</Text>
             <TextInput
               style={globalStyles.input}
