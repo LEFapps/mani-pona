@@ -1,57 +1,58 @@
 import React from 'react'
-import { createDrawerNavigator } from 'react-navigation-drawer-no-warnings'
+import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs'
 import { NavigationContainer } from '@react-navigation/native'
 import { View } from 'react-native'
-
-import AccountStack from '../routes/stacks/accountStack'
-
-import HomeStack from '../routes/stacks/homeStack'
-import TransactionHistoryStack from '../routes/stacks/transactionHistoryStack'
-import ContributionHistoryStack from '../routes/stacks/contributionHistoryStack'
-import StandingOrderStack from '../routes/stacks/standingOrderStack'
-import FreeBufferStack from '../routes/stacks/freeBufferStack'
-import ContactListStack from '../routes/stacks/contactListStack'
 import {
   MaterialIcons,
   MaterialCommunityIcons,
   Entypo
 } from '@expo/vector-icons'
+
+// import AccountStack from '../routes/stacks/accountStack'
+import HomeStack from './stacks/homeStack'
+// import QrStack from '../routes/stacks/qrStack'
+// import TransactionHistoryStack from '../routes/stacks/transactionHistoryStack'
+// import ContributionHistoryStack from '../routes/stacks/contributionHistoryStack'
+// import StandingOrderStack from '../routes/stacks/standingOrderStack'
+// import FreeBufferStack from '../routes/stacks/freeBufferStack'
+// import ContactListStack from '../routes/stacks/contactListStack'
 import { globalStyles } from '../styles/global'
+import { colors } from '../helpers/helper'
+
+const iconProps = { size: 32 }
 
 export default function drawerNavigator (props) {
-  const Drawer = createDrawerNavigator()
+  const Nav = createMaterialBottomTabNavigator()
 
   if (props.authState === 'signedIn') {
     return (
       <View style={globalStyles.container}>
         <NavigationContainer>
-          <Drawer.Navigator
-            drawerContentOptions={{
-              activeBackgroundColor: '#2B8AA0',
-              activeTintColor: 'white',
-              inactiveTintColor: '#2B8AA0',
-              labelStyle: { fontWeight: 'bold', fontSize: 16 }
-            }}
-            drawerStyle={{
-              width: '90%',
-              backgroundColor: 'white',
-              paddingTop: 20
-            }}
-          >
-            <Drawer.Screen
-              name='Home'
+          <Nav.Navigator barStyle={{ backgroundColor: colors.DarkerBlue }}>
+            <Nav.Screen
+              name='Overview'
+              tabBarLabel='Overview'
               component={HomeStack}
+              tabBarIcon={({ focused, color = 'white' }) => (
+                <MaterialIcons name='home' color={color} {...iconProps} />
+              )}
+            />
+
+            {/* <Nav.Screen
+              name='QR'
+              component={QrStack}
               options={{
                 drawerIcon: props => (
                   <MaterialIcons
                     name='home'
                     color={props.color}
-                    size={props.size}
+                     {...iconProps}
                   />
                 )
               }}
-            />
-            <Drawer.Screen
+            /> */}
+
+            {/* <Nav.Screen
               name='Transactie Geschiedenis'
               component={TransactionHistoryStack}
               options={{
@@ -59,12 +60,13 @@ export default function drawerNavigator (props) {
                   <MaterialIcons
                     name='history'
                     color={props.color}
-                    size={props.size}
+                     {...iconProps}
                   />
                 )
               }}
-            />
-            <Drawer.Screen
+            /> */}
+
+            {/* <Nav.Screen
               name='Bijdrage Geschiedenis'
               component={ContributionHistoryStack}
               options={{
@@ -72,13 +74,13 @@ export default function drawerNavigator (props) {
                   <MaterialIcons
                     name='swap-vertical-circle'
                     color={props.color}
-                    size={props.size}
+                     {...iconProps}
                   />
                 )
               }}
-            />
+            /> */}
 
-            <Drawer.Screen
+            {/* <Nav.Screen
               name='Betalingsopdrachten'
               component={StandingOrderStack}
               options={{
@@ -86,12 +88,13 @@ export default function drawerNavigator (props) {
                   <MaterialIcons
                     name='loop'
                     color={props.color}
-                    size={props.size}
+                     {...iconProps}
                   />
                 )
               }}
-            />
-            <Drawer.Screen
+            /> */}
+
+            {/* <Nav.Screen
               name='Beheer Vrije Buffer'
               component={FreeBufferStack}
               options={{
@@ -99,13 +102,13 @@ export default function drawerNavigator (props) {
                   <Entypo
                     name='bar-graph'
                     color={props.color}
-                    size={props.size}
+                     {...iconProps}
                   />
                 )
               }}
-            />
+            /> */}
 
-            <Drawer.Screen
+            {/* <Nav.Screen
               name='Contacten'
               component={ContactListStack}
               options={{
@@ -113,12 +116,13 @@ export default function drawerNavigator (props) {
                   <MaterialCommunityIcons
                     name='contacts'
                     color={props.color}
-                    size={props.size}
+                     {...iconProps}
                   />
                 )
               }}
-            />
-            <Drawer.Screen
+            /> */}
+
+            {/* <Nav.Screen
               name='Account'
               component={AccountStack}
               options={{
@@ -126,12 +130,12 @@ export default function drawerNavigator (props) {
                   <MaterialCommunityIcons
                     name='account-circle'
                     color={props.color}
-                    size={props.size}
+                     {...iconProps}
                   />
                 )
               }}
-            />
-          </Drawer.Navigator>
+            /> */}
+          </Nav.Navigator>
         </NavigationContainer>
       </View>
     )

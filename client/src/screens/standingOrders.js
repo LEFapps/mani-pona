@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import { View, Text, FlatList, Alert } from 'react-native'
-import Card from '../shared/bigCardWithDeleteAndEdit'
+import Card from '../shared/bigCardWithButtons'
 import IconButton from '../shared/buttons/iconButton'
 import { globalStyles } from '../styles/global'
 import mani from '../../shared/mani'
 
 export default function StandingOrder ({ navigation }) {
   const [standingOrders, setOrders] = useState([])
-  const [contacts, setContacts] = useState([])
   const [ready, setReady] = useState(false)
   const ManiClient = global.maniClient
 
@@ -19,27 +18,7 @@ export default function StandingOrder ({ navigation }) {
     await ManiClient.transactions.pending().then(standingOrders => {
       setOrders(standingOrders)
     })
-    // await ManiClient.contacts.all().then(contacts => {
-    //   setContacts(contacts)
-    // })
     setReady(true)
-  }
-
-  function getContact (contactId) {
-    const contact = contacts[contactId]
-    if (contact) {
-      return contact.name
-    } else {
-      return 'Anoniem'
-    }
-  }
-
-  const deleteStandingOrder = order => {
-    Alert.alert('Niet Geimplementeerd')
-  }
-
-  const editStandingOrder = order => {
-    navigation.navigate('EditStandingOrder', order)
   }
 
   if (ready) {
@@ -53,40 +32,71 @@ export default function StandingOrder ({ navigation }) {
         <FlatList
           style={{ marginTop: 5 }}
           data={standingOrders}
-          keyExtractor={item => item.standingOrderId.toString()}
-          renderItem={({ item }) => (
-            <Card
-              onPressDelete={() => deleteStandingOrder(item)}
-              onPressEdit={() => editStandingOrder(item)}
-            >
-              <View style={{ flexDirection: 'row' }}>
-                <View style={globalStyles.cardPropertys}>
-                  <Text style={globalStyles.cardPropertyText}>
-                    Begunstigde:
-                  </Text>
-                  <Text style={globalStyles.cardPropertyText}>Bedrag:</Text>
-                  <Text style={globalStyles.cardPropertyText}>Einddatum:</Text>
-                  <Text style={globalStyles.cardPropertyText}>Frequentie:</Text>
-                  <Text style={globalStyles.cardPropertyText}>Mededeling:</Text>
+          keyExtractor={item => item.challenge.toString()}
+          renderItem={({ item }) => {
+            if (!item) return
+            const {
+              ledger,
+              destination,
+              amount,
+              income,
+              demurrage,
+              balance,
+              date,
+              challenge,
+              message,
+              toSign
+            } = item
+            return (
+              <Card
+                onPressConfirm={
+                  !toSign
+                    ? undefined
+                    : () => ManiClient.transactions.confirm(item)
+                }
+                onPressCancel={
+                  destination === 'system' || !toSign
+                    ? undefined
+                    : () => ManiClient.transactions.cancel(item)
+                }
+              >
+                <View style={{ flexDirection: 'row' }}>
+                  <View style={globalStyles.cardPropertys}>
+                    <Text style={globalStyles.cardPropertyText}>
+                      Begunstigde:
+                    </Text>
+                    <Text style={globalStyles.cardPropertyText}>Bedrag:</Text>
+                    <Text style={globalStyles.cardPropertyText}>
+                      Einddatum:
+                    </Text>
+                    <Text style={globalStyles.cardPropertyText}>
+                      Frequentie:
+                    </Text>
+                    <Text style={globalStyles.cardPropertyText}>
+                      Mededeling:
+                    </Text>
+                  </View>
+                  <View style={globalStyles.cardValues}>
+                    <Text style={globalStyles.cardValueText}>
+                      {destination.toString()}
+                    </Text>
+                    <Text style={globalStyles.cardValueText}>
+                      {mani(amount).format()}
+                    </Text>
+                    <Text style={globalStyles.cardValueText}>
+                      {new Date(item.challenge.endDate).toLocaleDateString()}
+                    </Text>
+                    <Text style={globalStyles.cardValueText}>
+                      {item.challenge.frequency}
+                    </Text>
+                    <Text style={globalStyles.cardValueText}>
+                      {item.message}
+                    </Text>
+                  </View>
                 </View>
-                <View style={globalStyles.cardValues}>
-                  {/* <Text style={globalStyles.cardValueText}>
-                    {getContact(item.contactId)}
-                  </Text> */}
-                  <Text style={globalStyles.cardValueText}>
-                    {mani(item.amount).format()}
-                  </Text>
-                  <Text style={globalStyles.cardValueText}>
-                    {new Date(item.endDate).toLocaleDateString()}
-                  </Text>
-                  <Text style={globalStyles.cardValueText}>
-                    {item.frequency}
-                  </Text>
-                  <Text style={globalStyles.cardValueText}>{item.msg}</Text>
-                </View>
-              </View>
-            </Card>
-          )}
+              </Card>
+            )
+          }}
         />
       </View>
     )

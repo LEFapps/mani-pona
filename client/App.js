@@ -7,7 +7,7 @@ import log from 'loglevel'
 import SignIn from './src/screens/auth/signIn'
 import SignUp from './src/screens/auth/signUp'
 import ConfirmSignUp from './src/screens/auth/confirmSignUp'
-import Drawer from './src/routes/drawer'
+import Navigation from './src/routes/main'
 import Splash from './src/screens/splash'
 import ManiClient from './src/maniClient'
 import graphqlClient from './apollo/client'
@@ -68,7 +68,7 @@ export default function App () {
         <SignIn override={'SignIn'} />
         <SignUp override={'SignUp'} />
         <ConfirmSignUp override={'confirmSignUp'} />
-        <Drawer />
+        <Navigation />
       </Authenticator>
     )
   } else {
