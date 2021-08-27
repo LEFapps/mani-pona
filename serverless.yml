@@ -41,9 +41,19 @@ functions:
       - http:
           path: graphql
           method: post
+          cors: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: ApiGatewayAuthorizer
       - http:
           path: graphql
           method: get
+          cors: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: ApiGatewayAuthorizer
     environment:
       DYN_REGION: ${env:DYN_REGION}
       DYN_ENDPOINT:
@@ -91,7 +101,7 @@ custom:
   dotenv:
     basePath: env/
   output:
-    file: client/src/sls-output.json
+    file: client/sls-output.json
   dynamodb:
     stages:
       - test

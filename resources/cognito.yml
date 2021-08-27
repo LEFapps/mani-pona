@@ -21,7 +21,9 @@ Resources:
         - Name: alias
           AttributeDataType: String
           Mutable: true
-          Required: true
+        - Name: ledger
+          AttributeDataType: String
+          Mutable: false
         - Name: email
           AttributeDataType: String
           Mutable: false
