@@ -4,7 +4,13 @@ import IconButton from './buttons/iconButton'
 import { colors } from '../helpers/helper'
 const { TransparentBlueCard } = colors
 
-export default function Card ({ children, onPressDelete, onPressEdit }) {
+export default function Card ({
+  children,
+  onPressDelete,
+  onPressEdit,
+  onPressCancel,
+  onPressConfirm
+}) {
   return (
     <View style={styles.card}>
       <View style={styles.cardValues}>{props.children}</View>
@@ -14,7 +20,7 @@ export default function Card ({ children, onPressDelete, onPressEdit }) {
             <IconButton
               iconName='close'
               iconColor='white'
-              onPress={props.onPressCancel}
+              onPress={onPressCancel}
             />
           </View>
         )}
@@ -23,7 +29,7 @@ export default function Card ({ children, onPressDelete, onPressEdit }) {
             <IconButton
               iconName='check'
               iconColor='white'
-              onPress={props.onPressConfirm}
+              onPress={onPressConfirm}
             />
           </View>
         )}
@@ -32,7 +38,7 @@ export default function Card ({ children, onPressDelete, onPressEdit }) {
             <IconButton
               iconName='edit'
               iconColor='white'
-              onPress={props.onPressEdit}
+              onPress={onPressEdit}
             />
           </View>
         )}
@@ -41,7 +47,7 @@ export default function Card ({ children, onPressDelete, onPressEdit }) {
             <IconButton
               iconName='delete'
               iconColor='white'
-              onPress={props.onPressDelete}
+              onPress={onPressDelete}
             />
           </View>
         )}

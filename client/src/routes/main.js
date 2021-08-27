@@ -8,7 +8,7 @@ import {
   Entypo
 } from '@expo/vector-icons'
 
-// import AccountStack from '../routes/stacks/accountStack'
+import AccountStack from '../routes/stacks/accountStack'
 import HomeStack from './stacks/homeStack'
 // import QrStack from '../routes/stacks/qrStack'
 // import TransactionHistoryStack from '../routes/stacks/transactionHistoryStack'
@@ -122,19 +122,17 @@ export default function drawerNavigator (props) {
               }}
             /> */}
 
-            {/* <Nav.Screen
+            <Nav.Screen
               name='Account'
               component={AccountStack}
-              options={{
-                drawerIcon: props => (
-                  <MaterialCommunityIcons
-                    name='account-circle'
-                    color={props.color}
-                     {...iconProps}
-                  />
-                )
-              }}
-            /> */}
+              options={({ focused, color }) => (
+                <MaterialCommunityIcons
+                  name='account-circle'
+                  color={color}
+                  {...iconProps}
+                />
+              )}
+            />
           </Nav.Navigator>
         </NavigationContainer>
       </View>

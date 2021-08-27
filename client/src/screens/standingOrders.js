@@ -52,12 +52,12 @@ export default function StandingOrder ({ navigation }) {
                 onPressConfirm={
                   !toSign
                     ? undefined
-                    : () => ManiClient.transactions.confirm(item)
+                    : () => ManiClient.transactions.confirm(challenge)
                 }
                 onPressCancel={
                   destination === 'system' || !toSign
                     ? undefined
-                    : () => ManiClient.transactions.cancel(item)
+                    : () => ManiClient.transactions.cancel(challenge)
                 }
               >
                 <View style={{ flexDirection: 'row' }}>
@@ -84,14 +84,12 @@ export default function StandingOrder ({ navigation }) {
                       {mani(amount).format()}
                     </Text>
                     <Text style={globalStyles.cardValueText}>
-                      {new Date(item.challenge.endDate).toLocaleDateString()}
+                      {new Date(challenge.endDate || date).toLocaleDateString()}
                     </Text>
                     <Text style={globalStyles.cardValueText}>
-                      {item.challenge.frequency}
+                      {challenge.frequency}
                     </Text>
-                    <Text style={globalStyles.cardValueText}>
-                      {item.message}
-                    </Text>
+                    <Text style={globalStyles.cardValueText}>{message}</Text>
                   </View>
                 </View>
               </Card>
