@@ -2,7 +2,6 @@ import React, { useState } from 'react'
 import { TextInput, View, Text, Alert, Platform } from 'react-native'
 import { globalStyles } from '../../styles/global.js'
 import Button from '../../shared/buttons/button'
-import { KeyManager } from '../../helpers/keymanager'
 import Auth from '@aws-amplify/auth'
 import {
   validateEmail,
@@ -33,13 +32,12 @@ export default function signUp (props) {
     } else {
       setState(defaultState)
       try {
-        const signature = await KeyManager.getKeys()
         await Auth.signUp({
           username: state.email,
           password: state.password,
           attributes: {
             alias: state.alias,
-            ledger: signature.fingerprint
+            ledger: ManiClient.id
           }
         })
 

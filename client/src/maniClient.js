@@ -142,14 +142,6 @@ const ManiClient = async ({
         id,
         challenge
       })
-    },
-    async all () {
-      return []
-    }
-  }
-  const contacts = {
-    async all () {
-      return {}
     }
   }
   const system = {
@@ -172,7 +164,6 @@ const ManiClient = async ({
     register,
     find,
     transactions,
-    contacts,
     system,
     admin
   }
