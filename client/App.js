@@ -22,10 +22,8 @@ Amplify.configure(config)
 Analytics.configure({ disabled: true })
 
 log.enableAll()
-log.debug('App imported')
 
 export default function App () {
-  log.debug('App mounted')
   // fail: 'unknown_id'||'timeout'
 
   // LogBox.ignoreAllLogs();
