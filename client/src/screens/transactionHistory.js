@@ -21,12 +21,12 @@ export default function TransactionHitstory ({ navigation }) {
   }, [transactions])
 
   async function loadData () {
-    await ManiClient.transactions.all().then(transactions => {
+    await ManiClient.transactions.recent().then(transactions => {
       setTransactions(transactions)
     })
-    await ManiClient.contacts.all().then(contacts => {
-      setContacts(contacts)
-    })
+    // await ManiClient.contacts.all().then(contacts => {
+    //   setContacts(contacts)
+    // })
     setReady(true)
   }
 

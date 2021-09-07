@@ -28,43 +28,43 @@ const homeStack = () => {
         headerTitleAlign: 'center'
       }}
     >
-      <HomeStack.Screen
+      {/* <HomeStack.Screen
         name='Home'
         component={Home}
         options={() => ({
           headerTitle: () => <Header title='LoREco' icon='menu' />
         })}
-      />
+      /> */}
       <HomeStack.Screen
         name='QRCode'
         component={QRCode}
         options={{ title: 'QR-code', headerBackTitle: 'Terug' }}
       />
-      <HomeStack.Screen
+      {/* <HomeStack.Screen
         name='AccountBalance'
         component={Overview}
         options={{ title: 'Overzicht', headerBackTitle: 'Terug' }}
-      />
-      <HomeStack.Screen
+      /> */}
+      {/* <HomeStack.Screen
         name='IncomePrediction'
         component={IncomePrediction}
         options={{ title: 'Voorspelling Inkomen', headerBackTitle: 'Terug' }}
-      />
-      <HomeStack.Screen
+      /> */}
+      {/* <HomeStack.Screen
         name='ContributionPrediction'
         component={ContributionPrediction}
         options={{ title: 'Voorspelling Bijdrage', headerBackTitle: 'Terug' }}
-      />
-      <HomeStack.Screen
+      /> */}
+      {/* <HomeStack.Screen
         name='AddContact'
         component={AddContact}
         options={{ title: 'Contact Toevoegen', headerBackTitle: 'Terug' }}
-      />
-      <HomeStack.Screen
+      /> */}
+      {/* <HomeStack.Screen
         name='Transaction'
         component={Transaction}
         options={{ title: 'Transactie', headerBackTitle: 'Terug' }}
-      />
+      /> */}
     </HomeStack.Navigator>
   )
 }

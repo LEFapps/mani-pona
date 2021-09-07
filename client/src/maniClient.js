@@ -7,6 +7,7 @@ import {
   REGISTER,
   SYSTEM_CHALLENGE,
   CURRENT,
+  RECENT,
   PENDING,
   CHALLENGE,
   CREATE,
@@ -94,6 +95,13 @@ const ManiClient = async ({
     })
   }
   const transactions = {
+    async recent () {
+      const recent = await query(RECENT, 'ledger.transactions.recent', {
+        id
+      })
+      // log(JSON.stringify(recent, null, 2))
+      return fromDb(recent)
+    },
     async current () {
       const current = await query(CURRENT, 'ledger.transactions.current', {
         id

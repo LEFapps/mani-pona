@@ -10,8 +10,8 @@ import {
 
 import AccountStack from '../routes/stacks/accountStack'
 import HomeStack from './stacks/homeStack'
-// import QrStack from '../routes/stacks/qrStack'
-// import TransactionHistoryStack from '../routes/stacks/transactionHistoryStack'
+import QrStack from '../routes/stacks/qrStack'
+import TransactionHistoryStack from '../routes/stacks/transactionHistoryStack'
 // import ContributionHistoryStack from '../routes/stacks/contributionHistoryStack'
 // import StandingOrderStack from '../routes/stacks/standingOrderStack'
 // import FreeBufferStack from '../routes/stacks/freeBufferStack'
@@ -46,13 +46,13 @@ export default function drawerNavigator (props) {
                   <MaterialIcons
                     name='home'
                     color={props.color}
-                     {...iconProps}
+                    {...iconProps}
                   />
                 )
               }}
             /> */}
 
-            {/* <Nav.Screen
+            <Nav.Screen
               name='Transactie Geschiedenis'
               component={TransactionHistoryStack}
               options={{
@@ -60,11 +60,11 @@ export default function drawerNavigator (props) {
                   <MaterialIcons
                     name='history'
                     color={props.color}
-                     {...iconProps}
+                    {...iconProps}
                   />
                 )
               }}
-            /> */}
+            />
 
             {/* <Nav.Screen
               name='Bijdrage Geschiedenis'
