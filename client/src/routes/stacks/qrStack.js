@@ -1,5 +1,5 @@
 import React from 'react'
-import { createStackNavigator } from '@react-navigation/stack'
+import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs'
 import Scan from '../../screens/qr'
 import Create from '../../screens/qr-code'
 import Overview from '../../screens/overview'
@@ -9,28 +9,22 @@ import AddContact from '../../screens/addContact'
 
 import IncomePrediction from '../../screens/incomePredictions'
 
+import { globalStyles } from '../../styles/global'
+import { colors } from '../../helpers/helper'
 import Header from '../../shared/header'
 import { View, Text } from 'react-native'
 
-const HomeStack = createStackNavigator()
+const Nav = createMaterialTopTabNavigator()
 
-const Home = ({ navigation }) => {
+const qrStack = () => {
   return (
-    <View>
-      <Text onPress={() => navigation.push('Scan')}>Scan</Text>
-      <Text onPress={() => navigation.push('Create')}>Create</Text>
-    </View>
-  )
-}
-
-const homeStack = () => {
-  return (
-    <HomeStack.Navigator
-      initialRouteName='Home'
+    <Nav.Navigator
+      initialRouteName='AccountBalance'
       screenOptions={{
         headerStyle: {
-          backgroundColor: '#2B8AA0'
+          backgroundColor: colors.DarkerBlue
         },
+        tabBarActiveTintColor: colors.DarkerBlue,
         headerTintColor: '#fff',
         headerTitleStyle: {
           fontWeight: 'bold'
@@ -38,12 +32,12 @@ const homeStack = () => {
         headerTitleAlign: 'center'
       }}
     >
-      <HomeStack.Screen
-        name='Home'
-        component={Home}
-        options={{ headerTitle: () => <Header title='LoREco' icon='menu' /> }}
+      <Nav.Screen
+        name='AccountBalance'
+        component={Overview}
+        options={{ title: 'Overzicht', headerBackTitle: 'Terug' }}
       />
-      <HomeStack.Screen
+      <Nav.Screen
         name='Scan'
         component={Scan}
         options={{
@@ -51,38 +45,33 @@ const homeStack = () => {
           headerBackTitle: 'LoREco'
         }}
       />
-      <HomeStack.Screen
+      <Nav.Screen
         name='Create'
         component={Create}
         options={{ title: 'Create', headerBackTitle: 'LoREco' }}
       />
-      {/* <HomeStack.Screen
-        name='AccountBalance'
-        component={Overview}
-        options={{ title: 'Overzicht', headerBackTitle: 'Terug' }}
-      /> */}
-      {/* <HomeStack.Screen
+      {/* <Nav.Screen
         name='IncomePrediction'
         component={IncomePrediction}
         options={{ title: 'Voorspelling Inkomen', headerBackTitle: 'Terug' }}
       /> */}
-      {/* <HomeStack.Screen
+      {/* <Nav.Screen
         name='ContributionPrediction'
         component={ContributionPrediction}
         options={{ title: 'Voorspelling Bijdrage', headerBackTitle: 'Terug' }}
       /> */}
-      {/* <HomeStack.Screen
+      {/* <Nav.Screen
         name='AddContact'
         component={AddContact}
         options={{ title: 'Contact Toevoegen', headerBackTitle: 'Terug' }}
       /> */}
-      {/* <HomeStack.Screen
+      {/* <Nav.Screen
         name='Transaction'
         component={Transaction}
         options={{ title: 'Transactie', headerBackTitle: 'Terug' }}
       /> */}
-    </HomeStack.Navigator>
+    </Nav.Navigator>
   )
 }
 
-export default homeStack
+export default qrStack

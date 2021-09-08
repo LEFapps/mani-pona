@@ -19,7 +19,7 @@ import StandingOrderStack from '../routes/stacks/standingOrderStack'
 import { globalStyles } from '../styles/global'
 import { colors } from '../helpers/helper'
 
-const iconProps = { size: 32 }
+const iconProps = { size: 24 }
 
 const screens = ({ Nav }) => ({
   // Overview: (

@@ -17,14 +17,12 @@ export default function AccountBalance ({ navigation }) {
   }, [])
 
   async function loadData () {
-    await ManiClient.systemConfiguration.demurage().then(demurage => {
+    await ManiClient.system.parameters().then(demurage => {
       setDemu(demurage)
     })
-    await ManiClient.systemConfiguration
-      .incomePrediction()
-      .then(incomePrediction => {
-        setIncome(incomePrediction)
-      })
+    await ManiClient.system.parameters().then(incomePrediction => {
+      setIncome(incomePrediction)
+    })
     setReady(true)
   }
 
