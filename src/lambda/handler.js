@@ -35,7 +35,7 @@ const server = new ApolloServer({
       core: Core(
         DynamoPlus({
           region: process.env.DYN_REGION,
-          endpoint: process.env.DYN_ENDPOINT
+          maxRetries: 3
         }),
         process.env.IS_OFFLINE
           ? OfflineUserPool()
