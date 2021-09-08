@@ -159,7 +159,6 @@ export default function drawerNavigator (props) {
 
   const getPending = async () => {
     const data = await ManiClient.transactions.pending()
-    console.log(data)
     return data && data.length
   }
 
