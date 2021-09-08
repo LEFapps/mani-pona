@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Text, TextInput, View, Dimensions, LogBox } from 'react-native'
-import { Authenticator } from 'aws-amplify-react-native'
+import { Authenticator, VerifyContact } from 'aws-amplify-react-native'
 import { Amplify, Analytics } from 'aws-amplify'
 import log from 'loglevel'
 
@@ -61,11 +61,15 @@ export default function App () {
         )}
         hideDefault
         authState={'signIn'}
-        onStateChange={authState => console.log('authState', authState)}
+        onStateChange={authState => {
+          console.log('authState', authState)
+          if (authState === 'verifyContact') setAuthState('signedIn')
+        }}
       >
         <SignIn override={'SignIn'} />
         <SignUp override={'SignUp'} />
         <ConfirmSignUp override={'confirmSignUp'} />
+        <VerifyContact />
         <Navigation />
       </Authenticator>
     )
