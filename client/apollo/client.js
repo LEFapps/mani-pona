@@ -7,7 +7,6 @@ const testing = process.env.REACT_APP_TEST
 const ServiceEndpoint = config.ServiceEndpoint || 'http://localhost:3000'
 
 const AuthLink = setContext(async (_, { headers }) => {
-  console.log(headers)
   // return the headers to the context so httpLink can read them
   return {
     headers: {

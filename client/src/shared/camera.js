@@ -10,7 +10,7 @@ export default function Cam (props) {
   const [scanned, setScanned] = useState(false)
 
   const handleBarCodeScanned = barcode => {
-    // console.log(barcode) // {text: "loreco:scan/f8aca881b6f87f9aa42708943ce067ef8334e9e8/16000", rawBytes: Uint8Array(64), numBits: 512, resultPoints: Array(4), format: 11, …}
+    // barcode in the format: {text: "loreco:scan/f8aca881b6f87f9aa42708943ce067ef8334e9e8/16000", rawBytes: Uint8Array(64), numBits: 512, resultPoints: Array(4), format: 11, …}
     const { text } = barcode || {}
     props.onBarCodeScanned(text)
     // setScanned(true)

@@ -39,8 +39,6 @@ export default function Home ({ navigation }) {
     setData({ ...getData, amount: Number(amount) })
   }
 
-  console.log(isFocused)
-
   return (
     <View>
       {isFocused && (
