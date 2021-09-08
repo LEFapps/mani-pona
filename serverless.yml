@@ -15,6 +15,11 @@ provider:
         - lambda:InvokeAsync
         - lambda:InvokeFunction
       Resource: '*'
+    - Effect: Allow
+      Action:
+        - dynamodb:*
+      Resource:
+        Ref: ledger
 
 package:
   # individually: true
@@ -56,10 +61,11 @@ functions:
               Ref: ApiGatewayAuthorizer
     environment:
       DYN_REGION: ${env:DYN_REGION}
-      DYN_ENDPOINT:
-        Ref: ledger
       DYN_TABLE: ${env:DYN_TABLE}
       DEBUG: ${env:DEBUG, self:custom.debug}
+      NODE_DEBUG: ${env:NODE_DEBUG, 'sumsy*'}
+      LOG_LEVEL: ${env:LOG_LEVEL, 'error'}
+      LOG_PREFIX: ${env:LOG_PREFIX, 'sumsy'}
 
     # From the documentation (https://www.serverless.com/framework/docs/providers/aws/events/apigateway/):
     # If you want more control over which attributes are exposed as claims you can switch to integration: lambda and add the following configuration. The claims will be exposed at events.cognitoPoolClaims.
@@ -109,9 +115,3 @@ custom:
     start:
       inMemory: true
       migrate: true
-#      seed: false
-#    seed:
-#      test:
-#        sources:
-#          - table: manipona
-#            sources: [./tests/seeds/manipona.json]
