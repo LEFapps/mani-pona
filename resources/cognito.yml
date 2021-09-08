@@ -24,6 +24,9 @@ Resources:
         - Name: ledger
           AttributeDataType: String
           Mutable: false
+        - Name: administrator
+          AttributeDataType: String
+          Mutable: true
         - Name: email
           AttributeDataType: String
           Mutable: false

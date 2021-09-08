@@ -169,7 +169,7 @@ const ManiClient = async ({
     }
   }
   return {
-    getTime: async () => query(TIME),
+    getTime: async () => query(TIME, 'time'),
     id,
     register,
     find,

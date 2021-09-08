@@ -17,9 +17,9 @@ function contextProcessor (event) {
     : event.requestContext.authorizer.claims
   log.debug('User claims: %j', claims)
   return {
-    ledger: claims.sub,
+    ledger: claims['custom:ledger'],
     verified: claims.verified,
-    admin: claims.admin
+    admin: claims['custom:administrator']
   }
 }
 
@@ -46,11 +46,4 @@ const server = new ApolloServer({
   }
 })
 
-export function graphqlHandler (event, context, callback) {
-  server.createHandler({
-    cors: {
-      origin: '*',
-      credentials: true
-    }
-  })(event, context, callback)
-}
+exports.graphqlHandler = server.createHandler()

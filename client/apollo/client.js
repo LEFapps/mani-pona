@@ -32,12 +32,17 @@ const enchancedFetch = async (url, init) => {
 const apolloClient = new ApolloClient({
   link: createHttpLink({
     uri: ServiceEndpoint + '/graphql',
-    credentials: 'include',
-    fetchOptions: {
-      mode: 'cors'
-    },
     fetch: enchancedFetch
   }),
+  // link: createHttpLink({
+  //   uri: ServiceEndpoint + '/graphql',
+  //   credentials: 'include',
+  //   fetchOptions: {
+  //     mode: 'cors'
+  //   },
+  //   fetch: enchancedFetch
+  // }),
+
   // DEPRECATED: Cognito Auth
   // headers: async operation => {
   //   const headers = {

@@ -1,7 +1,5 @@
 'use strict';
 
-Object.defineProperty(exports, '__esModule', { value: true });
-
 var apolloServerLambda = require('apollo-server-lambda');
 var dynamoPlus = require('dynamo-plus');
 var assert = require('assert');
@@ -1427,9 +1425,9 @@ function contextProcessor (event) {
     : event.requestContext.authorizer.claims;
   log.debug('User claims: %j', claims);
   return {
-    ledger: claims.sub,
+    ledger: claims['custom:ledger'],
     verified: claims.verified,
-    admin: claims.admin
+    admin: claims['custom:administrator']
   }
 }
 
@@ -1456,13 +1454,4 @@ const server = new apolloServerLambda.ApolloServer({
   }
 });
 
-function graphqlHandler (event, context, callback) {
-  server.createHandler({
-    cors: {
-      origin: '*',
-      credentials: true
-    }
-  })(event, context, callback);
-}
-
-exports.graphqlHandler = graphqlHandler;
+exports.graphqlHandler = server.createHandler();
