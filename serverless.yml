@@ -18,8 +18,7 @@ provider:
     - Effect: Allow
       Action:
         - dynamodb:*
-      Resource:
-        Ref: ledger
+      Resource: '*'
 
 package:
   # individually: true

@@ -7,3 +7,4 @@ client/.expo
 client/sls-output*.json
 .serverless
 client/amplify
+client/web-build
