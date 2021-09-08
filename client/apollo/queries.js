@@ -1,6 +1,12 @@
 import React from 'react'
 import { gql } from '@apollo/client'
 
+const TIME = gql`
+  query {
+    time
+  }
+`
+
 const REGISTER = gql`
   query($registration: LedgerRegistration!) {
     system {
@@ -157,5 +163,6 @@ export {
   FIND_KEY,
   JUBILEE,
   INIT,
-  SYSTEM_PARAMETERS
+  SYSTEM_PARAMETERS,
+  TIME
 }
