@@ -10,36 +10,38 @@ export default function Cam (props) {
   const [scanned, setScanned] = useState(false)
 
   const handleBarCodeScanned = barcode => {
-    console.log(barcode)
-    const { type, data } = barcode || {}
-    setScanned(true)
-    // setScanned(barcode !== null)
-    props.onBarCodeScanned(type, data)
+    console.log(barcode) // {text: "loreco:scan/f8aca881b6f87f9aa42708943ce067ef8334e9e8/16000", rawBytes: Uint8Array(64), numBits: 512, resultPoints: Array(4), format: 11, …}
+    const { text } = barcode || {}
+    props.onBarCodeScanned(text)
+    setScanned(barcode !== null)
   }
 
   const handleBarCodeError = err => {
     if (err === 'Permission denied') setHasPermission(false) // Check for correct err msg (NotAllowedError)
     console.error('QrScanner ERROR:', err)
   }
+
   if (hasPermission === false) return <Text>No access to camera</Text>
+
   return (
     <View style={globalStyles.screen}>
       <View style={globalStyles.camPlace}>
-        <QrScanner
-          // legacyMode
-          interval={500}
-          // style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
-          // style={globalStyles.qrTextContainer}
-          onError={handleBarCodeError}
-          onScan={scanned ? undefined : handleBarCodeScanned}
-        >
-          <Text>Requesting for camera permission</Text>
-        </QrScanner>
-        {scanned && (
+        {scanned ? (
           <Button
             text={'Tik om opnieuw te scannen'}
             onPress={() => setScanned(false)}
           />
+        ) : (
+          <QrScanner
+            // legacyMode
+            interval={500}
+            // style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
+            // style={globalStyles.qrTextContainer}
+            onError={handleBarCodeError}
+            onScan={handleBarCodeScanned}
+          >
+            <Text>Requesting for camera permission</Text>
+          </QrScanner>
         )}
       </View>
 

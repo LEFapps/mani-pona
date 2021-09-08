@@ -13,7 +13,7 @@ export default function Card ({
 }) {
   return (
     <View style={styles.card}>
-      <View style={styles.cardValues}>{props.children}</View>
+      <View style={styles.cardValues}>{children}</View>
       <View style={styles.buttonContainer}>
         {onPressCancel && (
           <View style={styles.button}>
