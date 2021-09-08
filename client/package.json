@@ -6,7 +6,7 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "eject": "expo eject",
-    "build": "expo build",
+    "build": "expo build:web",
     "sync": "node deploy.js",
     "deploy": "npm run build && npm run sync"
   },
