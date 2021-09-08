@@ -1,13 +1,15 @@
 import React, { useState } from 'react'
-import { View, Text, TextInput, StyleSheet, Alert } from 'react-native'
-import { globalStyles } from '../styles/global'
-import Button from '../shared/buttons/button'
-
+import { View, Text, TextInput, StyleSheet, Pressable } from 'react-native'
 import QRCode from 'react-native-qrcode-svg'
+
+import { globalStyles } from '../styles/global'
+import { colors } from '../helpers/helper'
+import Button from '../shared/buttons/button'
 import ManiError from '../helpers/error'
 
 export default function Receive () {
   const [getAmount, setAmount] = useState(0)
+  const [getSign, setSign] = useState(100)
   const [getConfirm, setConfirm] = useState(false)
   const [getValue, setValue] = useState('')
   const maniClient1 = global.maniClient
@@ -25,7 +27,7 @@ export default function Receive () {
   //   })
 
   const createQr = () => {
-    setValue(`loreco:scan/${maniClient1.id}/${Number(getAmount) * 100}`)
+    setValue(`loreco:scan/${maniClient1.id}/${Number(getAmount) * getSign}`)
     setConfirm(true)
   }
 
@@ -59,8 +61,20 @@ export default function Receive () {
             <TextInput
               style={globalStyles.input}
               placeholder='0,00'
-              onChangeText={setAmount}
+              onChangeText={amount => setAmount(Number(amount))}
               value={getAmount}
+            />
+          </View>
+          <View>
+            <Button
+              active={getSign > 0}
+              onPress={() => setSign(100)}
+              text={'Betalen'}
+            />
+            <Button
+              active={getSign < 0}
+              onPress={() => setSign(-100)}
+              text={'Ontvangen'}
             />
           </View>
           <Button text='Aanmaken' onPress={createQr} />
