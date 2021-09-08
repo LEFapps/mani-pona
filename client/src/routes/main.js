@@ -148,11 +148,11 @@ export default function drawerNavigator (props) {
   const Nav = createMaterialBottomTabNavigator()
   const navScreens = screens({ Nav })
 
-  // useEffect(() => {
-  //   isReady && setReady(false)
-  //   setPending(getPending())
-  //   setReady(true)
-  // })
+  useEffect(() => {
+    isReady && setReady(false)
+    setPending(getPending())
+    setReady(true)
+  }, [isReady])
 
   const getPending = async () => {
     const data = await ManiClient.transactions.pending()
@@ -164,13 +164,13 @@ export default function drawerNavigator (props) {
       <View style={globalStyles.container}>
         <NavigationContainer>
           <Nav.Navigator barStyle={{ backgroundColor: colors.DarkerBlue }}>
-            {/*!isReady
+            {!isReady
               ? 'Checking for pending transactions . . .'
               : hasPending
-              ? ['Betalingsopdrachten'].map(screen => navScreens[screen])
-              :*/ Object.keys(
-              navScreens
-            ).map(screen => navScreens[screen])}
+                ? ['Betalingsopdrachten'].map(screen => navScreens[screen])
+                : Object.keys(
+                  navScreens
+                ).map(screen => navScreens[screen])}
           </Nav.Navigator>
         </NavigationContainer>
       </View>
