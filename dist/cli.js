@@ -7,8 +7,8 @@ var core = require('@apollo/client/core');
 var _ = require('lodash');
 var AsyncStorage = require('@react-native-async-storage/async-storage');
 var openpgp = require('openpgp');
-var assert = require('assert');
-var sha1 = require('sha1');
+require('assert');
+require('sha1');
 var currency = require('currency.js');
 require('react');
 var client = require('@apollo/client');
@@ -16,54 +16,12 @@ var Storage = require('dom-storage');
 
 function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
 
-function _interopNamespace(e) {
-  if (e && e.__esModule) return e;
-  var n = Object.create(null);
-  if (e) {
-    Object.keys(e).forEach(function (k) {
-      if (k !== 'default') {
-        var d = Object.getOwnPropertyDescriptor(e, k);
-        Object.defineProperty(n, k, d.get ? d : {
-          enumerable: true,
-          get: function () {
-            return e[k];
-          }
-        });
-      }
-    });
-  }
-  n['default'] = e;
-  return Object.freeze(n);
-}
-
 var inquirer__default = /*#__PURE__*/_interopDefaultLegacy(inquirer);
 var log__default = /*#__PURE__*/_interopDefaultLegacy(log$1);
-var ___default = /*#__PURE__*/_interopDefaultLegacy(_);
 var AsyncStorage__default = /*#__PURE__*/_interopDefaultLegacy(AsyncStorage);
-var openpgp__namespace = /*#__PURE__*/_interopNamespace(openpgp);
-var assert__default = /*#__PURE__*/_interopDefaultLegacy(assert);
-var sha1__default = /*#__PURE__*/_interopDefaultLegacy(sha1);
 var currency__default = /*#__PURE__*/_interopDefaultLegacy(currency);
 var Storage__default = /*#__PURE__*/_interopDefaultLegacy(Storage);
 
-function bugfix () {
-  // Bugfix, see: https://github.com/openpgpjs/openpgpjs/issues/1036
-  // and https://github.com/facebook/jest/issues/9983
-  const textEncoding = require('text-encoding-utf-8');
-  global.TextEncoder = textEncoding.TextEncoder;
-  global.TextDecoder = textEncoding.TextDecoder;
-}
-
-const unpack = async key => {
-  const {
-    err,
-    keys: [parsedkey]
-  } = await openpgp__namespace.key.readArmored(key);
-  if (err) {
-    throw err[0]
-  }
-  return parsedkey
-};
 // reliably sort an objects keys and merge everything into one String
 const sortedObjectString = obj => {
   return Object.keys(obj)
@@ -74,29 +32,20 @@ const sortedObjectString = obj => {
     }, [])
     .join('|')
 };
-
-const Signer = (key, pk) => {
+/**
+ * Sign with private key. You can pass the already parse privateKey if you have it, otherwise it will be lazy loaded from the armored version.
+ */
+const Signer = (armoredPrivateKey, privateKey) => {
   const signer = {
     sign: async input => {
-      bugfix();
-      assert__default['default'](!___default['default'].isEmpty(input), 'Missing input');
+      // assert(!_.isEmpty(input), 'Missing input')
       const text = typeof input === 'string' ? input : sortedObjectString(input);
-      pk = pk === undefined ? await unpack(key) : pk; // lazy loaded
-      const { signature: detachedSignature } = await openpgp__namespace.sign({
-        message: openpgp__namespace.cleartext.fromText(text),
-        privateKeys: [pk],
+      privateKey = privateKey === undefined ? await openpgp.readPrivateKey({ armoredKey: armoredPrivateKey }) : privateKey; // lazy loaded
+      return openpgp.sign({
+        message: await openpgp.createMessage({ text }),
+        signingKeys: privateKey,
         detached: true
-      });
-      return detachedSignature
-    },
-    signature: async input => {
-      // TODO: @deprecated
-      const s = await signer.sign(input);
-      const hash = sha1__default['default'](s);
-      return {
-        signature: s,
-        hash
-      }
+      })
     }
   };
   return signer
@@ -110,7 +59,7 @@ const Signer = (key, pk) => {
  *
  * @param {string} key - An armored OpenPGP (public) key
  */
-const Verifier = (key, pk) => {
+const Verifier = (armoredPublicKey, publicKey) => {
   let fingerprint;
   return {
     /**
@@ -119,52 +68,55 @@ const Verifier = (key, pk) => {
      * @returns true is the signature matches
      * @throws An error if the input (key or signature) is not in a valid format or if the signature doesn't match.
      */
-    verify: async (input, signature) => {
-      bugfix();
+    verify: async (input, armoredSignature) => {
       const text = typeof input === 'string' ? input : sortedObjectString(input);
-      pk = pk === undefined ? await unpack(key) : pk;
-      const { signatures } = await openpgp__namespace.verify({
-        message: openpgp__namespace.cleartext.fromText(text),
-        signature: await openpgp__namespace.signature.readArmored(signature),
-        publicKeys: [pk]
+      publicKey = publicKey === undefined ? await openpgp.readKey({ armoredKey: armoredPublicKey }) : publicKey; // lazy loaded
+      await openpgp.verify({
+        message: await openpgp.createMessage({ text }),
+        signature: await openpgp.readSignature({ armoredSignature }),
+        verificationKeys: publicKey,
+        expectSigned: true // automatically throws an error
       });
-      if (signatures[0].valid) {
-        return true
-      } else {
-        throw new Error(
-          "The proof signature didn't match either this key or the challenge."
-        )
-      }
+      return true
     },
     fingerprint: async () => {
       if (!fingerprint) {
-        pk = pk === undefined ? await unpack(key) : pk;
-        fingerprint = await pk.getFingerprint();
+        publicKey = publicKey === undefined ? await openpgp.readKey({ armoredKey: armoredPublicKey }) : publicKey; // lazy loaded
+        fingerprint = publicKey.getFingerprint();
       }
       return fingerprint
     }
   }
 };
 
-const KeyWrapper = (key, pk) => {
+const KeyWrapper = (key) => {
   return {
-    publicKey: Verifier(key.publicKeyArmored, pk),
+    publicKey: Verifier(key.publicKeyArmored),
     publicKeyArmored: key.publicKeyArmored,
-    privateKey: Signer(key.privateKeyArmored, pk),
+    privateKey: Signer(key.privateKeyArmored),
     privateKeyArmored: key.privateKeyArmored
-    // write: async (file) => fs.writeFile(file, JSON.stringify(key))
   }
 };
 
-const KeyGenerator = (userId = {}) => {
-  bugfix();
+const KeyGenerator = (userId = {}, log = () => {}) => {
   return {
     generate: async () => {
-      const key = await openpgp__namespace.generateKey({
-        userIds: [userId],
-        rsaBits: 4096
+      // simply add 'passphrase' as an option here to protect the key:
+      log('Generating keys');
+      const key = await openpgp.generateKey({
+        userIDs: userId,
+        //        type: 'rsa',
+        // rsaBits: 4096,
+        type: 'ecc',
+        format: 'object'
       });
-      return KeyWrapper(key, key.key)
+      log('Keys generated');
+      return {
+        publicKey: Verifier(key.publicKey.armor(), key.publicKey),
+        publicKeyArmored: key.publicKey.armor(),
+        privateKey: Signer(key.privateKey.armor(), key.privateKey),
+        privateKeyArmored: key.privateKey.armor()
+      }
     }
   }
 };
@@ -541,12 +493,12 @@ const ManiClient = async ({
     return obj
   }
   async function find (ledger) {
-    return await query(FIND_KEY, 'system.findkey.alias', { id: ledger }, false)
+    return query(FIND_KEY, 'system.findkey.alias', { id: ledger }, false)
   }
   async function register (alias) {
     const challenge = await query(SYSTEM_CHALLENGE, 'system.challenge');
     const payload = challenge.replace('<fingerprint>', id);
-    return await query(REGISTER, 'system.register', {
+    return query(REGISTER, 'system.register', {
       registration: {
         publicKeyArmored: (await keyManager.getKeys()).publicKeyArmored,
         alias,
@@ -574,7 +526,7 @@ const ManiClient = async ({
       return fromDb(pending)
     },
     async confirm (challenge) {
-      return await query(CONFIRM, 'ledger.transactions.confirm', {
+      return query(CONFIRM, 'ledger.transactions.confirm', {
         id,
         proof: {
           signature: await keyManager.sign(challenge),
@@ -584,7 +536,7 @@ const ManiClient = async ({
       })
     },
     async challenge (destination, amount) {
-      return await query(CHALLENGE, 'ledger.transactions.challenge', {
+      return query(CHALLENGE, 'ledger.transactions.challenge', {
         id,
         destination,
         amount: amount.format()
@@ -601,18 +553,10 @@ const ManiClient = async ({
       })
     },
     async cancel (challenge) {
-      return await query(CANCEL, 'ledger.transactions.cancel', {
+      return query(CANCEL, 'ledger.transactions.cancel', {
         id,
         challenge
       })
-    },
-    async all () {
-      return []
-    }
-  };
-  const contacts = {
-    async all () {
-      return {}
     }
   };
   const system = {
@@ -627,7 +571,7 @@ const ManiClient = async ({
       return fromDb(await query(JUBILEE, 'admin.jubilee', { ledger: id }))
     },
     async init () {
-      return await query(INIT, 'admin.init')
+      return query(INIT, 'admin.init')
     }
   };
   return {
@@ -635,7 +579,6 @@ const ManiClient = async ({
     register,
     find,
     transactions,
-    contacts,
     system,
     admin
   }

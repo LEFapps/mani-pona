@@ -14,16 +14,10 @@ import i18n from 'i18n-js'
 export default function signUp (props) {
   const ManiClient = global.maniClient
 
-  const [state, setState] = useState({
-    email: '',
-    password: '',
-    password2: ''
-  })
-  const [errors, setErrors] = useState({
-    email: '',
-    password: '',
-    password2: ''
-  })
+  const defaultState = { alias: '', email: '', password: '', password2: '' }
+
+  const [state, setState] = useState(defaultState)
+  const [errors, setErrors] = useState(defaultState)
 
   const [user, setUser] = useState('')
 
@@ -36,17 +30,14 @@ export default function signUp (props) {
     if (emailError || passwordError) {
       setErrors({ email: emailError, password: passwordError })
     } else {
-      setState({
-        email: '',
-        password: '',
-        password2: ''
-      })
+      setState(defaultState)
       try {
         await Auth.signUp({
           username: state.email,
           password: state.password,
           attributes: {
-            // ledger: fingerprint // insert fingerprint here ?
+            alias: state.alias,
+            ledger: ManiClient.id
           }
         })
 
@@ -67,6 +58,21 @@ export default function signUp (props) {
         <Text style={globalStyles.authTitle}>Registreren</Text>
         <View style={globalStyles.main}>
           <View>
+            <Text style={globalStyles.label}>Schermnaam</Text>
+            <TextInput
+              style={globalStyles.input}
+              placeholder='Eigennaam of bedrijfsnaam'
+              onChangeText={alias => {
+                setState({ ...state, alias })
+                setErrors({})
+              }}
+              value={state.alias}
+            />
+
+            {!!errors.alias && (
+              <Text style={globalStyles.errorText}>{errors.alias}</Text>
+            )}
+
             <Text style={globalStyles.label}>E-mail</Text>
             <TextInput
               style={globalStyles.input}

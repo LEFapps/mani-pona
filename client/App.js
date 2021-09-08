@@ -7,7 +7,7 @@ import log from 'loglevel'
 import SignIn from './src/screens/auth/signIn'
 import SignUp from './src/screens/auth/signUp'
 import ConfirmSignUp from './src/screens/auth/confirmSignUp'
-import Drawer from './src/routes/drawer'
+import Navigation from './src/routes/main'
 import Splash from './src/screens/splash'
 import ManiClient from './src/maniClient'
 import graphqlClient from './apollo/client'
@@ -22,10 +22,8 @@ Amplify.configure(config)
 Analytics.configure({ disabled: true })
 
 log.enableAll()
-log.debug('App imported')
 
 export default function App () {
-  log.debug('App mounted')
   // fail: 'unknown_id'||'timeout'
 
   // LogBox.ignoreAllLogs();
@@ -68,7 +66,7 @@ export default function App () {
         <SignIn override={'SignIn'} />
         <SignUp override={'SignUp'} />
         <ConfirmSignUp override={'confirmSignUp'} />
-        <Drawer />
+        <Navigation />
       </Authenticator>
     )
   } else {

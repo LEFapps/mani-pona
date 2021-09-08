@@ -32,6 +32,23 @@ const CURRENT = gql`
     }
   }
 `
+const RECENT = gql`
+  query ledger($id: String!) {
+    ledger(id: $id) {
+      transactions {
+        recent {
+          ledger
+          destination
+          amount
+          income
+          demurrage
+          balance
+          date
+        }
+      }
+    }
+  }
+`
 const PENDING = gql`
   query ledger($id: String!) {
     ledger(id: $id) {
@@ -131,6 +148,7 @@ export {
   REGISTER,
   SYSTEM_CHALLENGE,
   CURRENT,
+  RECENT,
   PENDING,
   CHALLENGE,
   CREATE,

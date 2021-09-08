@@ -15,7 +15,7 @@ export default function Home () {
   }, [])
 
   async function loadData () {
-    await ManiClient.demurageHistory.all().then(demurageHistory => {
+    await ManiClient.transactions.recent().then(demurageHistory => {
       setContributions(demurageHistory)
     })
     setReady(true)
