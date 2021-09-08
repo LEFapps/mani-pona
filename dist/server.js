@@ -372,7 +372,7 @@ const tools = {
   flip
 };
 
-const log$7 = serverLog.getLogger('core:util');
+const log$8 = serverLog.getLogger('core:util');
 /**
  * Note that the 'table' listed below should always be a core/ledgerTable object
  */
@@ -396,7 +396,7 @@ async function mapValuesAsync (object, asyncFn) {
  *  - destination: 'system'
  */
 async function getSources (table, input) {
-  log$7.debug('Getting sources for %j', input);
+  log$8.debug('Getting sources for %j', input);
   return mapValuesAsync(input, async (ledger, role, input) => {
     const current = await table.current(ledger);
     if (current) return current
@@ -415,7 +415,7 @@ async function getPayloadSources (table, { payloads }) {
   return mapValuesAsync(
     payloads,
     async ({ from: { ledger } }, role, payloads) => {
-      log$7.debug('Getting current on %s %s', role, ledger);
+      log$8.debug('Getting current on %s %s', role, ledger);
       return table.current(ledger, true)
     }
   )
@@ -591,7 +591,7 @@ function addSignature (
 async function addSystemSignatures (table, { sources, targets }, keys) {
   // autosigning system side
   // happens during system init, UBI and creation of new ledger
-  log$7.info(`Autosigning system (only during init)`);
+  log$8.info(`Autosigning system (only during init)`);
   assert__default['default'](
     targets.destination.ledger === 'system' &&
       targets.ledger.destination === 'system',
@@ -602,8 +602,8 @@ async function addSystemSignatures (table, { sources, targets }, keys) {
       await table.keys('system', true)
     );
   }
-  log$7.debug('Signing targets %j', targets);
-  log$7.debug('with keys %j', keys);
+  log$8.debug('Signing targets %j', targets);
+  log$8.debug('with keys %j', keys);
   // log(JSON.stringify(targets, null, 2))
   targets.destination.signature = await keys.privateKey.sign(
     targets.destination.challenge
@@ -767,7 +767,7 @@ const StateMachine = (table) => {
 
 const PARAMETERS = { income: mani$1(100), demurrage: 5.0 };
 
-const log$6 = serverLog.getLogger('core:system');
+const log$7 = serverLog.getLogger('core:system');
 
 function System (ledgers, userpool) {
   return {
@@ -778,17 +778,17 @@ function System (ledgers, userpool) {
       return ledgers.publicKey(fingerprint)
     },
     async init () {
-      log$6.info('System init requested');
+      log$7.info('System init requested');
       let keys = await ledgers.keys('system');
-      log$6.info('Checking keys');
+      log$7.info('Checking keys');
       if (keys) {
-        log$6.info('System already initialized');
+        log$7.info('System already initialized');
         return // idempotency
       }
-      log$6.info('Generating system keys');
+      log$7.info('Generating system keys');
       // initializing fresh system:
-      keys = await KeyGenerator({}, log$6.info).generate();
-      log$6.info('System keys generated');
+      keys = await KeyGenerator({}, log$7.info).generate();
+      log$7.info('System keys generated');
       const { publicKeyArmored, privateKeyArmored } = keys;
       const trans = ledgers.transaction();
       trans.putKey({ ledger: 'system', publicKeyArmored, privateKeyArmored });
@@ -797,9 +797,9 @@ function System (ledgers, userpool) {
         .then(t => t.addAmount(mani$1(0)))
         .then(t => t.addSystemSignatures(keys))
         .then(t => t.save())
-        .catch(err => log$6.error('System initialization failed\n%j', err));
-      log$6.debug('Database update: %j', trans.items());
-      log$6.info('System keys and parameters stored');
+        .catch(err => log$7.error('System initialization failed\n%j', err));
+      log$7.debug('Database update: %j', trans.items());
+      log$7.info('System keys and parameters stored');
       await trans.execute();
       return `SuMsy initialized with ${mani$1(
         100
@@ -818,7 +818,7 @@ function System (ledgers, userpool) {
       const ledger = await Verifier(publicKeyArmored).fingerprint();
       const existing = await ledgers.current(ledger);
       if (existing) {
-        log$6.info('Ledger was already registered: %s', ledger);
+        log$7.info('Ledger was already registered: %s', ledger);
         return ledger // idempotency!
       }
       const transaction = ledgers.transaction();
@@ -837,7 +837,7 @@ function System (ledgers, userpool) {
         challenge: payload
       });
       await transaction.execute();
-      log$6.info('Registered ledger %s', ledger);
+      log$7.info('Registered ledger %s', ledger);
       return ledger
     },
     async jubilee (ledger) {
@@ -847,7 +847,7 @@ function System (ledgers, userpool) {
         income: mani$1(0)
       };
       async function applyJubilee (ledger) {
-        log$6.debug('Applying jubilee to ledger %s', ledger);
+        log$7.debug('Applying jubilee to ledger %s', ledger);
         const transaction = ledgers.transaction();
         await StateMachine(transaction)
           .getSources({ ledger, destination: 'system' })
@@ -861,9 +861,9 @@ function System (ledgers, userpool) {
           })
           .then(t => t.addSystemSignatures())
           .then(t => t.save())
-          .catch(log$6.error);
+          .catch(log$7.error);
         await transaction.execute();
-        log$6.debug('Jubilee succesfully applied to ledger %s', ledger);
+        log$7.debug('Jubilee succesfully applied to ledger %s', ledger);
       }
       if (ledger) {
         await applyJubilee(ledger);
@@ -880,8 +880,117 @@ function System (ledgers, userpool) {
 }
 
 serverLog.getLogger('dynamodb:ledger');
+/**
+ * Specialized view on a single ledger.
+ */
 
-serverLog.getLogger('core:transactions');
+function ledger (ledgers, fingerprint) {
+  return {
+    fingerprint,
+    async current (required = false) {
+      return ledgers.current(fingerprint, required)
+    },
+    async pending (required = false) {
+      return ledgers.pending(fingerprint, required)
+    },
+    async recent () {
+      return ledgers.recent(fingerprint)
+    },
+    async entry (entry, required = false) {
+      return ledgers.entry(fingerprint, entry, required)
+    },
+    short () {
+      return ledger(ledgers.short(), fingerprint)
+    }
+  }
+}
+
+const log$6 = serverLog.getLogger('core:transactions');
+
+/**
+ * Operations on a single ledger.
+ */
+var Transactions = (ledgers, fingerprint) => {
+  const ledger$1 = ledger(ledgers, fingerprint);
+  const { current, pending, recent, short } = ledger$1;
+  return {
+    fingerprint,
+    current,
+    pending,
+    recent,
+    short,
+    async challenge (destination, amount) {
+      return StateMachine(ledgers)
+        .getSources({ ledger: fingerprint, destination })
+        .then(t => t.addAmount(amount))
+        .then(t => t.getPrimaryEntry().challenge)
+    },
+    async create (proof) {
+      const existing = await ledger$1.pending();
+      if (existing && existing.challenge === proof.payload) {
+        log$6.info(`Transaction ${proof.payload} was already created`);
+        return existing.next // idempotency
+      }
+      let next;
+      const transaction = ledgers.transaction();
+      await StateMachine(transaction)
+        .getPayloads(proof.payload)
+        .getPayloadSources()
+        .then(t => t.continuePayload())
+        .then(t => t.addSignatures({ ledger: fingerprint, ...proof }))
+        .then(t => {
+          next = t.getPrimaryEntry().next;
+          return t
+        })
+        .then(t => t.save());
+      await transaction.execute();
+      return next
+    },
+    async confirm (proof) {
+      // proof contains signature, counterSignature, payload
+      const existing = await ledger$1.current();
+      if (existing && existing.challenge === proof.payload) {
+        log$6.info(`Transaction ${proof.payload} was already confirmed`);
+        return existing.next // idempotency
+      }
+      let next;
+      const transaction = ledgers.transaction();
+      await StateMachine(transaction)
+        .getPayloads(proof.payload)
+        .continuePending()
+        .then(t => t.addSignatures({ ledger: fingerprint, ...proof }))
+        .then(t => {
+          next = t.getPrimaryEntry().next;
+          log$6.debug('Primary entry: %j', t.getPrimaryEntry());
+          return t
+        })
+        .then(t => t.save());
+      await transaction.execute();
+      return next
+    },
+    async cancel (challenge) {
+      const pending = await ledger$1.pending();
+      if (pending && pending.challenge === challenge) {
+        if (pending.destination === 'system') {
+          throw new Error('System transactions cannot be cancelled.')
+        }
+        const destination = await ledgers.pendingEntry(pending.destination);
+        if (!destination) {
+          throw new Error(
+            'No matching transaction found on destination ledger, please contact system administrators.'
+          )
+        }
+        const transaction = ledgers.transaction();
+        transaction.deletePending(fingerprint);
+        transaction.deletePending(pending.destination);
+        await transaction.execute();
+        return 'Pending transaction successfully cancelled.'
+      } else {
+        return 'No matching pending transaction found, it may have already been cancelled or confirmed.'
+      }
+    }
+  }
+};
 
 const log$5 = serverLog.getLogger('dynamodb:table');
 const methods = ['get', 'put', 'query', 'update'];
@@ -1039,7 +1148,6 @@ function ledgers (table, prefix = '') {
       key.entry = 'pk';
       return table.putItem(key)
     },
-
     async recent (fingerprint) {
       log$4.debug('ledger = %s AND begins_with(entry,/)', fingerprint);
       return table.queryItems({
@@ -1087,8 +1195,7 @@ function Core (db, userpool) {
   const ledgers = mani(table$1);
   return {
     system: () => System(ledgers, userpool),
-    mani: (fingerprint) => {
-    }
+    mani: (fingerprint) => Transactions(ledgers, fingerprint)
   }
 }
 
@@ -1443,7 +1550,7 @@ const server = new apolloServerLambda.ApolloServer({
       core: Core(
         dynamoPlus.DynamoPlus({
           region: process.env.DYN_REGION,
-          endpoint: process.env.DYN_ENDPOINT
+          maxRetries: 3
         }),
         process.env.IS_OFFLINE
           ? OfflineUserPool()
