@@ -16,7 +16,8 @@ import {
   FIND_KEY,
   JUBILEE,
   INIT,
-  SYSTEM_PARAMETERS
+  SYSTEM_PARAMETERS,
+  TIME
 } from '../apollo/queries'
 
 // const log = require('util').debuglog('Transactions')
@@ -168,6 +169,7 @@ const ManiClient = async ({
     }
   }
   return {
+    getTime: async () => query(TIME),
     id,
     register,
     find,
