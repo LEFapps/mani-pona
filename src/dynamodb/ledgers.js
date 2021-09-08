@@ -47,7 +47,6 @@ function ledgers (table, prefix = '') {
       key.entry = 'pk'
       return table.putItem(key)
     },
-
     async recent (fingerprint) {
       log.debug('ledger = %s AND begins_with(entry,/)', fingerprint)
       return table.queryItems({
