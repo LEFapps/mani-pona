@@ -24,11 +24,11 @@ export default function StandingOrder ({ navigation }) {
   if (ready) {
     return (
       <View style={globalStyles.main}>
-        <IconButton
+        {/* <IconButton
           iconName='add'
           iconColor='white'
           onPress={() => navigation.push('CamToAddStandingOrder')}
-        />
+        /> */}
         <FlatList
           style={{ marginTop: 5 }}
           data={standingOrders}

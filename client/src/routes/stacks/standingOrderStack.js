@@ -1,38 +1,38 @@
-import React from 'react';
-import { createStackNavigator } from '@react-navigation/stack';
+import React from 'react'
+import { createStackNavigator } from '@react-navigation/stack'
 
-import StandingOrder from '../../screens/standingOrders';
-import AddStandingOrder from '../../screens/addStandingOrder';
-import EditStandingOrder from '../../screens/editStandingOrder';
-import CamToAddStandingOrder from '../../screens/camToAddStandingOrder';
-import Header from '../../shared/header';
+import StandingOrder from '../../screens/standingOrders'
+import AddStandingOrder from '../../screens/addStandingOrder'
+import EditStandingOrder from '../../screens/editStandingOrder'
+import CamToAddStandingOrder from '../../screens/camToAddStandingOrder'
+import Header from '../../shared/header'
 
-const StandingOrderStack = createStackNavigator();
+const StandingOrderStack = createStackNavigator()
 
 const standingOrderStack = () => {
-	return (
-		<StandingOrderStack.Navigator
-			initialRouteName="StandingOrder"
-			screenOptions={{
-				headerStyle: {
-					backgroundColor: '#2B8AA0'
-				},
-				headerTintColor: '#fff',
-				headerTitleStyle: {
-					fontWeight: 'bold'
-				},
-				headerTitleAlign: 'center'
-			}}
-		>
-			<StandingOrderStack.Screen
-				name="StandingOrder"
-				component={StandingOrder}
-				options={() => ({
-					headerTitle: () => <Header title="Betalingsopdrachten" icon="menu" />
-				})}
-			/>
+  return (
+    <StandingOrderStack.Navigator
+      initialRouteName='StandingOrder'
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: '#2B8AA0'
+        },
+        headerTintColor: '#fff',
+        headerTitleStyle: {
+          fontWeight: 'bold'
+        },
+        headerTitleAlign: 'center'
+      }}
+    >
+      <StandingOrderStack.Screen
+        name='StandingOrder'
+        component={StandingOrder}
+        options={() => ({
+          headerTitle: () => <Header title='Betalingsopdrachten' icon='menu' />
+        })}
+      />
 
-			<StandingOrderStack.Screen
+      {/* <StandingOrderStack.Screen
 				name="AddStandingOrder"
 				component={AddStandingOrder}
 				options={{ title: 'Toevoegen', headerBackTitle: 'Terug' }}
@@ -47,9 +47,9 @@ const standingOrderStack = () => {
 				name="CamToAddStandingOrder"
 				component={CamToAddStandingOrder}
 				options={{ title: 'Scan QR-Code', headerBackTitle: 'Annuleren' }}
-			/>
-		</StandingOrderStack.Navigator>
-	);
-};
+			/> */}
+    </StandingOrderStack.Navigator>
+  )
+}
 
-export default standingOrderStack;
+export default standingOrderStack

@@ -149,28 +149,30 @@ export default function drawerNavigator (props) {
   const navScreens = screens({ Nav })
 
   useEffect(() => {
-    isReady && setReady(false)
-    setPending(getPending())
-    setReady(true)
+    if (!isReady) {
+      getPending().then(p => {
+        setPending(p)
+        setReady(true)
+      })
+    }
   }, [isReady])
 
   const getPending = async () => {
     const data = await ManiClient.transactions.pending()
-    return data.length
+    console.log(data)
+    return data && data.length
   }
+
+  console.log(hasPending)
 
   if (props.authState === 'signedIn') {
     return (
       <View style={globalStyles.container}>
         <NavigationContainer>
           <Nav.Navigator barStyle={{ backgroundColor: colors.DarkerBlue }}>
-            {!isReady
-              ? 'Checking for pending transactions . . .'
-              : hasPending
-                ? ['Betalingsopdrachten'].map(screen => navScreens[screen])
-                : Object.keys(
-                  navScreens
-                ).map(screen => navScreens[screen])}
+            {hasPending
+              ? ['Betalingsopdrachten'].map(screen => navScreens[screen])
+              : Object.keys(navScreens).map(screen => navScreens[screen])}
           </Nav.Navigator>
         </NavigationContainer>
       </View>
