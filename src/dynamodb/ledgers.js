@@ -1,4 +1,6 @@
 import assert from 'assert'
+import { getLogger } from 'server-log'
+const log = getLogger('dynamodb:ledgers')
 
 /**
  * Specialized functions to strictly work with ledgers. Continues building on table.
@@ -38,8 +40,16 @@ function ledgers (table, prefix = '') {
         required ? `Key(s) not found for ledger ${fingerprint}` : undefined
       )
     },
+    async publicKey (fingerprint) {
+      return table.attributes(['ledger', 'publicKeyArmored', 'alias']).getItem({ ledger: fingerprint, entry: 'pk' })
+    },
+    async putKey (key) {
+      key.entry = 'pk'
+      return table.putItem(key)
+    },
+
     async recent (fingerprint) {
-      // log.debug('ledger = %s AND begins_with(entry,/)', ledger)
+      log.debug('ledger = %s AND begins_with(entry,/)', fingerprint)
       return table.queryItems({
         KeyConditionExpression:
           'ledger = :ledger AND begins_with(entry, :slash)',
@@ -68,6 +78,9 @@ function ledgers (table, prefix = '') {
     },
     transaction () {
       return ledgers(table.transaction(), prefix)
+    },
+    items () {
+      return table.items()
     },
     async execute () {
       return table.execute()

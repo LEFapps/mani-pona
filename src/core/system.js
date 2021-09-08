@@ -1,24 +1,22 @@
 import StateMachine from './statemachine'
 import { KeyGenerator, Verifier, mani } from '../shared'
-import Ledgers from '../dynamodb/ledgers'
 import { getLogger } from 'server-log'
 
-const PARAMS_KEY = { ledger: 'system', entry: 'parameters' }
-const PK_KEY = { ledger: 'system', entry: 'pk' }
+const PARAMETERS = { income: mani(100), demurrage: 5.0 }
 
 const log = getLogger('core:system')
 
-export default function (table, userpool) {
+export default function (ledgers, userpool) {
   return {
     async parameters () {
-      return table.getItem(PARAMS_KEY)
+      return PARAMETERS
     },
     async findkey (fingerprint) {
-      return table.attributes(['ledger', 'publicKeyArmored', 'alias']).getItem({ ledger: fingerprint, entry: 'pk' })
+      return ledgers.publicKey(fingerprint)
     },
     async init () {
       log.info('System init requested')
-      let keys = await table.getItem(PK_KEY)
+      let keys = await ledgers.keys('system')
       log.info('Checking keys')
       if (keys) {
         log.info('System already initialized')
@@ -29,10 +27,8 @@ export default function (table, userpool) {
       keys = await KeyGenerator({}, log.info).generate()
       log.info('System keys generated')
       const { publicKeyArmored, privateKeyArmored } = keys
-      const trans = table.transaction()
-      trans.putItem({ ...PK_KEY, publicKeyArmored, privateKeyArmored })
-      trans.putItem({ ...PARAMS_KEY, income: mani(100), demurrage: 5.0 }) // TODO: replace hardcoded values
-      const ledgers = Ledgers(trans, '')
+      const trans = ledgers.transaction()
+      trans.putKey({ ledger: 'system', publicKeyArmored, privateKeyArmored })
       await StateMachine(ledgers)
         .getSources({ ledger: 'system', destination: 'system' })
         .then(t => t.addAmount(mani(0)))
@@ -49,7 +45,6 @@ export default function (table, userpool) {
     async challenge () {
       // provides the payload of the first transaction on a new ledger
       // clients have to replace '<fingerprint>'
-      const ledgers = Ledgers(table, '')
       return StateMachine(ledgers)
         .getSources({ ledger: '<fingerprint>', destination: 'system' })
         .then(t => t.addAmount(mani(0)))
@@ -58,24 +53,22 @@ export default function (table, userpool) {
     async register (registration) {
       const { publicKeyArmored, payload, alias } = registration
       const ledger = await Verifier(publicKeyArmored).fingerprint()
-      const existing = await table.getItem({ ledger, entry: '/current' })
+      const existing = await ledgers.current(ledger)
       if (existing) {
         log.info('Ledger was already registered: %s', ledger)
         return ledger // idempotency!
       }
-      const transaction = table.transaction()
-      const ledgers = Ledgers(transaction, '')
+      const transaction = ledgers.transaction()
       // TODO: assert amount = 0
-      await StateMachine(ledgers)
+      await StateMachine(transaction)
         .getPayloads(payload)
         .getSources({ ledger, destination: 'system' })
         .then(t => t.continuePayload())
         .then(t => t.addSystemSignatures())
         .then(t => t.addSignatures({ ledger, ...registration }))
         .then(t => t.save())
-      transaction.putItem({
+      transaction.putKey({
         ledger,
-        entry: 'pk',
         publicKeyArmored,
         alias,
         challenge: payload
@@ -90,17 +83,12 @@ export default function (table, userpool) {
         demurrage: mani(0),
         income: mani(0)
       }
-      const parameters = await table.getItem(
-        PARAMS_KEY,
-        'Missing system parameters'
-      )
       async function applyJubilee (ledger) {
         log.debug('Applying jubilee to ledger %s', ledger)
-        const transaction = table.transaction()
-        const ledgers = Ledgers(transaction, '')
-        await StateMachine(ledgers)
+        const transaction = ledgers.transaction()
+        await StateMachine(transaction)
           .getSources({ ledger, destination: 'system' })
-          .then(t => t.addDI(parameters))
+          .then(t => t.addDI(PARAMETERS))
           .then(t => {
             const entry = t.getPrimaryEntry()
             results.income = results.income.add(entry.income)

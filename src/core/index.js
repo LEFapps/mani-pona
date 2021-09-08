@@ -1,12 +1,15 @@
 import System from './system'
 import Transactions from './transactions'
 import Table from '../dynamodb/table'
+import { mani as maniLedgers } from './ledgers'
 
 export default function (db, userpool) {
-  const tableName = process.env.DYN_TABLE
-  const table = Table(db, tableName)
+  const table = Table(db)
+  const ledgers = maniLedgers(table)
   return {
-    system: () => System(table, userpool),
-    mani: (fingerprint) => Transactions(table, fingerprint, '')
+    system: () => System(ledgers, userpool),
+    mani: (fingerprint) => {
+      Transactions(ledgers, fingerprint)
+    }
   }
 }

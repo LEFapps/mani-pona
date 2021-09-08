@@ -1,4 +1,5 @@
-
+import { getLogger } from 'server-log'
+const log = getLogger('dynamodb:ledger')
 /**
  * Specialized view on a single ledger.
  */

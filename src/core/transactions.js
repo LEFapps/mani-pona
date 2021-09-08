@@ -1,8 +1,6 @@
-import assert from 'assert'
-import { isObject } from 'lodash'
 import StateMachine from './statemachine'
 import Ledger from '../dynamodb/ledger'
-import Ledgers from '../dynamodb/ledgers'
+// import { mani as Ledgers } from './ledgers'
 
 import { getLogger } from 'server-log'
 const log = getLogger('core:transactions')
@@ -10,11 +8,8 @@ const log = getLogger('core:transactions')
 /**
  * Operations on a single ledger.
  */
-export default (T, fingerprint, prefix = '') => {
-  const ledgers = Ledgers(T, prefix)
+export default (ledgers, fingerprint) => {
   const ledger = Ledger(ledgers, fingerprint)
-  // assert(isObject(verification), 'Verification')
-  log.trace('Transactions dynamo')
   const { current, pending, recent, short } = ledger
   return {
     fingerprint,

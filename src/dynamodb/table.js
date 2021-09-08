@@ -10,7 +10,11 @@ const methods = ['get', 'put', 'query', 'update']
  * By using `transaction()`, a similar set of functions is available, except the entire transaction (set of commands) needs to be executed at the end.
  */
 
-const table = function (db, TableName, options = {}) {
+const table = function (db, options = {}) {
+  const TableName = process.env.DYN_TABLE
+  if (!TableName) {
+    throw new Error('Please set ENV variable DYN_TABLE.')
+  }
   const t = reduce(
     methods,
     (table, method) => {
