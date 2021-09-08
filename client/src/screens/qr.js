@@ -82,7 +82,7 @@ export default function Home ({ navigation }) {
 const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: 'row',
-    width: Dimensions.get('screen').width,
+    width: Dimensions.get('window').width,
     justifyContent: 'space-evenly',
     position: 'absolute',
     bottom: 40

@@ -52,7 +52,7 @@ export default function App () {
           <View
             style={{
               flex: 1,
-              width: Dimensions.get('screen').width,
+              width: Dimensions.get('window').width,
               backgroundColor: '#2B8AA0'
             }}
           >

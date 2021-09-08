@@ -121,7 +121,7 @@ export const globalStyles = StyleSheet.create({
   },
   camPlace: {
     backgroundColor: 'red',
-    width: Dimensions.get('screen').width,
+    width: Dimensions.get('window').width,
     height: '100%',
     flexDirection: 'row',
     alignItems: 'center',
@@ -132,7 +132,7 @@ export const globalStyles = StyleSheet.create({
   },
   qrTextContainer: {
     position: 'absolute',
-    width: Dimensions.get('screen').width,
+    width: Dimensions.get('window').width,
     top: 0
   },
   qrText: {
