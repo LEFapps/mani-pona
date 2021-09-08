@@ -1426,7 +1426,7 @@ function contextProcessor (event) {
   log.debug('User claims: %j', claims);
   return {
     ledger: claims['custom:ledger'],
-    verified: claims.verified,
+    verified: claims.email_verified,
     admin: claims['custom:administrator']
   }
 }
