@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { View, StyleSheet, Dimensions, Text } from 'react-native'
+import { useIsFocused } from '@react-navigation/native'
 import RoundButton from '../shared/buttons/roundIconButton'
 import BigCardWithButtons from '../shared/bigCardWithButtons'
 import Camera from '../shared/camera'
@@ -8,6 +9,7 @@ import MANI from '../../shared/mani'
 import { globalStyles } from '../styles/global'
 
 export default function Home ({ navigation }) {
+  const isFocused = useIsFocused()
   const [getData, setData] = useState()
   const maniClient = global.maniClient
 
@@ -37,12 +39,16 @@ export default function Home ({ navigation }) {
     setData({ ...getData, amount: Number(amount) })
   }
 
+  console.log(isFocused)
+
   return (
     <View>
-      <Camera
-        onBarCodeScanned={readChallenge}
-        text='Scan een QR-Code om te betalen of te ontvangen.'
-      />
+      {isFocused && (
+        <Camera
+          onBarCodeScanned={readChallenge}
+          text='Scan een QR-Code om te betalen of te ontvangen.'
+        />
+      )}
 
       {getData && (
         <BigCardWithButtons
