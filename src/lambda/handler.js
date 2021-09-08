@@ -5,7 +5,7 @@ import typeDefs from '../graphql/typeDefs/index'
 import resolvers from '../graphql/resolvers/index'
 import { CognitoUserPool } from '../cognito/userpool'
 import { OfflineUserPool } from './offlineuserpool'
-import { getLogger } from 'server-log'
+import { apolloLogPlugin, getLogger } from 'server-log'
 
 const log = getLogger('lambda:handler')
 
@@ -29,10 +29,7 @@ const server = new ApolloServer({
   introspection: process.env.DEBUG === 'true',
   typeDefs,
   resolvers,
-  formatError: err => {
-    log.error(err, err.stack)
-    return err
-  },
+  plugins: [apolloLogPlugin],
   context: async ({ event, context }) => {
     return {
       core: Core(
