@@ -20,13 +20,4 @@ var s3SyncOptions = {
 
 console.log('Deploying client code to bucket: ' + ClientBucket)
 
-s3_sync.syncCleanInvalidate('./build', ClientBucket, s3SyncOptions, function (
-  err
-) {
-  if (err) {
-    console.error('Deployment failed:')
-    console.error(err)
-    return
-  }
-  return console.log('Deployment complete')
-})
+s3_sync.syncCleanInvalidate('./web-build', ClientBucket, s3SyncOptions).then(console.log).catch(console.error)
