@@ -24,7 +24,7 @@ export function validatePassword (password) {
       password
     )
   ) {
-    return 'Wachtwoord moet minimaal 1 cijfer bevatten en minimaal 8 tekens lang zijn, probeer opnieuw'
+    return 'Wachtwoord moet minimaal 1 cijfer, 1 kleine letter, 1 hoofdletter en 1 speciaal karakter bevatten en minimaal 8 tekens lang zijn, probeer opnieuw'
   } else if (!password) {
     return 'Wachtwoord niet ingevuld!'
   } else return null

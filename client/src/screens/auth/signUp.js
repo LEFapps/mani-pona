@@ -36,8 +36,9 @@ export default function signUp (props) {
           username: state.email,
           password: state.password,
           attributes: {
-            alias: state.alias,
-            ledger: ManiClient.id
+            'custom:alias': state.alias,
+            'custom:ledger': ManiClient.id,
+            email: state.email
           }
         })
 
