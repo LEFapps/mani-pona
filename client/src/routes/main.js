@@ -22,16 +22,16 @@ import { colors } from '../helpers/helper'
 const iconProps = { size: 32 }
 
 const screens = ({ Nav }) => ({
-  Overview: (
-    <Nav.Screen
-      name='Overview'
-      tabBarLabel='Overview'
-      component={HomeStack}
-      tabBarIcon={({ focused, color = 'white' }) => (
-        <MaterialIcons name='home' color={color} {...iconProps} />
-      )}
-    />
-  ),
+  // Overview: (
+  //   <Nav.Screen
+  //     name='Overview'
+  //     tabBarLabel='Overview'
+  //     component={HomeStack}
+  //     tabBarIcon={({ focused, color = 'white' }) => (
+  //       <MaterialIcons name='home' color={color} {...iconProps} />
+  //     )}
+  //   />
+  // ),
   QR: (
     <Nav.Screen
       name='QR'
@@ -39,6 +39,9 @@ const screens = ({ Nav }) => ({
       options={{
         drawerIcon: props => (
           <MaterialIcons name='home' color={props.color} {...iconProps} />
+        ),
+        tabBarIcon: ({ focused, color = 'white' }) => (
+          <MaterialIcons name='home' color={color} {...iconProps} />
         )
       }}
     />
@@ -50,6 +53,9 @@ const screens = ({ Nav }) => ({
       options={{
         drawerIcon: props => (
           <MaterialIcons name='history' color={props.color} {...iconProps} />
+        ),
+        tabBarIcon: ({ focused, color = 'white' }) => (
+          <MaterialIcons name='history' color={color} {...iconProps} />
         )
       }}
     />
@@ -65,6 +71,13 @@ const screens = ({ Nav }) => ({
             color={props.color}
             {...iconProps}
           />
+        ),
+        tabBarIcon: ({ focused, color = 'white' }) => (
+          <MaterialIcons
+            name='swap-vertical-circle'
+            color={color}
+            {...iconProps}
+          />
         )
       }}
     />
@@ -76,6 +89,9 @@ const screens = ({ Nav }) => ({
       options={{
         drawerIcon: props => (
           <MaterialIcons name='loop' color={props.color} {...iconProps} />
+        ),
+        tabBarIcon: ({ focused, color = 'white' }) => (
+          <MaterialIcons name='loop' color={color} {...iconProps} />
         )
       }}
     />
@@ -87,7 +103,8 @@ const screens = ({ Nav }) => ({
   //     options={{
   //       drawerIcon: props => (
   //         <Entypo name='bar-graph' color={props.color} {...iconProps} />
-  //       )
+  //       ),
+  // tabBarIcon={({focused, color = 'white'}) => <MaterialIcons name='home' color={color} {...iconProps} />}
   //     }}
   //   />
   // ),
@@ -102,7 +119,8 @@ const screens = ({ Nav }) => ({
   //           color={props.color}
   //           {...iconProps}
   //         />
-  //       )
+  //       ),
+  // tabBarIcon={({focused, color = 'white'}) => <MaterialIcons name='contacts' color={color} {...iconProps} />}
   //     }}
   //   />
   // ),
@@ -110,13 +128,15 @@ const screens = ({ Nav }) => ({
     <Nav.Screen
       name='Account'
       component={AccountStack}
-      options={({ focused, color }) => (
-        <MaterialCommunityIcons
-          name='account-circle'
-          color={color}
-          {...iconProps}
-        />
-      )}
+      options={{
+        tabBarIcon: ({ focused, color = 'white' }) => (
+          <MaterialCommunityIcons
+            name='account-circle'
+            color={color}
+            {...iconProps}
+          />
+        )
+      }}
     />
   )
 })
@@ -128,11 +148,11 @@ export default function drawerNavigator (props) {
   const Nav = createMaterialBottomTabNavigator()
   const navScreens = screens({ Nav })
 
-  useEffect(() => {
-    isReady && setReady(false)
-    setPending(getPending())
-    setReady(true)
-  })
+  // useEffect(() => {
+  //   isReady && setReady(false)
+  //   setPending(getPending())
+  //   setReady(true)
+  // })
 
   const getPending = async () => {
     const data = await ManiClient.transactions.pending()
@@ -144,11 +164,13 @@ export default function drawerNavigator (props) {
       <View style={globalStyles.container}>
         <NavigationContainer>
           <Nav.Navigator barStyle={{ backgroundColor: colors.DarkerBlue }}>
-            {!isReady
+            {/*!isReady
               ? 'Checking for pending transactions . . .'
               : hasPending
               ? ['Betalingsopdrachten'].map(screen => navScreens[screen])
-              : Object.keys(navScreens).map(screen => navScreens[screen])}
+              :*/ Object.keys(
+              navScreens
+            ).map(screen => navScreens[screen])}
           </Nav.Navigator>
         </NavigationContainer>
       </View>

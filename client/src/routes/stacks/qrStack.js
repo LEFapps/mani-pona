@@ -1,7 +1,7 @@
 import React from 'react'
 import { createStackNavigator } from '@react-navigation/stack'
-import Home from '../../screens/qr'
-import QRCode from '../../screens/qr-code'
+import Scan from '../../screens/qr'
+import Create from '../../screens/qr-code'
 import Overview from '../../screens/overview'
 import ContributionPrediction from '../../screens/contributionPrediction'
 import Transaction from '../../screens/transactionFromHome'
@@ -10,8 +10,18 @@ import AddContact from '../../screens/addContact'
 import IncomePrediction from '../../screens/incomePredictions'
 
 import Header from '../../shared/header'
+import { View, Text } from 'react-native'
 
 const HomeStack = createStackNavigator()
+
+const Home = ({ navigation }) => {
+  return (
+    <View>
+      <Text onPress={() => navigation.push('Scan')}>Scan</Text>
+      <Text onPress={() => navigation.push('Create')}>Create</Text>
+    </View>
+  )
+}
 
 const homeStack = () => {
   return (
@@ -28,17 +38,23 @@ const homeStack = () => {
         headerTitleAlign: 'center'
       }}
     >
-      {/* <HomeStack.Screen
+      <HomeStack.Screen
         name='Home'
         component={Home}
-        options={() => ({
-          headerTitle: () => <Header title='LoREco' icon='menu' />
-        })}
-      /> */}
+        options={{ headerTitle: () => <Header title='LoREco' icon='menu' /> }}
+      />
       <HomeStack.Screen
-        name='QRCode'
-        component={QRCode}
-        options={{ title: 'QR-code', headerBackTitle: 'Terug' }}
+        name='Scan'
+        component={Scan}
+        options={{
+          headerTitle: () => <Header title='Scan' icon='menu' />,
+          headerBackTitle: 'LoREco'
+        }}
+      />
+      <HomeStack.Screen
+        name='Create'
+        component={Create}
+        options={{ title: 'Create', headerBackTitle: 'LoREco' }}
       />
       {/* <HomeStack.Screen
         name='AccountBalance'

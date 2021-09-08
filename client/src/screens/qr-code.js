@@ -12,7 +12,7 @@ export default function Receive () {
     'test_D0C8F0D0032C95F667C46469D05C6EACD4461A3E6DC69C537379649C226'
 
   maniClient1.transactions
-    .listen()
+    .current()
     .then(confirmation => {
       Alert.alert(confirmation.message + ': ' + confirmation.amount)
       // confirm the payment using the callback provided in the confirmation
