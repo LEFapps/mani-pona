@@ -307,6 +307,12 @@ function fromDb (entry) {
   })
 }
 
+const TIME = client.gql`
+  query {
+    time
+  }
+`;
+
 const REGISTER = client.gql`
   query($registration: LedgerRegistration!) {
     system {
@@ -599,6 +605,7 @@ const ManiClient = async ({
     }
   };
   return {
+    getTime: async () => query(TIME),
     id,
     register,
     find,
