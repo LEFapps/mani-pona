@@ -62,7 +62,6 @@ export default function App () {
         hideDefault
         authState={'signIn'}
         onStateChange={authState => {
-          console.log('authState', authState)
           if (authState === 'verifyContact') setAuthState('signedIn')
         }}
       >

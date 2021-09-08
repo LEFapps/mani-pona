@@ -32,14 +32,14 @@ export default function AccountBalance ({ navigation }) {
         <View style={globalStyles.amountHeader}>
           <Text style={globalStyles.property}>Huidige rekeningstand:</Text>
           <Text style={globalStyles.price}>
-            {mani(ManiClient.balance).format()}
+            {mani(ManiClient.balance || 0).format()}
           </Text>
         </View>
 
         <View style={styles.part}>
           <Text style={styles.title}>Voorspellingen gegarandeerd inkomen</Text>
           <Text style={styles.amount}>
-            +{mani(income.currentPrediction).format()}
+            +{mani(income.currentPrediction || 0).format()}
           </Text>
           <CustomButton
             text='Bekijk voorspelling'
@@ -48,7 +48,9 @@ export default function AccountBalance ({ navigation }) {
         </View>
         <View style={styles.part}>
           <Text style={styles.title}>Voorspellingen bijdrage</Text>
-          <Text style={styles.amount}>{mani(demu.totalDemurage).format()}</Text>
+          <Text style={styles.amount}>
+            {mani(demu.totalDemurage || 0).format()}
+          </Text>
           <CustomButton
             text='Bekijk voorspelling'
             onPress={() => navigation.navigate('ContributionPrediction', demu)}

@@ -54,7 +54,6 @@ export default function SignIn (props) {
   }
 
   async function newPassword (newPass) {
-    console.log('user', user)
     try {
       const changePassword = await Auth.completeNewPassword(user, newPass)
     } catch (error) {
