@@ -3,7 +3,7 @@ Resources:
     Type: AWS::CloudFront::Distribution
     Properties:
       DistributionConfig:
-        Comment: mani-pona-${self:provider.stage}-client
+        Comment: ${self:custom.prefix}-client
         CustomErrorResponses:
           - ErrorCachingMinTTL: 0
             ErrorCode: 403
@@ -29,7 +29,7 @@ Resources:
         Enabled: true
         IPV6Enabled: true
         Origins:
-          - Id: Client
+          - Id: ${self:custom.prefix}-client-origin
             S3OriginConfig:
               OriginAccessIdentity: ''
             DomainName:

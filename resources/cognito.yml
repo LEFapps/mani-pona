@@ -3,7 +3,7 @@ Resources:
     Type: AWS::Cognito::UserPool
     Properties:
       # Generate a name based on the stage
-      UserPoolName: mani-pona-${self:provider.stage}-user-pool
+      UserPoolName: ${self:custom.prefix}-user-pool
       AutoVerifiedAttributes:
         - email
       UsernameAttributes:
@@ -32,7 +32,7 @@ Resources:
           Mutable: false
           Required: true
       EmailVerificationMessage: 'Gebruik volgende code om uw account te verifiëren: {####}'
-      EmailVerificationSubject: Welkom bij Mani Pona ${env:CLIENT}
+      EmailVerificationSubject: Welkom bij ${env:CLIENT}
       # LambdaConfig:
       #   PostConfirmation:
       #     Fn::GetAtt: ['SignupLambdaFunction', 'Arn']

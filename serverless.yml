@@ -1,4 +1,4 @@
-service: ${env:CLIENT, 'dev'}-mani-pona
+service: ${env:CLIENT, 'dev'}-mani
 
 provider:
   name: aws
@@ -19,6 +19,23 @@ provider:
       Action:
         - dynamodb:*
       Resource: '*'
+
+# Warning: the dynamodb shell does NOT work in Firefox, only in Chrome
+custom:
+  debug: ${env:DEBUG, true} # debug mode (string values or 0|1 are converted)
+  dotenv:
+    basePath: env/
+  output:
+    file: client/sls-output.json
+  dynamodb:
+    stages:
+      - test
+      - dev
+    start:
+      inMemory: true
+      migrate: true
+  prefix: ${self:service}-${self:provider.stage}
+  tableName: ${self:service}-ledgers
 
 package:
   # individually: true
@@ -60,7 +77,7 @@ functions:
               Ref: ApiGatewayAuthorizer
     environment:
       DYN_REGION: ${env:DYN_REGION}
-      DYN_TABLE: ${env:DYN_TABLE}
+      DYN_TABLE: ${self:custom.tableName}
       DEBUG: ${env:DEBUG, self:custom.debug}
       NODE_DEBUG: ${env:NODE_DEBUG, 'sumsy*'}
       LOG_LEVEL: ${env:LOG_LEVEL, 'error'}
@@ -100,17 +117,3 @@ resources:
   - ${file(resources/client.yml)}
   - ${file(resources/exports.yml)}
 
-# Warning: the dynamodb shell does NOT work in Firefox, only in Chrome
-custom:
-  debug: ${env:DEBUG, true} # debug mode (string values or 0|1 are converted)
-  dotenv:
-    basePath: env/
-  output:
-    file: client/sls-output.json
-  dynamodb:
-    stages:
-      - test
-      - dev
-    start:
-      inMemory: true
-      migrate: true

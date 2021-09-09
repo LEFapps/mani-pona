@@ -2,7 +2,7 @@ Resources:
   ledger:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: ${env:DYN_TABLE}
+      TableName: ${self:custom.tableName}
       AttributeDefinitions:
         - AttributeName: ledger
           AttributeType: S
