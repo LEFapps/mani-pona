@@ -30,16 +30,13 @@ Resources:
         IPV6Enabled: true
         Origins:
           - Id: Client
+            S3OriginConfig:
+              OriginAccessIdentity: ''
             DomainName:
               Fn::Join:
                 - ""
                 - - Ref: ClientBucket
-                  - "."
-                  - "s3-app-"
+                  - ".s3."
                   - ${self:provider.region}
                   - ".amazonaws.com"
-            CustomOriginConfig:
-              HTTPPort: 80
-              HTTPSPort: 443
-              OriginProtocolPolicy: http-only
         PriceClass: PriceClass_100
