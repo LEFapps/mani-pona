@@ -59,134 +59,124 @@ const ManiClient = async ({
   contextProvider = defaultContext
 }) => {
   const keyManager = await KeyManager(keyStore)
-  const hasKeys = keyManager.hasKeys
-  const importKeys = keyManager.setKeys
-  const client = async () => {
-    if (!hasKeys()) return {}
-    const id = await keyManager.fingerprint()
-    console.log('FingerPrint', id)
-    async function query (query, path, variables = {}, required = true) {
-      const result = await graphqlClient.query({
-        query,
-        variables,
-        context: contextProvider(),
-        fetchPolicy: 'no-cache'
+  const id = await keyManager.fingerprint()
+  async function query (query, path, variables = {}, required = true) {
+    const result = await graphqlClient.query({
+      query,
+      variables,
+      context: contextProvider(),
+      fetchPolicy: 'no-cache'
+    })
+    if (result.errors) {
+      log(result.errors)
+      if (fail) throw new Error(result.errors)
+    }
+    const obj = get(result.data, path)
+    if (required && fail && !obj) {
+      throw new Error(
+        `Could not find ${path} in\n${JSON.stringify(result.data)}`
+      )
+    }
+    return obj
+  }
+  async function find (ledger) {
+    return query(FIND_KEY, 'system.findkey.alias', { id: ledger }, false)
+  }
+  async function register (alias) {
+    const challenge = await query(SYSTEM_CHALLENGE, 'system.challenge')
+    const payload = challenge.replace('<fingerprint>', id)
+    return query(REGISTER, 'system.register', {
+      registration: {
+        publicKeyArmored: (await keyManager.getKeys()).publicKeyArmored,
+        alias,
+        signature: await keyManager.sign(payload),
+        counterSignature: await keyManager.sign(flip(payload)),
+        payload
+      }
+    })
+  }
+  const transactions = {
+    async recent () {
+      const recent = await query(RECENT, 'ledger.transactions.recent', {
+        id
       })
-      if (result.errors) {
-        log(result.errors)
-        if (fail) throw new Error(result.errors)
-      }
-      const obj = get(result.data, path)
-      if (required && fail && !obj) {
-        throw new Error(
-          `Could not find ${path} in\n${JSON.stringify(result.data)}`
-        )
-      }
-      return obj
-    }
-    async function find (ledger) {
-      return query(FIND_KEY, 'system.findkey.alias', { id: ledger }, false)
-    }
-    async function register (alias) {
-      const challenge = await query(SYSTEM_CHALLENGE, 'system.challenge')
-      const payload = challenge.replace('<fingerprint>', id)
-      return query(REGISTER, 'system.register', {
-        registration: {
-          publicKeyArmored: (await keyManager.getKeys()).publicKeyArmored,
-          alias,
-          signature: await keyManager.sign(payload),
-          counterSignature: await keyManager.sign(flip(payload)),
-          payload
+      // log(JSON.stringify(recent, null, 2))
+      return fromDb(recent)
+    },
+    async current () {
+      const current = await query(CURRENT, 'ledger.transactions.current', {
+        id
+      })
+      // log(JSON.stringify(current, null, 2))
+      return fromDb(current)
+    },
+    async pending () {
+      const pending = await query(
+        PENDING,
+        'ledger.transactions.pending',
+        { id },
+        false
+      )
+      return fromDb(pending)
+    },
+    async confirm (challenge) {
+      return query(CONFIRM, 'ledger.transactions.confirm', {
+        id,
+        proof: {
+          signature: await keyManager.sign(challenge),
+          counterSignature: await keyManager.sign(flip(challenge)),
+          payload: challenge
         }
       })
-    }
-    const transactions = {
-      async recent () {
-        const recent = await query(RECENT, 'ledger.transactions.recent', {
-          id
-        })
-        // log(JSON.stringify(recent, null, 2))
-        return fromDb(recent)
-      },
-      async current () {
-        const current = await query(CURRENT, 'ledger.transactions.current', {
-          id
-        })
-        // log(JSON.stringify(current, null, 2))
-        return fromDb(current)
-      },
-      async pending () {
-        const pending = await query(
-          PENDING,
-          'ledger.transactions.pending',
-          { id },
-          false
-        )
-        return fromDb(pending)
-      },
-      async confirm (challenge) {
-        return query(CONFIRM, 'ledger.transactions.confirm', {
-          id,
-          proof: {
-            signature: await keyManager.sign(challenge),
-            counterSignature: await keyManager.sign(flip(challenge)),
-            payload: challenge
-          }
-        })
-      },
-      async challenge (destination, amount) {
-        return query(CHALLENGE, 'ledger.transactions.challenge', {
-          id,
-          destination,
-          amount: amount.format()
-        })
-      },
-      async create (challenge) {
-        return query(CREATE, 'ledger.transactions.create', {
-          id,
-          proof: {
-            signature: await keyManager.sign(challenge),
-            counterSignature: await keyManager.sign(flip(challenge)),
-            payload: challenge
-          }
-        })
-      },
-      async cancel (challenge) {
-        return query(CANCEL, 'ledger.transactions.cancel', {
-          id,
-          challenge
-        })
-      }
-    }
-    const system = {
-      async parameters () {
-        return fromDb(
-          await query(SYSTEM_PARAMETERS, 'system.parameters', {}, false)
-        )
-      }
-    }
-    const admin = {
-      async jubilee () {
-        return fromDb(await query(JUBILEE, 'admin.jubilee', { ledger: id }))
-      },
-      async init () {
-        return query(INIT, 'admin.init')
-      }
-    }
-    return {
-      getTime: async () => query(TIME, 'time'),
-      id,
-      keyManager,
-      register,
-      find,
-      transactions,
-      system,
-      admin
+    },
+    async challenge (destination, amount) {
+      return query(CHALLENGE, 'ledger.transactions.challenge', {
+        id,
+        destination,
+        amount: amount.format()
+      })
+    },
+    async create (challenge) {
+      return query(CREATE, 'ledger.transactions.create', {
+        id,
+        proof: {
+          signature: await keyManager.sign(challenge),
+          counterSignature: await keyManager.sign(flip(challenge)),
+          payload: challenge
+        }
+      })
+    },
+    async cancel (challenge) {
+      return query(CANCEL, 'ledger.transactions.cancel', {
+        id,
+        challenge
+      })
     }
   }
-  const run = async () => client()
-  const methods = await run()
-  return { hasKeys, run, ...methods, importKeys }
+  const system = {
+    async parameters () {
+      return fromDb(
+        await query(SYSTEM_PARAMETERS, 'system.parameters', {}, false)
+      )
+    }
+  }
+  const admin = {
+    async jubilee () {
+      return fromDb(await query(JUBILEE, 'admin.jubilee', { ledger: id }))
+    },
+    async init () {
+      return query(INIT, 'admin.init')
+    }
+  }
+  return {
+    getTime: async () => query(TIME, 'time'),
+    id,
+    register,
+    find,
+    transactions,
+    system,
+    admin
+  }
 }
 
 export { ManiClient }

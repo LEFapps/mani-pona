@@ -12,46 +12,16 @@ import Splash from './src/screens/splash'
 import ManiClient from './src/maniClient'
 import graphqlClient from './apollo/client'
 
-import Button from './src/shared/buttons/button'
-
 import config from './aws-config'
 
 import * as Localization from 'expo-localization'
-import i18n, { placeholder } from 'i18n-js'
+import i18n from 'i18n-js'
 import './src/helpers/i18n'
-import { globalStyles } from './src/styles/global'
 
 Amplify.configure(config)
 Analytics.configure({ disabled: true })
 
 log.enableAll()
-
-const KeyPrompt = ({ onInsert }) => {
-  const [keyString, setString] = useState('')
-  const setKey = () => {
-    global.maniClient
-      .importKeys(keyString)
-      .then(i => {
-        return global.maniClient.run()
-      })
-      .then(r => {
-        onInsert()
-      })
-  }
-  return (
-    <View>
-      <Text>Welkom bij LoREco.</Text>
-      <TextInput
-        value={keyString}
-        onChangeText={setString}
-        multiline
-        style={{ height: '50vh' }}
-        placeholder='Plak hier je sleutels of klik doorgaan om een nieuw account te maken.'
-      />
-      <Button text='Doorgaan' onPress={setKey} />
-    </View>
-  )
-}
 
 export default function App () {
   // fail: 'unknown_id'||'timeout'
@@ -65,28 +35,18 @@ export default function App () {
   TextInput.defaultProps.allowFontScaling = false
 
   const [isSplashFinished, setIsSplashFinished] = useState(false)
-  const [showKeyPrompt, setKeyPrompt] = useState(true)
 
   useEffect(() => {
-    setupClient().then(() => checkKeys())
+    const setupClient = async () => {
+      log.debug('Starting ManiClient')
+      global.maniClient = await ManiClient({ graphqlClient })
+      setIsSplashFinished(!!global.maniClient)
+    }
+    setupClient()
   }, [])
 
-  const setupClient = async () => {
-    log.debug('Starting ManiClient')
-    global.maniClient = await ManiClient({ graphqlClient })
-    setIsSplashFinished(!!global.maniClient)
-  }
-
-  const checkKeys = async () => {
-    const hk = await global.maniClient.hasKeys()
-    if (hk) await setupClient()
-    setKeyPrompt(!hk)
-  }
-
   if (isSplashFinished) {
-    return showKeyPrompt ? (
-      <KeyPrompt onInsert={checkKeys} />
-    ) : (
+    return (
       <Authenticator
         container={({ children }) => (
           <View
