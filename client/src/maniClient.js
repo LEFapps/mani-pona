@@ -61,9 +61,10 @@ const ManiClient = async ({
   const keyManager = await KeyManager(keyStore)
   const hasKeys = keyManager.hasKeys
   const importKeys = keyManager.setKeys
-  const client = () => {
+  const client = async () => {
     if (!hasKeys()) return {}
-    const id = keyManager.fingerprint()
+    const id = await keyManager.fingerprint()
+    console.log('FingerPrint', id)
     async function query (query, path, variables = {}, required = true) {
       const result = await graphqlClient.query({
         query,

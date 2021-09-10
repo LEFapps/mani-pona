@@ -40,14 +40,15 @@ const KeyPrompt = ({ onInsert }) => {
   }
   return (
     <View>
+      <Text>Welkom bij LoREco.</Text>
       <TextInput
         value={keyString}
         onChangeText={setString}
         multiline
-        style={{ height: '80vh' }}
+        style={{ height: '50vh' }}
         placeholder='Plak hier je sleutels of klik doorgaan om een nieuw account te maken.'
       />
-      <Button text='Bevestigen' onPress={setKey} />
+      <Button text='Doorgaan' onPress={setKey} />
     </View>
   )
 }
