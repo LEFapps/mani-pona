@@ -24,6 +24,7 @@ const iconProps = { size: 24 }
 const screens = ({ Nav }) => ({
   // Overview: (
   //   <Nav.Screen
+  //     key='Overview'
   //     name='Overview'
   //     tabBarLabel='Overview'
   //     component={HomeStack}
@@ -34,6 +35,7 @@ const screens = ({ Nav }) => ({
   // ),
   QR: (
     <Nav.Screen
+      key='QR'
       name='QR'
       component={QrStack}
       options={{
@@ -48,6 +50,7 @@ const screens = ({ Nav }) => ({
   ),
   'Transactie Geschiedenis': (
     <Nav.Screen
+      key='Transactie Geschiedenis'
       name='Transactie Geschiedenis'
       component={TransactionHistoryStack}
       options={{
@@ -62,6 +65,7 @@ const screens = ({ Nav }) => ({
   ),
   'Bijdrage Geschiedenis': (
     <Nav.Screen
+      key='Bijdrage Geschiedenis'
       name='Bijdrage Geschiedenis'
       component={ContributionHistoryStack}
       options={{
@@ -84,6 +88,7 @@ const screens = ({ Nav }) => ({
   ),
   Betalingsopdrachten: (
     <Nav.Screen
+      key='Betalingsopdrachten'
       name='Betalingsopdrachten'
       component={StandingOrderStack}
       options={{
@@ -98,6 +103,7 @@ const screens = ({ Nav }) => ({
   ),
   // 'Beheer Vrije Buffer': (
   //   <Nav.Screen
+  //     key='Beheer Vrije Buffer'
   //     name='Beheer Vrije Buffer'
   //     component={FreeBufferStack}
   //     options={{
@@ -110,6 +116,7 @@ const screens = ({ Nav }) => ({
   // ),
   // Contacten: (
   //   <Nav.Screen
+  //     key='Contacten'
   //     name='Contacten'
   //     component={ContactListStack}
   //     options={{
@@ -126,6 +133,7 @@ const screens = ({ Nav }) => ({
   // ),
   Account: (
     <Nav.Screen
+      key='Account'
       name='Account'
       component={AccountStack}
       options={{
