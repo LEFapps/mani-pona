@@ -36,6 +36,8 @@ export default function Cam (props) {
           <QrScanner
             // legacyMode
             // interval={5000}
+            onLoad={props.onInit}
+            facingMode={'rear'}
             delay={false}
             // style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
             // style={globalStyles.qrTextContainer}

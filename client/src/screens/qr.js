@@ -7,10 +7,16 @@ import Camera from '../shared/camera'
 import MANI from '../../shared/mani'
 
 import { globalStyles } from '../styles/global'
+import { getErrorSource } from 'source-map-support'
 
 export default function Home ({ navigation }) {
   const isFocused = useIsFocused()
   const [getData, setData] = useState()
+  const [getError, setError] = useState([])
+  const reset = () => {
+    setData()
+    setError()
+  }
   const maniClient = global.maniClient
 
   const readChallenge = (data = 'loreco:null') => {
@@ -26,12 +32,17 @@ export default function Home ({ navigation }) {
   }
 
   const createChallenge = async () => {
+    setError([])
     const { destination, amount } = getData
-    const challenge = await maniClient.transactions.challenge(
-      destination,
-      MANI(amount)
-    )
-    if (challenge) navigation.navigate('AccountBalance')
+    maniClient.transactions
+      .challenge(destination, MANI(amount))
+      .then(challenge => {
+        console.log('PAYMENT', challenge)
+        if (challenge) navigation.navigate('AccountBalance')
+      })
+      .catch(err => {
+        setError(err.message)
+      })
   }
 
   const editAmount = () => {
@@ -43,6 +54,7 @@ export default function Home ({ navigation }) {
     <View>
       {isFocused && (
         <Camera
+          onInit={reset}
           onBarCodeScanned={readChallenge}
           text='Scan een QR-Code om te betalen of te ontvangen.'
         />
@@ -50,16 +62,19 @@ export default function Home ({ navigation }) {
 
       {getData && (
         <BigCardWithButtons
-          onPressCancel={setData}
+          onPressCancel={reset}
           onPressConfirm={createChallenge}
           onPressEdit={getData.amount ? undefined : editAmount}
         >
           <View style={{ flexDirection: 'column' }}>
             <Text style={globalStyles.property}>{getData.destination}</Text>
+            <Text style={globalStyles.price}>
+              {!!getData.amount && MANI(getData.amount).format()}
+            </Text>
+            {!!getError && (
+              <Text style={globalStyles.errorText}>{getError}</Text>
+            )}
           </View>
-          <Text style={globalStyles.price}>
-            {!!getData.amount && MANI(getData.amount).format()}
-          </Text>
         </BigCardWithButtons>
       )}
 
