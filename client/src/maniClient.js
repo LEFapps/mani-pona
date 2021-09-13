@@ -65,11 +65,12 @@ const ManiClient = async ({
       query,
       variables,
       context: contextProvider(),
-      fetchPolicy: 'no-cache'
+      fetchPolicy: 'no-cache',
+      errorPolicy: 'all'
     })
     if (result.errors) {
       log(result.errors)
-      if (fail) throw new Error(result.errors)
+      if (fail) throw new Error(result.errors[0].message)
     }
     const obj = get(result.data, path)
     if (required && fail && !obj) {

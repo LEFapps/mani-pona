@@ -25,7 +25,9 @@ const enchancedFetch = async (url, init) => {
       'access-control-allow-origin': '*',
       authorization: token
     }
-  }).then(response => response)
+  })
+    .then(response => response)
+    .catch(error => error)
 }
 
 const apolloClient = new ApolloClient({
@@ -52,6 +54,7 @@ const apolloClient = new ApolloClient({
   //   operation.setContext({ headers })
   // },
   cache: new InMemoryCache(),
+  errorPolicy: 'all',
   connectToDevTools: true
 })
 
