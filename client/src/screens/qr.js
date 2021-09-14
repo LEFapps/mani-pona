@@ -7,7 +7,7 @@ import Camera from '../shared/camera'
 import MANI from '../../shared/mani'
 
 import { globalStyles } from '../styles/global'
-import { getErrorSource } from 'source-map-support'
+import { Contact } from '../shared/contact'
 
 export default function Home ({ navigation }) {
   const isFocused = useIsFocused()
@@ -67,7 +67,10 @@ export default function Home ({ navigation }) {
           onPressEdit={getData.amount ? undefined : editAmount}
         >
           <View style={{ flexDirection: 'column' }}>
-            <Text style={globalStyles.property}>{getData.destination}</Text>
+            <Contact
+              style={globalStyles.property}
+              ledger={getData.destination}
+            />
             <Text style={globalStyles.price}>
               {!!getData.amount && MANI(getData.amount).format()}
             </Text>

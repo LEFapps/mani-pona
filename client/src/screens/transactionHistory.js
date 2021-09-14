@@ -5,6 +5,7 @@ import Card from '../shared/card'
 import HistoryButton from '../shared/buttons/historyButton'
 import { globalStyles } from '../styles/global'
 import MANI from '../../shared/mani'
+import { Contact } from '../shared/contact'
 
 export default function TransactionHitstory ({ navigation }) {
   const [transactions, setTransactions] = useState([])
@@ -104,16 +105,16 @@ export default function TransactionHitstory ({ navigation }) {
               <TouchableOpacity
                 onPress={() =>
                   navigation.navigate('TransactionDetail', {
-                    transaction: item,
-                    user: getContact(item.contactId)
+                    transaction: item
                   })
                 }
               >
                 <Card>
                   <View style={{ flexDirection: 'column' }}>
-                    <Text style={globalStyles.property}>
-                      {getContact(item.contactId)}
-                    </Text>
+                    <Contact
+                      style={globalStyles.property}
+                      ledger={item.destination}
+                    />
                     <Text style={globalStyles.date}>
                       {new Date(item.date).toLocaleString()}
                     </Text>
