@@ -43,7 +43,12 @@ export default function AccountBalance ({ navigation }) {
           </Text>
           <CustomButton
             text='Bekijk voorspelling'
-            onPress={() => navigation.navigate('IncomePrediction', income)}
+            onPress={() =>
+              navigation.navigate('Bijdrage Geschiedenis', {
+                screen: 'IncomePrediction',
+                params: income
+              })
+            }
           />
         </View>
         <View style={styles.part}>
@@ -53,7 +58,12 @@ export default function AccountBalance ({ navigation }) {
           </Text>
           <CustomButton
             text='Bekijk voorspelling'
-            onPress={() => navigation.navigate('ContributionPrediction', demu)}
+            onPress={() =>
+              navigation.navigate('Bijdrage Geschiedenis', {
+                screen: 'ContributionPrediction',
+                params: demu
+              })
+            }
           />
         </View>
       </View>

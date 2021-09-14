@@ -33,10 +33,10 @@ const screens = ({ Nav }) => ({
   //     )}
   //   />
   // ),
-  QR: (
+  LoREco: (
     <Nav.Screen
-      key='QR'
-      name='QR'
+      key='LoREco'
+      name='LoREco'
       component={QrStack}
       options={{
         drawerIcon: props => (
@@ -48,10 +48,10 @@ const screens = ({ Nav }) => ({
       }}
     />
   ),
-  'Transactie Geschiedenis': (
+  Geschiedenis: (
     <Nav.Screen
-      key='Transactie Geschiedenis'
-      name='Transactie Geschiedenis'
+      key='Geschiedenis'
+      name='Geschiedenis'
       component={TransactionHistoryStack}
       options={{
         drawerIcon: props => (
@@ -86,21 +86,21 @@ const screens = ({ Nav }) => ({
       }}
     />
   ),
-  Betalingsopdrachten: (
-    <Nav.Screen
-      key='Betalingsopdrachten'
-      name='Betalingsopdrachten'
-      component={StandingOrderStack}
-      options={{
-        drawerIcon: props => (
-          <MaterialIcons name='loop' color={props.color} {...iconProps} />
-        ),
-        tabBarIcon: ({ focused, color = 'white' }) => (
-          <MaterialIcons name='loop' color={color} {...iconProps} />
-        )
-      }}
-    />
-  ),
+  // Betalingsopdrachten: (
+  //   <Nav.Screen
+  //     key='Betalingsopdrachten'
+  //     name='Betalingsopdrachten'
+  //     component={StandingOrderStack}
+  //     options={{
+  //       drawerIcon: props => (
+  //         <MaterialIcons name='loop' color={props.color} {...iconProps} />
+  //       ),
+  //       tabBarIcon: ({ focused, color = 'white' }) => (
+  //         <MaterialIcons name='loop' color={color} {...iconProps} />
+  //       )
+  //     }}
+  //   />
+  // ),
   // 'Beheer Vrije Buffer': (
   //   <Nav.Screen
   //     key='Beheer Vrije Buffer'

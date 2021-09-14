@@ -41,9 +41,7 @@ export default function ContributionPrediction ({ route }) {
               Bijdrage op {selectText(item.tierId)} deel
             </Text>
 
-            <Text style={styles.amount}>
-              {mani(item.contribution).format()}
-            </Text>
+            <Text style={styles.amount}>{item.contribution.format()}</Text>
             <View style={styles.icon}>
               <InfoButton
                 logoName='info-outline'
