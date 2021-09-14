@@ -28,7 +28,7 @@ export default function Home () {
       <View style={globalStyles.main}>
         <FlatList
           data={contributions}
-          // keyExtractor={item => item.demurageId.toString()}
+          keyExtractor={item => JSON.stringify(item)} // TODO: handle keys smarter
           renderItem={({ item }) => (
             <Card>
               <Text style={globalStyles.property}>

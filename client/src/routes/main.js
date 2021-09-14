@@ -48,10 +48,10 @@ const screens = ({ Nav }) => ({
       }}
     />
   ),
-  Geschiedenis: (
+  Transacties: (
     <Nav.Screen
-      key='Geschiedenis'
-      name='Geschiedenis'
+      key='Transacties'
+      name='Transacties'
       component={TransactionHistoryStack}
       options={{
         drawerIcon: props => (
@@ -63,10 +63,10 @@ const screens = ({ Nav }) => ({
       }}
     />
   ),
-  'Bijdrage Geschiedenis': (
+  Bijdragen: (
     <Nav.Screen
-      key='Bijdrage Geschiedenis'
-      name='Bijdrage Geschiedenis'
+      key='Bijdragen'
+      name='Bijdragen'
       component={ContributionHistoryStack}
       options={{
         drawerIcon: props => (

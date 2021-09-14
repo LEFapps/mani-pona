@@ -1,5 +1,6 @@
 import React from 'react'
 import { createStackNavigator } from '@react-navigation/stack'
+import { useIsFocused } from '@react-navigation/native'
 
 import StandingOrder from '../../screens/standingOrders'
 import AddStandingOrder from '../../screens/addStandingOrder'
@@ -10,29 +11,33 @@ import Header from '../../shared/header'
 const StandingOrderStack = createStackNavigator()
 
 const standingOrderStack = () => {
+  const isFocused = useIsFocused()
   return (
-    <StandingOrderStack.Navigator
-      initialRouteName='StandingOrder'
-      screenOptions={{
-        headerStyle: {
-          backgroundColor: '#2B8AA0'
-        },
-        headerTintColor: '#fff',
-        headerTitleStyle: {
-          fontWeight: 'bold'
-        },
-        headerTitleAlign: 'center'
-      }}
-    >
-      <StandingOrderStack.Screen
-        name='StandingOrder'
-        component={StandingOrder}
-        options={() => ({
-          headerTitle: () => <Header title='Betalingsopdrachten' icon='menu' />
-        })}
-      />
+    isFocused && (
+      <StandingOrderStack.Navigator
+        initialRouteName='StandingOrder'
+        screenOptions={{
+          headerStyle: {
+            backgroundColor: '#2B8AA0'
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: 'bold'
+          },
+          headerTitleAlign: 'center'
+        }}
+      >
+        <StandingOrderStack.Screen
+          name='StandingOrder'
+          component={StandingOrder}
+          options={() => ({
+            headerTitle: () => (
+              <Header title='Betalingsopdrachten' icon='menu' />
+            )
+          })}
+        />
 
-      {/* <StandingOrderStack.Screen
+        {/* <StandingOrderStack.Screen
 				name="AddStandingOrder"
 				component={AddStandingOrder}
 				options={{ title: 'Toevoegen', headerBackTitle: 'Terug' }}
@@ -48,7 +53,8 @@ const standingOrderStack = () => {
 				component={CamToAddStandingOrder}
 				options={{ title: 'Scan QR-Code', headerBackTitle: 'Annuleren' }}
 			/> */}
-    </StandingOrderStack.Navigator>
+      </StandingOrderStack.Navigator>
+    )
   )
 }
 
