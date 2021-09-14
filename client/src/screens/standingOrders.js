@@ -4,6 +4,7 @@ import Card from '../shared/bigCardWithButtons'
 import IconButton from '../shared/buttons/iconButton'
 import { globalStyles } from '../styles/global'
 import mani from '../../shared/mani'
+import { Contact } from '../shared/contact'
 
 export default function StandingOrder ({ navigation }) {
   const [standingOrders, setOrders] = useState([])
@@ -15,10 +16,10 @@ export default function StandingOrder ({ navigation }) {
   }, [])
 
   async function loadData () {
-    await ManiClient.transactions.pending().then(standingOrders => {
-      setOrders(standingOrders)
+    await ManiClient.transactions.pending().then(pending => {
+      setOrders(pending ? [{ ...pending, key: 'pending' }] : [])
+      setReady(true)
     })
-    setReady(true)
   }
 
   if (ready) {
@@ -32,7 +33,7 @@ export default function StandingOrder ({ navigation }) {
         <FlatList
           style={{ marginTop: 5 }}
           data={standingOrders}
-          keyExtractor={item => item.challenge.toString()}
+          // keyExtractor={item => item.challenge.toString()}
           renderItem={({ item }) => {
             if (!item) return
             const {
@@ -52,12 +53,26 @@ export default function StandingOrder ({ navigation }) {
                 onPressConfirm={
                   !toSign
                     ? undefined
-                    : () => ManiClient.transactions.confirm(challenge)
+                    : () =>
+                        ManiClient.transactions
+                          .confirm(challenge)
+                          .then(confirm => {
+                            console.log('confirm', confirm)
+                            navigation.navigate('LoREco')
+                          })
+                          .catch(console.error)
                 }
                 onPressCancel={
                   destination === 'system' || !toSign
                     ? undefined
-                    : () => ManiClient.transactions.cancel(challenge)
+                    : () =>
+                        ManiClient.transactions
+                          .cancel(challenge)
+                          .then(cancel => {
+                            console.log('cancel', cancel)
+                            navigation.navigate('LoREco')
+                          })
+                          .catch(lorrconsole.error)
                 }
               >
                 <View style={{ flexDirection: 'row' }}>
@@ -77,11 +92,12 @@ export default function StandingOrder ({ navigation }) {
                     </Text>
                   </View>
                   <View style={globalStyles.cardValues}>
+                    <Contact
+                      style={globalStyles.cardValueText}
+                      ledger={destination.toString()}
+                    />
                     <Text style={globalStyles.cardValueText}>
-                      {destination.toString()}
-                    </Text>
-                    <Text style={globalStyles.cardValueText}>
-                      {mani(amount).format()}
+                      {amount.format()}
                     </Text>
                     <Text style={globalStyles.cardValueText}>
                       {new Date(challenge.endDate || date).toLocaleDateString()}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs'
 import { NavigationContainer } from '@react-navigation/native'
-import { View } from 'react-native'
+import { View, Text } from 'react-native'
 import {
   MaterialIcons,
   MaterialCommunityIcons,
@@ -86,21 +86,21 @@ const screens = ({ Nav }) => ({
       }}
     />
   ),
-  // Betalingsopdrachten: (
-  //   <Nav.Screen
-  //     key='Betalingsopdrachten'
-  //     name='Betalingsopdrachten'
-  //     component={StandingOrderStack}
-  //     options={{
-  //       drawerIcon: props => (
-  //         <MaterialIcons name='loop' color={props.color} {...iconProps} />
-  //       ),
-  //       tabBarIcon: ({ focused, color = 'white' }) => (
-  //         <MaterialIcons name='loop' color={color} {...iconProps} />
-  //       )
-  //     }}
-  //   />
-  // ),
+  Betalingsopdrachten: (
+    <Nav.Screen
+      key='Betalingsopdrachten'
+      name='Betalingsopdrachten'
+      component={StandingOrderStack}
+      options={{
+        drawerIcon: props => (
+          <MaterialIcons name='loop' color={props.color} {...iconProps} />
+        ),
+        tabBarIcon: ({ focused, color = 'white' }) => (
+          <MaterialIcons name='loop' color={color} {...iconProps} />
+        )
+      }}
+    />
+  ),
   // 'Beheer Vrije Buffer': (
   //   <Nav.Screen
   //     key='Beheer Vrije Buffer'
@@ -151,37 +151,54 @@ const screens = ({ Nav }) => ({
 
 export default function drawerNavigator (props) {
   const [hasPending, setPending] = useState(null)
-  const [isReady, setReady] = useState(null)
+  const [isPolling, setPolling] = useState(null)
   const ManiClient = global.maniClient
   const Nav = createMaterialBottomTabNavigator()
   const navScreens = screens({ Nav })
 
   useEffect(() => {
-    if (!isReady) {
-      getPending().then(p => {
-        setPending(p)
-        setReady(true)
-      })
-    }
-  }, [isReady])
+    pollPending()
+    // return () => {
+    //   console.log('cleanup', isPolling)
+    //   isPolling && clearInterval(isPolling)
+    // }
+  })
 
-  const getPending = async () => {
-    const data = await ManiClient.transactions.pending()
-    return data && data.length
+  const getPending = () => {
+    ManiClient.transactions
+      .pending()
+      .then(pending => {
+        console.log('PENDING', pending)
+        setPending(pending)
+      })
+      .catch(console.error)
   }
 
-  console.log(hasPending)
+  const pollPending = () => {
+    if (!isPolling) {
+      getPending()
+      // const poll = setInterval(() => getPending(), 5000)
+      // console.log('init poll', poll)
+      // setPolling(poll)
+      setPolling(true)
+    }
+  }
 
   if (props.authState === 'signedIn') {
     return (
       <View style={globalStyles.container}>
-        <NavigationContainer>
-          <Nav.Navigator barStyle={{ backgroundColor: colors.DarkerBlue }}>
-            {hasPending
-              ? ['Betalingsopdrachten'].map(screen => navScreens[screen])
-              : Object.keys(navScreens).map(screen => navScreens[screen])}
-          </Nav.Navigator>
-        </NavigationContainer>
+        {hasPending === null ? (
+          <Text>Rekening controleren...</Text>
+        ) : (
+          <NavigationContainer>
+            <Nav.Navigator
+              barStyle={{ backgroundColor: colors.DarkerBlue }}
+              initialRouteName={hasPending ? 'Betalingsopdrachten' : 'LoREco'}
+            >
+              {Object.keys(navScreens).map(screen => navScreens[screen])}
+            </Nav.Navigator>
+          </NavigationContainer>
+        )}
       </View>
     )
   } else {
