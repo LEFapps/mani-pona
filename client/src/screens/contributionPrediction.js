@@ -7,7 +7,7 @@ import { colors } from '../helpers/helper'
 const { DarkerBlue, CurrencyColor } = colors
 
 export default function ContributionPrediction ({ route }) {
-  const { tiers, totalDemurage } = route.params
+  const { demurrage } = route.params
 
   function selectText (number) {
     const numbers = [
@@ -29,10 +29,10 @@ export default function ContributionPrediction ({ route }) {
     <View style={globalStyles.main}>
       <View style={globalStyles.amountHeader}>
         <Text style={globalStyles.property}>Totaal voorspelde bijdrage:</Text>
-        <Text style={globalStyles.price}>{mani(totalDemurage).format()}</Text>
+        <Text style={globalStyles.price}>{mani(demurrage).format()}</Text>
       </View>
 
-      <FlatList
+      {/*<FlatList
         keyExtractor={item => item.tierId.toString()}
         data={tiers}
         renderItem={({ item }) => (
@@ -55,7 +55,7 @@ export default function ContributionPrediction ({ route }) {
                       mani(item.start).format() +
                       ' en ' +
                       mani(item.end).format() +
-                      ' betaald u ' +
+                      ' betaalt u ' +
                       item.percentage +
                       '% bijdrage.'
                   )
@@ -64,7 +64,7 @@ export default function ContributionPrediction ({ route }) {
             </View>
           </View>
         )}
-      />
+              />*/}
     </View>
   )
 }

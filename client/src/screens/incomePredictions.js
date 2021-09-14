@@ -22,23 +22,23 @@ const monthStrings = [
 ]
 
 export default function incomePrediction ({ route }) {
-  const { currentPrediction, predictions } = route.params
-  const currentYear = new Date().getYear()
-  const currentMonth = new Date().getMonth()
-  const [income, setIncome] = useState(currentPrediction)
-  const [month, setMonth] = useState(currentMonth)
+  const { income } = route.params
+  // const currentYear = new Date().getYear()
+  // const currentMonth = new Date().getMonth()
+  // const [income, setIncome] = useState(currentPrediction)
+  // const [month, setMonth] = useState(currentMonth)
 
-  function changeValue (itemIndex) {
-    setIncome(predictions[itemIndex].income)
-  }
+  // function changeValue (itemIndex) {
+  //   setIncome(predictions[itemIndex].income)
+  // }
 
   return (
     <View style={globalStyles.main}>
       <View style={globalStyles.amountHeader}>
         <Text style={globalStyles.property}>Voorspelling huidige maand:</Text>
-        <Text style={globalStyles.price}>{currentPrediction.format()}</Text>
+        <Text style={globalStyles.price}>{income.format()}</Text>
       </View>
-      <Text style={globalStyles.label}>Selecteer maand</Text>
+      {/*<Text style={globalStyles.label}>Selecteer maand</Text>
       <View>
         <View style={globalStyles.input}>
           <Picker
@@ -74,7 +74,7 @@ export default function incomePrediction ({ route }) {
           </Text>
           <Text style={styles.amount}>+ {income.format()}</Text>
         </View>
-      </View>
+                </View>*/}
     </View>
   )
 }
