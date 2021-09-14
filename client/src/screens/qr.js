@@ -37,8 +37,12 @@ export default function Home ({ navigation }) {
     maniClient.transactions
       .challenge(destination, MANI(amount))
       .then(challenge => {
-        console.log('PAYMENT', challenge)
-        if (challenge) navigation.navigate('AccountBalance')
+        console.log('CHALLENGE', challenge)
+        return maniClient.transactions.create(challenge)
+      })
+      .then(create => {
+        console.log('CREATE', create)
+        if (create) navigation.navigate('AccountBalance')
       })
       .catch(err => {
         setError(err.message)
