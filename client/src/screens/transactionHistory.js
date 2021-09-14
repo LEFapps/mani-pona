@@ -4,6 +4,7 @@ import { View, Text, FlatList, TouchableOpacity } from 'react-native'
 import Card from '../shared/card'
 import HistoryButton from '../shared/buttons/historyButton'
 import { globalStyles } from '../styles/global'
+import MANI from '../../shared/mani'
 
 export default function TransactionHitstory ({ navigation }) {
   const [transactions, setTransactions] = useState([])
@@ -95,7 +96,9 @@ export default function TransactionHitstory ({ navigation }) {
         />
         <View>
           <FlatList
-            keyExtractor={item => item.transactionId.toString()}
+            keyExtractor={({ ledger, destination, date }) =>
+              `${ledger}-${destination}-${date}`
+            }
             data={transactionsToShow}
             renderItem={({ item }) => (
               <TouchableOpacity
@@ -115,9 +118,7 @@ export default function TransactionHitstory ({ navigation }) {
                       {new Date(item.date).toLocaleString()}
                     </Text>
                   </View>
-                  <Text style={globalStyles.price}>
-                    {MANI(item.amount).format()}
-                  </Text>
+                  <Text style={globalStyles.price}>{item.amount.format()}</Text>
                 </Card>
               </TouchableOpacity>
             )}

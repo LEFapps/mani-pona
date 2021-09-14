@@ -19,9 +19,7 @@ export default function TransactionHitstory ({ route }) {
       </Card>
       <Card>
         <Text style={globalStyles.property}>Bedrag:</Text>
-        <Text style={globalStyles.price}>
-          {mani(transaction.amount).format()}
-        </Text>
+        <Text style={globalStyles.price}>{transaction.amount.format()}</Text>
       </Card>
       <Card>
         <Text style={globalStyles.property}>Datum:</Text>
