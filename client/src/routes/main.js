@@ -48,6 +48,21 @@ const screens = ({ Nav }) => ({
       }}
     />
   ),
+  Betalingsopdrachten: (
+    <Nav.Screen
+      key='Betalingsopdrachten'
+      name='Betalingsopdrachten'
+      component={StandingOrderStack}
+      options={{
+        drawerIcon: props => (
+          <MaterialIcons name='loop' color={props.color} {...iconProps} />
+        ),
+        tabBarIcon: ({ focused, color = 'white' }) => (
+          <MaterialIcons name='loop' color={color} {...iconProps} />
+        )
+      }}
+    />
+  ),
   Transacties: (
     <Nav.Screen
       key='Transacties'
@@ -82,21 +97,6 @@ const screens = ({ Nav }) => ({
             color={color}
             {...iconProps}
           />
-        )
-      }}
-    />
-  ),
-  Betalingsopdrachten: (
-    <Nav.Screen
-      key='Betalingsopdrachten'
-      name='Betalingsopdrachten'
-      component={StandingOrderStack}
-      options={{
-        drawerIcon: props => (
-          <MaterialIcons name='loop' color={props.color} {...iconProps} />
-        ),
-        tabBarIcon: ({ focused, color = 'white' }) => (
-          <MaterialIcons name='loop' color={color} {...iconProps} />
         )
       }}
     />
@@ -171,7 +171,10 @@ export default function drawerNavigator (props) {
         console.log('PENDING', pending)
         setPending(pending)
       })
-      .catch(console.error)
+      .catch(e => {
+        console.error(e.message)
+        setPending(undefined)
+      })
   }
 
   const pollPending = () => {
@@ -202,6 +205,6 @@ export default function drawerNavigator (props) {
       </View>
     )
   } else {
-    return null
+    return <View />
   }
 }
