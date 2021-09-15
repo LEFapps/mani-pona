@@ -7,6 +7,7 @@ import {
   MaterialCommunityIcons,
   Entypo
 } from '@expo/vector-icons'
+import Auth from '@aws-amplify/auth'
 
 import AccountStack from '../routes/stacks/accountStack'
 import HomeStack from './stacks/homeStack'
@@ -164,22 +165,35 @@ export default function drawerNavigator (props) {
     // }
   })
 
-  const getPending = () => {
-    ManiClient.transactions
-      .pending()
-      .then(pending => {
-        console.log('PENDING', pending)
-        setPending(pending)
-      })
-      .catch(e => {
-        console.error(e.message)
-        setPending(undefined)
-      })
+  const getPending = async () => {
+    await ManiClient.find(ManiClient.id).then(async found => {
+      if (found) {
+        // autoRegister
+        await Auth.currentSession()
+          .then(async data => {
+            const { 'custom:ledger': ledger } = data.idToken.payload
+            console.log('Cognito Ledger:', ledger)
+            console.log('Local Ledger:', ManiClient.id)
+            if (ManiClient.id !== ledger) await Auth.signOut({ global: true })
+          })
+          .catch(err => console.log(err))
+      }
+      ManiClient.transactions
+        .pending()
+        .then(pending => {
+          console.log('PENDING', pending)
+          setPending(pending)
+        })
+        .catch(e => {
+          console.error(e.message)
+          setPending(undefined)
+        })
+    })
   }
 
-  const pollPending = () => {
+  const pollPending = async () => {
     if (!isPolling) {
-      getPending()
+      await getPending()
       // const poll = setInterval(() => getPending(), 5000)
       // console.log('init poll', poll)
       // setPolling(poll)

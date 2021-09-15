@@ -23,9 +23,14 @@ export default function AccountBalance ({ navigation }) {
       .then(async found => {
         console.log('Ledger registered:', !!found)
         if (!found) {
+          // autoRegister
           return await Auth.currentSession()
             .then(async data => {
-              const { email, 'custom:alias': alias } = data.idToken.payload
+              const {
+                email,
+                'custom:alias': alias,
+                'custom:ledger': ledger
+              } = data.idToken.payload
               await ManiClient.register(alias || email)
               loadData()
             })
