@@ -7,7 +7,8 @@ import { colors } from '../helpers/helper'
 const { DarkerBlue, CurrencyColor } = colors
 
 export default function ContributionPrediction ({ route }) {
-  const { demurrage } = route.params
+  const { demurrage, current } = route.params
+  console.log(current.balance)
 
   function selectText (number) {
     const numbers = [
@@ -29,7 +30,9 @@ export default function ContributionPrediction ({ route }) {
     <View style={globalStyles.main}>
       <View style={globalStyles.amountHeader}>
         <Text style={globalStyles.property}>Totaal voorspelde bijdrage:</Text>
-        <Text style={globalStyles.price}>{mani(demurrage).format()}</Text>
+        <Text style={globalStyles.price}>
+          {current.balance.multiply(demurrage / 100).format()}
+        </Text>
       </View>
 
       {/*<FlatList

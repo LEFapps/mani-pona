@@ -48,20 +48,20 @@ export default function AccountBalance ({ navigation }) {
             onPress={() =>
               navigation.navigate('Bijdragen', {
                 screen: 'IncomePrediction',
-                params: { income }
+                params: { income, current }
               })
             }
           />
         </View>
         <View style={styles.part}>
           <Text style={styles.title}>Voorspellingen bijdrage</Text>
-          <Text style={styles.amount}>{mani(demurrage).format()}</Text>
+          <Text style={styles.amount}>{demurrage} %</Text>
           <CustomButton
             text='Bekijk voorspelling'
             onPress={() =>
               navigation.navigate('Bijdragen', {
                 screen: 'ContributionPrediction',
-                params: { demurrage }
+                params: { demurrage, current }
               })
             }
           />

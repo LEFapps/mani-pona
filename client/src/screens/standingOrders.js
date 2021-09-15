@@ -9,6 +9,7 @@ import { Contact } from '../shared/contact'
 export default function StandingOrder ({ navigation }) {
   const [standingOrders, setOrders] = useState([])
   const [ready, setReady] = useState(false)
+  const [error, setError] = useState(false)
   const ManiClient = global.maniClient
 
   useEffect(() => {
@@ -16,10 +17,13 @@ export default function StandingOrder ({ navigation }) {
   }, [])
 
   async function loadData () {
-    await ManiClient.transactions.pending().then(pending => {
-      setOrders(pending ? [{ ...pending, key: 'pending' }] : [])
-      setReady(true)
-    })
+    await ManiClient.transactions
+      .pending()
+      .then(pending => {
+        setOrders(pending ? [{ ...pending, key: 'pending' }] : [])
+        setReady(true)
+      })
+      .catch(e => setError(e.message))
   }
 
   if (ready) {
@@ -30,6 +34,7 @@ export default function StandingOrder ({ navigation }) {
           iconColor='white'
           onPress={() => navigation.push('CamToAddStandingOrder')}
         /> */}
+        {error && <Text style={globalStyles.errorText}>{error}</Text>}
         <FlatList
           style={{ marginTop: 5 }}
           data={standingOrders}
