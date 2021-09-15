@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { View, Text, StyleSheet } from 'react-native'
+import Auth from '@aws-amplify/auth'
 import CustomButton from '../shared/buttons/button'
 import { globalStyles } from '../styles/global.js'
 import mani from '../../shared/mani'
@@ -18,18 +19,34 @@ export default function AccountBalance ({ navigation }) {
   }, [])
 
   async function loadData () {
-    await ManiClient.transactions
-      .current()
-      .then(setCurrent)
-      .catch(console.error)
-    await ManiClient.system
-      .parameters()
-      .then(({ demurrage, income }) => {
-        setDemurrage(demurrage) // int
-        setIncome(income) // mani
+    await ManiClient.find(ManiClient.id)
+      .then(async found => {
+        console.log('Ledger registered:', !!found)
+        if (!found) {
+          return await Auth.currentSession()
+            .then(async data => {
+              const { email, 'custom:alias': alias } = data.idToken.payload
+              await ManiClient.register(alias || email)
+              loadData()
+            })
+            .catch(err => console.log(err))
+        }
+        await ManiClient.transactions
+          .current()
+          .then(setCurrent)
+          .catch(console.error)
+        await ManiClient.system
+          .parameters()
+          .then(({ demurrage, income }) => {
+            setDemurrage(demurrage) // int
+            setIncome(income) // mani
+          })
+          .catch(console.error)
+        setReady(true)
       })
-      .catch(console.error)
-    setReady(true)
+      .catch(async e => {
+        console.error((e && e.message) || e)
+      })
   }
 
   if (ready) {
@@ -37,7 +54,9 @@ export default function AccountBalance ({ navigation }) {
       <View style={globalStyles.main}>
         <View style={globalStyles.amountHeader}>
           <Text style={globalStyles.property}>Huidige rekeningstand:</Text>
-          <Text style={globalStyles.price}>{current.balance.format()}</Text>
+          <Text style={globalStyles.price}>
+            {!!current.balance && current.balance.format()}
+          </Text>
         </View>
 
         <View style={styles.part}>
