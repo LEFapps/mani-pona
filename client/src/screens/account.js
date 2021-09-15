@@ -4,6 +4,7 @@ import { globalStyles } from '../styles/global'
 import Auth from '@aws-amplify/auth'
 import Card from '../shared/card'
 import CustomButton from '../shared/buttons/button'
+import ExportKeys from './auth/_keys'
 
 export default function Home () {
   const [email, setEmail] = useState('')
@@ -17,7 +18,7 @@ export default function Home () {
     await Auth.currentSession()
       .then(data => {
         setEmail(data.idToken.payload['email'])
-        setAlias(data.idToken.payload['alias'])
+        setAlias(data.idToken.payload['custom:alias'])
       })
       .catch(err => console.log(err))
   }
@@ -47,6 +48,7 @@ export default function Home () {
         </Card>
       </View>
 
+      <ExportKeys />
       <CustomButton text='Afmelden' onPress={() => signOut()} />
     </View>
   )
