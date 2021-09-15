@@ -44,6 +44,9 @@ const KeyManager = async store => {
     store.saveKeys(keys)
     return keys
   }
+  async function clear () {
+    return await store.removeKeys()
+  }
   async function sign (payload) {
     const storedKeys = await getKeys()
     return storedKeys && storedKeys.privateKey.sign(payload)
@@ -55,6 +58,7 @@ const KeyManager = async store => {
   return {
     getKeys,
     setKeys,
+    clear,
     fingerprint,
     sign
   }

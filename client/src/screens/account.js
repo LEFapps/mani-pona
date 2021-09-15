@@ -5,8 +5,11 @@ import Auth from '@aws-amplify/auth'
 import Card from '../shared/card'
 import CustomButton from '../shared/buttons/button'
 import ExportKeys from './auth/_keys'
+import { resetClient } from '../../App'
 
 export default function Home () {
+  const { maniClient } = global
+
   const [email, setEmail] = useState('')
   const [alias, setAlias] = useState('')
 
@@ -23,8 +26,14 @@ export default function Home () {
       .catch(err => console.log(err))
   }
 
-  async function signOut () {
+  async function signOut (clearKeys = false) {
+    const proceed = confirm(
+      'Bent u zeker dat u wil afmelden? Denk eraan om uw sleutels te exporteren als u op een ander toestel wil aanmelden!'
+    )
+    if (!proceed) return
     try {
+      if (clearKeys) await maniClient.cleanup()
+      await resetClient()
       await Auth.signOut({ global: true })
     } catch (error) {
       Alert.alert('error signing out: ', error)
@@ -50,6 +59,10 @@ export default function Home () {
 
       <ExportKeys />
       <CustomButton text='Afmelden' onPress={() => signOut()} />
+      <CustomButton
+        text='Afmelden en sleutels wissen'
+        onPress={() => signOut(true)}
+      />
     </View>
   )
 }

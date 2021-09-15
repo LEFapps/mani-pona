@@ -8,12 +8,11 @@ import SignIn from '../src/screens/auth/signIn'
 import SignUp from '../src/screens/auth/signUp'
 import ConfirmSignUp from '../src/screens/auth/confirmSignUp'
 import Navigation from '../src/routes/main'
-import graphqlClient from '../apollo/client'
 import CustomButton from './shared/buttons/button'
 
 import config from '../aws-config'
-import ManiClient from './maniClient'
 import { globalStyles } from './styles/global'
+import { resetClient } from '../App'
 
 const KeyPrompt = ({ onResolve, ...props }) => {
   const { maniClient } = global
@@ -26,7 +25,7 @@ const KeyPrompt = ({ onResolve, ...props }) => {
       .then(async keys => {
         if (keys) {
           // re-init maniCLient with new keys
-          global.maniClient = await ManiClient({ graphqlClient })
+          await resetClient()
           onResolve(getValue ? 'pasted' : global.maniClient.id)
         }
       })
@@ -114,6 +113,9 @@ export default () => {
       hideDefault
       authState={isNew ? 'signUp' : 'signIn'}
       onStateChange={authState => {
+        console.log('authState', authState)
+        if (['signIn', 'signUp'].includes(authState))
+          setKeys(global.maniClient.id)
         if (authState === 'verifyContact') setAuthState('signedIn')
       }}
     >

@@ -10,6 +10,7 @@ import {
 } from '../../helpers/validation'
 import { GotoConfirmSignUp, GotoSignIn } from './StateManagers.js'
 import i18n from 'i18n-js'
+import { resetClient } from '../../../App.js'
 
 export default function signUp (props) {
   const ManiClient = global.maniClient
@@ -32,18 +33,16 @@ export default function signUp (props) {
     } else {
       setState(defaultState)
       try {
+        await resetClient()
         await Auth.signUp({
           username: state.email,
           password: state.password,
           attributes: {
             'custom:alias': state.alias,
-            'custom:ledger': ManiClient.id,
+            'custom:ledger': global.maniClient.id,
             email: state.email
           }
         })
-
-        const user = await Auth.signIn(state.email, state.password)
-        setUser(user)
       } catch (error) {
         console.log(error)
         Alert.alert(i18n.t(error.code))

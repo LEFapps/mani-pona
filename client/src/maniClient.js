@@ -49,6 +49,14 @@ const defaultKeyStore = {
       // saving error
       log(e)
     }
+  },
+  async removeKeys (index = 0) {
+    try {
+      await AsyncStorage.removeItem(storageKey + index)
+    } catch (e) {
+      // removing error
+      log(e)
+    }
   }
 }
 
@@ -179,7 +187,8 @@ const ManiClient = async ({
     system,
     admin,
     importKeys: keyManager.setKeys,
-    exposeKeys: keyManager.getKeys
+    exposeKeys: keyManager.getKeys,
+    cleanup: keyManager.clear
   }
 }
 

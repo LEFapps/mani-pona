@@ -23,6 +23,13 @@ Analytics.configure({ disabled: true })
 
 log.enableAll()
 
+export const resetClient = async () => {
+  const mc = await maniClient({ graphqlClient })
+  global.maniClient = mc
+  console.log('resetting client', mc.id)
+  return mc
+}
+
 export default function App () {
   // fail: 'unknown_id'||'timeout'
 
@@ -42,7 +49,7 @@ export default function App () {
 
   const setupClient = async () => {
     log.debug('Starting ManiClient')
-    global.maniClient = await maniClient({ graphqlClient })
+    await resetClient()
     setIsSplashFinished(!!global.maniClient)
   }
 
