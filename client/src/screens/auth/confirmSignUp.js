@@ -14,6 +14,7 @@ import i18n from 'i18n-js'
 import Dialog from 'react-native-dialog'
 
 export default function confirmSignUp (props) {
+  const { maniClient } = global
   const [state, setState] = useState({
     email: '',
     verificationCode: ''
@@ -46,6 +47,7 @@ export default function confirmSignUp (props) {
       })
       try {
         await Auth.confirmSignUp(state.email, state.verificationCode)
+        await maniClient.register(state.email)
         props.onStateChange('signIn', {})
       } catch (error) {
         console.log(error)

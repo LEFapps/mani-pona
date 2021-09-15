@@ -42,8 +42,6 @@ export default function signUp (props) {
           }
         })
 
-        await ManiClient.register(state.email)
-
         const user = await Auth.signIn(state.email, state.password)
         setUser(user)
       } catch (error) {
