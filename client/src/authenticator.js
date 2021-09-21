@@ -132,7 +132,7 @@ export default () => {
 const styles = {
   container: {
     flex: 1,
-    width: Dimensions.get('window').width,
+    width: '100%',
     backgroundColor: '#2B8AA0'
   }
 }
