@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 
-import { View, Text, StyleSheet } from 'react-native'
+import { View, Text, StyleSheet, Platform } from 'react-native'
 import QrScanner from 'react-qr-scanner'
 import Button from '../shared/buttons/largeRoundTextButton'
 import { globalStyles } from '../styles/global'
@@ -24,6 +24,8 @@ export default function Cam (props) {
 
   if (hasPermission === false) return <Text>No access to camera</Text>
 
+  const isDesktop = false
+
   return (
     <View style={globalStyles.screen}>
       <View style={globalStyles.camPlace}>
@@ -37,7 +39,11 @@ export default function Cam (props) {
             // legacyMode
             // interval={5000}
             onLoad={props.onInit}
-            facingMode={'rear'}
+            constraints={{
+              video: {
+                facingMode: { exact: `environment` }
+              }
+            }}
             delay={false}
             // style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
             // style={globalStyles.qrTextContainer}
