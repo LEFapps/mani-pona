@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { TextInput, View, Text, Alert, Platform } from 'react-native'
+import React, { useEffect, useState } from 'react'
+import { TextInput, View, Text, Platform } from 'react-native'
 import { globalStyles } from '../../styles/global.js'
 import Button from '../../shared/buttons/button'
 import Auth from '@aws-amplify/auth'
@@ -9,14 +9,18 @@ import {
   validatePasswordLogIn,
   validateVerificationCode
 } from '../../helpers/validation'
+import Alert from '../../shared/alert'
 import { GotoSignUp, GotoSignIn } from './StateManagers.js'
 import i18n from 'i18n-js'
 import Dialog from 'react-native-dialog'
+import { AppIntegrations } from 'aws-sdk'
 
-export default function confirmSignUp (props) {
+export default function confirmSignUp (props = {}) {
   const { maniClient } = global
+  const { authData } = props
+  const { username } = authData || {}
   const [state, setState] = useState({
-    email: '',
+    email: username || '',
     verificationCode: ''
   })
   const [errors, setErrors] = useState({
@@ -24,13 +28,15 @@ export default function confirmSignUp (props) {
     verificationCode: ''
   })
 
-  const [user, setUser] = useState('')
-
   const [newPassFirst, setNewPassFirst] = useState('')
   const [newPassSecond, setNewPassSecond] = useState('')
 
   const [requirePass, setRequirePass] = useState(false)
   const [passControle, setPassControle] = useState(false)
+
+  useEffect(() => {
+    setState({ ...state, email: username || '' })
+  }, [username])
 
   async function onSubmit () {
     const emailError = validateEmail(state.email)
@@ -47,11 +53,15 @@ export default function confirmSignUp (props) {
       })
       try {
         await Auth.confirmSignUp(state.email, state.verificationCode)
-        await maniClient.register(state.email)
-        props.onStateChange('signIn', {})
       } catch (error) {
         console.log(error)
         Alert.alert(i18n.t(error.code))
+      }
+      try {
+        await maniClient.register(state.email)
+        props.onStateChange('signIn', { username: state.email })
+      } catch (error) {
+        console.log(error)
       }
     }
   }
@@ -59,7 +69,7 @@ export default function confirmSignUp (props) {
   if (props.authState === 'confirmSignUp') {
     return (
       <View style={globalStyles.container}>
-        <Text style={globalStyles.authTitle}>Log In</Text>
+        <Text style={globalStyles.authTitle}>Verificatie</Text>
         <View style={globalStyles.main}>
           <View>
             <Text style={globalStyles.label}>E-mail</Text>

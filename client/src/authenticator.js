@@ -116,7 +116,8 @@ export default () => {
         console.log('authState', authState)
         if (['signIn', 'signUp'].includes(authState))
           setKeys(global.maniClient.id)
-        if (authState === 'verifyContact') setAuthState('signedIn')
+        if (authState === 'verifyContact') return 'signedIn'
+        return authState
       }}
     >
       <Navigation />

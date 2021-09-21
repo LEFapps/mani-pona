@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { TextInput, View, Text, Alert, Platform } from 'react-native'
+import { TextInput, View, Text } from 'react-native'
 import { globalStyles } from '../../styles/global.js'
 import Button from '../../shared/buttons/button'
 import Auth from '@aws-amplify/auth'
@@ -8,6 +8,7 @@ import {
   validatePassword,
   validatePasswordRepeat
 } from '../../helpers/validation'
+import Alert from '../../shared/alert'
 import { GotoConfirmSignUp, GotoSignIn } from './StateManagers.js'
 import i18n from 'i18n-js'
 import { resetClient } from '../../../App.js'
@@ -19,8 +20,6 @@ export default function signUp (props) {
 
   const [state, setState] = useState(defaultState)
   const [errors, setErrors] = useState(defaultState)
-
-  const [user, setUser] = useState('')
 
   async function onSubmit () {
     const emailError = validateEmail(state.email)
@@ -34,7 +33,7 @@ export default function signUp (props) {
       setState(defaultState)
       try {
         await resetClient()
-        await Auth.signUp({
+        const { userConfirmed } = await Auth.signUp({
           username: state.email,
           password: state.password,
           attributes: {
@@ -43,6 +42,9 @@ export default function signUp (props) {
             email: state.email
           }
         })
+        if (userConfirmed)
+          props.onStateChange('signIn', { username: state.email })
+        else props.onStateChange('confirmSignUp', { username: state.email })
       } catch (error) {
         console.log(error)
         Alert.alert(i18n.t(error.code))
