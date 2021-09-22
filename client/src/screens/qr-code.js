@@ -44,9 +44,9 @@ export default function Receive () {
           <View style={styles.qr}>
             <QRCode
               value={getValue}
-              size={300}
-              color='black'
-              backgroundColor='white'
+              size={320}
+              enableLinearGradient
+              linearGradient={['rgb(122,195,241)', 'rgb(43,138,160)']}
             />
           </View>
           <Text style={globalStyles.bigText}>

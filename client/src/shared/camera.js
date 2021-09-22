@@ -1,23 +1,18 @@
 import log from 'loglevel'
 import React, { useState, useEffect } from 'react'
 
-import { View, Text, StyleSheet, Platform } from 'react-native'
+import { View, Text } from 'react-native'
 import QrScanner from 'react-qr-scanner'
-import Button from '../shared/buttons/largeRoundTextButton'
 import { globalStyles } from '../styles/global'
 
 export default function Cam (props) {
   const [hasPermission, setHasPermission] = useState(null)
-  const [scanned, setScanned] = useState(false)
 
   const handleBarCodeScanned = barcode => {
     // barcode in the format: "loreco://scan/f8aca881b6f87f9aa42708943ce067ef8334e9e8/16000"
-    // barcode in the general format: "loreco://<action>/<source:fingerprint>/<amount>?"
+    // barcode in the general format: "loreco://<action>/<source:fingerprint>/<amount * 100>?"
     log.debug('QrScanner/onScan:', barcode)
-    if (barcode) {
-      props.onBarCodeScanned(barcode)
-      setScanned(true)
-    }
+    if (barcode) props.onBarCodeScanned(barcode)
   }
 
   const handleBarCodeError = err => {
