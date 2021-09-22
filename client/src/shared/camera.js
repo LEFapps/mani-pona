@@ -31,6 +31,7 @@ export default function Cam (props) {
           delay={100}
           onError={handleBarCodeError}
           onScan={handleBarCodeScanned}
+          style={cameraStyle}
         >
           <Text>Requesting for camera permission</Text>
         </QrScanner>
@@ -41,4 +42,9 @@ export default function Cam (props) {
       </View>
     </View>
   )
+}
+
+const cameraStyle = {
+  maxHeight: '60vh',
+  objectFit: 'fill'
 }

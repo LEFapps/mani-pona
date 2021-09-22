@@ -7,86 +7,13 @@ import log from 'loglevel'
 import SignIn from '../src/screens/auth/signIn'
 import SignUp from '../src/screens/auth/signUp'
 import ConfirmSignUp from '../src/screens/auth/confirmSignUp'
+import KeyPrompt from '../src/screens/auth/keyPrompt'
 import Navigation from '../src/routes/main'
 import CustomButton from './shared/buttons/button'
 
 import config from '../aws-config'
 import { globalStyles } from './styles/global'
 import { resetClient } from '../App'
-
-const KeyPrompt = ({ onResolve, ...props }) => {
-  const { maniClient } = global
-
-  const [getValue, setValue] = useState('')
-
-  const setKeys = async () => {
-    maniClient
-      .importKeys(getValue)
-      .then(async keys => {
-        if (keys) {
-          // re-init maniCLient with new keys
-          await resetClient()
-          onResolve(getValue ? 'pasted' : global.maniClient.id)
-        }
-      })
-      .catch(e => {
-        console.error(e)
-        setValue('')
-      })
-  }
-
-  return (
-    <View style={globalStyles.container}>
-      <View style={globalStyles.main}>
-        <Text style={globalStyles.bigText}>Welkom bij LoREco!</Text>
-        <View style={globalStyles.paragraph}>
-          <Text style={globalStyles.text}>
-            Je bent hier in deze browser of op dit toestel voor het eerst.
-          </Text>
-        </View>
-        <View style={globalStyles.paragraph}>
-          <Text style={globalStyles.text}>
-            Heb je nog geen account? Ga dan verder als nieuwe gebruiker.
-          </Text>
-        </View>
-        <CustomButton
-          text={'Doorgaan als nieuwe gebruiker'}
-          onPress={setKeys}
-          style={{ margin: '1em 0' }}
-          disabled={!!getValue}
-        />
-        <View style={globalStyles.paragraph}>
-          <Text style={globalStyles.text}>
-            Heb je op een ander toestel een account aangemaakt? Plak hieronder
-            dan eerst je persoonlijke sleutels die je op je accountpagina kan
-            opvragen.
-          </Text>
-        </View>
-        <TextInput
-          onChangeText={setValue}
-          value={getValue}
-          style={{
-            width: '100%',
-            height: '50vh',
-            marginTop: '16px',
-            marginBottom: '16px'
-          }}
-          placeholder={'Plak hier je persoonlijke sleutels'}
-          multiline
-        />
-        <CustomButton
-          text={'Sleutels gebruiken'}
-          onPress={setKeys}
-          style={{
-            marginTop: '16px',
-            marginBottom: '16px'
-          }}
-          disabled={!getValue}
-        />
-      </View>
-    </View>
-  )
-}
 
 export default () => {
   const { maniClient } = global

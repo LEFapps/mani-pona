@@ -17,7 +17,9 @@ import { globalStyles } from '../../styles/global'
 const KeyTabs = createMaterialTopTabNavigator()
 
 const ModalContent = ({ data }) => {
-  const QrData = () => (
+  if (!data) return null
+
+  const QrData = index => () => (
     <View
       style={{
         backgroundColor: 'white',
@@ -32,8 +34,8 @@ const ModalContent = ({ data }) => {
       </Text>
       <View style={styles.qr}>
         <QRCode
-          value={data}
-          size={256}
+          value={'loreco:import/' + data[index]}
+          size={320}
           enableLinearGradient
           linearGradient={['rgb(122,195,241)', 'rgb(43,138,160)']}
           style={{ maxWidth: '80vw' }}
@@ -57,7 +59,7 @@ const ModalContent = ({ data }) => {
         gebruiker dit toestel gebruikt heeft.
       </Text>
       <TextInput
-        value={data || ''}
+        value={data.join('\n\n')}
         style={{
           width: '100%',
           height: '40vh',
@@ -77,7 +79,8 @@ const ModalContent = ({ data }) => {
         flex: '0 0 90vw'
       }}
     >
-      <KeyTabs.Screen name={'QR-code'} component={QrData} />
+      <KeyTabs.Screen name={'QR-code 1'} component={QrData(0)} />
+      <KeyTabs.Screen name={'QR-code 2'} component={QrData(1)} />
       <KeyTabs.Screen name={'Kopiëren'} component={TextData} />
     </KeyTabs.Navigator>
   )
@@ -90,7 +93,7 @@ const ExportKeys = () => {
   const getKeys = async () => {
     setBusy(true)
     maniClient.exposeKeys().then(({ privateKeyArmored, publicKeyArmored }) => {
-      setKeys(`${privateKeyArmored}\n\n${publicKeyArmored}`)
+      setKeys([privateKeyArmored, publicKeyArmored])
       setBusy(false)
     })
   }
