@@ -13,22 +13,27 @@ import { resetClient } from '../../../App'
 
 const KeyTabs = createMaterialTopTabNavigator()
 
-const ImportModal = ({ onValue, isOpen, setOpen, navigation, route = {} }) => {
-  const { prevScan = '' } = route.params || {}
-  const QrData = index => () => {
+const ImportModal = ({ onValue, isOpen, setOpen }) => {
+  const QrData = index => ({ navigation, route = {} }) => {
+    const [modalStep, setStep] = useState()
+    const { prevScan = '' } = route.params || {}
+
     const readBarcode = (data = 'loreco:null') => {
       log.debug('scanned data', data)
-      const [action, params] = data
+      const [action, ...params] = data
         .split(':')
         .pop()
         .split('/')
       log.debug('scanned action', action)
       if (action === 'import') {
-        if (index) {
-          onValue([prevScan, params].join('\n\n'))
-        } else {
-          navigation.navigate('QR-code 2', { prevScan: params })
-        }
+        const scanned = params.join('/')
+        // https://stackoverflow.com/questions/55621212/is-it-possible-to-react-usestate-in-react
+        if (index)
+          setStep(() => () => onValue([prevScan, scanned].join('\n\n')))
+        else
+          setStep(() => () =>
+            navigation.navigate('QR-code 2', { prevScan: scanned })
+          )
       }
     }
     return (
@@ -40,39 +45,57 @@ const ImportModal = ({ onValue, isOpen, setOpen, navigation, route = {} }) => {
           flexDirection: 'column'
         }}
       >
-        <Camera
-          // onInit={reset}
-          onBarCodeScanned={readBarcode}
-          text='Scan de QR-code met jouw persoonlijke geheime sleutels.'
-        />
+        {modalStep ? (
+          <CustomButton text={'Volgende stap ››'} onPress={modalStep} />
+        ) : (
+          navigation.isFocused() && (
+            <Camera
+              // onInit={reset}
+              onBarCodeScanned={readBarcode}
+              text={`Scan QR-code ${index +
+                1} met jouw persoonlijke geheime sleutels.`}
+            />
+          )
+        )}
       </View>
     )
   }
 
-  const TextData = () => (
-    <View
-      style={{
-        backgroundColor: 'white',
-        paddingVertical: 16,
-        display: 'flex',
-        flexDirection: 'column'
-      }}
-    >
-      <Text style={globalStyles.text}>Plak hieronder jouw sleutels.</Text>
-      <TextInput
-        onChangeText={onValue}
-        // value={textData}
+  const TextData = () => {
+    const [modalStep, setStep] = useState()
+    return (
+      <View
         style={{
-          width: '100%',
-          height: '50vh',
-          marginTop: '16px',
-          marginBottom: '16px'
+          backgroundColor: 'white',
+          paddingVertical: 16,
+          display: 'flex',
+          flexDirection: 'column'
         }}
-        placeholder={'Plak hier je persoonlijke sleutels'}
-        multiline
-      />
-    </View>
-  )
+      >
+        <Text style={globalStyles.text}>Plak hieronder jouw sleutels.</Text>
+        {modalStep ? (
+          <CustomButton
+            text={'Volgende stap ››'}
+            style={{ marginTop: -10 }}
+            onPress={modalStep}
+          />
+        ) : (
+          <TextInput
+            onChangeText={data => setStep(() => onValue(data))}
+            // value={textData}
+            style={{
+              width: '100%',
+              height: '50vh',
+              marginTop: '16px',
+              marginBottom: '16px'
+            }}
+            placeholder={'Plak hier je persoonlijke sleutels'}
+            multiline
+          />
+        )}
+      </View>
+    )
+  }
 
   return (
     <NavigationContainer>
@@ -93,9 +116,9 @@ const ImportModal = ({ onValue, isOpen, setOpen, navigation, route = {} }) => {
               <KeyTabs.Screen name={'Plakken'} component={TextData} />
             </KeyTabs.Navigator>
             <Button
-              title={'Verder…'}
-              style={{ marginTop: 10 }}
-              onPress={() => setOpen()}
+              title={'Sluiten'}
+              style={{ marginTop: 10, marginHorizontal: 16 }}
+              onPress={() => setOpen(false)}
             />
           </View>
         </View>

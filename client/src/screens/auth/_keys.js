@@ -34,10 +34,8 @@ const ModalContent = ({ data }) => {
       </Text>
       <View style={styles.qr}>
         <QRCode
-          value={'loreco:import/' + data[index]}
+          value={'loreco:import/' + (index < 0 ? data.join('/') : data[index])}
           size={320}
-          enableLinearGradient
-          linearGradient={['rgb(122,195,241)', 'rgb(43,138,160)']}
           style={{ maxWidth: '80vw' }}
         />
       </View>
