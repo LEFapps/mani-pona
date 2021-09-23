@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { View, Text, FlatList, TouchableOpacity } from 'react-native'
 
 import Card from '../shared/card'
-import HistoryButton from '../shared/buttons/historyButton'
+import { HistoryButton } from '../shared/buttons/historyButton'
 import { globalStyles } from '../styles/global'
 import MANI from '../../shared/mani'
 import { Contact } from '../shared/contact'
