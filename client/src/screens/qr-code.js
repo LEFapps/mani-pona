@@ -4,6 +4,7 @@ import QRCode from 'react-native-qrcode-svg'
 
 import { globalStyles } from '../styles/global'
 import { colors } from '../helpers/helper'
+import FlatButton from '../shared/buttons/historyButton'
 import Button from '../shared/buttons/button'
 import ManiError from '../helpers/error'
 
@@ -37,17 +38,25 @@ export default function Receive () {
     setConfirm(false)
   }
 
+  const signOptions = [
+    {
+      active: () => getSign > 0,
+      onPress: () => setSign(100),
+      title: 'Betalen'
+    },
+    {
+      active: () => getSign < 0,
+      onPress: () => setSign(-100),
+      title: 'Ontvangen'
+    }
+  ]
+
   return (
     <View style={globalStyles.main}>
       {getValue && getConfirm ? (
         <View style={styles.cont}>
           <View style={styles.qr}>
-            <QRCode
-              value={getValue}
-              size={320}
-              enableLinearGradient
-              linearGradient={['rgb(122,195,241)', 'rgb(43,138,160)']}
-            />
+            <QRCode value={getValue} size={320} />
           </View>
           <Text style={globalStyles.bigText}>
             Toon deze QR-Code om te ontvangen of betalen.
@@ -66,16 +75,7 @@ export default function Receive () {
             />
           </View>
           <View>
-            <Button
-              active={getSign > 0}
-              onPress={() => setSign(100)}
-              text={'Betalen'}
-            />
-            <Button
-              active={getSign < 0}
-              onPress={() => setSign(-100)}
-              text={'Ontvangen'}
-            />
+            <FlatButton options={signOptions} />
           </View>
           <Button text='Aanmaken' onPress={createQr} />
         </View>
