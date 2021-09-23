@@ -22,10 +22,10 @@ export default function Home ({ navigation }) {
   }
   const maniClient = global.maniClient
 
-  const readChallenge = (data = 'loreco:null') => {
+  const readChallenge = (data = 'loreco://null') => {
     log.debug('scanned data', data)
     const [action, ...params] = data
-      .split(':')
+      .split('://')
       .pop()
       .split('/')
     log.debug('scanned action', action)

@@ -18,10 +18,10 @@ const ImportModal = ({ onValue, isOpen, setOpen }) => {
     const [modalStep, setStep] = useState()
     const { prevScan = '' } = route.params || {}
 
-    const readBarcode = (data = 'loreco:null') => {
+    const readBarcode = (data = 'loreco://null') => {
       log.debug('scanned data', data)
       const [action, ...params] = data
-        .split(':')
+        .split('://')
         .pop()
         .split('/')
       log.debug('scanned action', action)

@@ -28,7 +28,8 @@ export default function Receive () {
   //   })
 
   const createQr = () => {
-    setValue(`loreco:scan/${maniClient1.id}/${Number(getAmount) * getSign}`)
+    // barcode in the format: "loreco://scan/<fingerprint:destination>/<amount * 100>?"
+    setValue(`loreco://scan/${maniClient1.id}/${Number(getAmount) * getSign}`)
     setConfirm(true)
   }
 

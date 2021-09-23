@@ -9,8 +9,7 @@ export default function Cam (props) {
   const [hasPermission, setHasPermission] = useState(null)
 
   const handleBarCodeScanned = barcode => {
-    // barcode in the format: "loreco://scan/f8aca881b6f87f9aa42708943ce067ef8334e9e8/16000"
-    // barcode in the general format: "loreco://<action>/<source:fingerprint>/<amount * 100>?"
+    // barcode in the general format: "loreco://<action>/<param 1>/<param 2>?/..."
     log.debug('QrScanner/onScan:', barcode)
     if (barcode) props.onBarCodeScanned(barcode)
   }

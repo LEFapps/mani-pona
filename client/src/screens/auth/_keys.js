@@ -34,7 +34,9 @@ const ModalContent = ({ data }) => {
       </Text>
       <View style={styles.qr}>
         <QRCode
-          value={'loreco:import/' + (index < 0 ? data.join('/') : data[index])}
+          value={
+            'loreco://import/' + (index < 0 ? data.join('/') : data[index])
+          }
           size={320}
           style={{ maxWidth: '80vw' }}
         />
