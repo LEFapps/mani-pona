@@ -9,8 +9,8 @@ import {
 } from '@expo/vector-icons'
 import Auth from '@aws-amplify/auth'
 
+import AdminStack from './stacks/AdminStack'
 import AccountStack from '../routes/stacks/accountStack'
-import HomeStack from './stacks/homeStack'
 import QrStack from '../routes/stacks/qrStack'
 import TransactionHistoryStack from '../routes/stacks/transactionHistoryStack'
 import ContributionHistoryStack from '../routes/stacks/contributionHistoryStack'
@@ -144,6 +144,18 @@ const screens = ({ Nav }) => ({
             color={color}
             {...iconProps}
           />
+        )
+      }}
+    />
+  ),
+  Admin: (
+    <Nav.Screen
+      key='Admin'
+      name='Admin'
+      component={AdminStack}
+      options={{
+        tabBarIcon: ({ focused, color = 'white' }) => (
+          <MaterialCommunityIcons name='wrench' color={color} {...iconProps} />
         )
       }}
     />
