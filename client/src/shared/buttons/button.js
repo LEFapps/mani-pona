@@ -5,14 +5,16 @@ const { ErrorRed, DarkerBlue } = colors
 
 export default function FlatButton (props) {
   return (
-    <TouchableOpacity onPress={props.onPress} style={styles.everything}>
-      <View style={styles.button}>
-        <Text style={styles.buttonText}>
-          {props.active ? '✔ ' : ''}
-          {props.text}
-        </Text>
-      </View>
-    </TouchableOpacity>
+    <View style={props.style || {}}>
+      <TouchableOpacity onPress={props.onPress} style={styles.everything}>
+        <View style={styles.button}>
+          <Text style={styles.buttonText}>
+            {props.active ? '✔ ' : ''}
+            {props.text}
+          </Text>
+        </View>
+      </TouchableOpacity>
+    </View>
   )
 }
 

@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { TextInput, View, Text, Alert, Platform } from 'react-native'
+import React, { useState, useEffect } from 'react'
+import { TextInput, View, Text, Platform } from 'react-native'
 import { globalStyles } from '../../styles/global.js'
 import Button from '../../shared/buttons/button'
 import Auth from '@aws-amplify/auth'
@@ -8,13 +8,16 @@ import {
   validatePassword,
   validatePasswordLogIn
 } from '../../helpers/validation'
+import Alert from '../../shared/alert'
 import { GotoSignUp, GotoConfirmSignUp } from './StateManagers.js'
 import i18n from 'i18n-js'
 import Dialog from 'react-native-dialog'
 
-export default function SignIn (props) {
+export default function SignIn (props = {}) {
+  const { authData } = props
+  const { username } = authData || {}
   const [state, setState] = useState({
-    email: '',
+    email: username || '',
     password: ''
   })
   const [errors, setErrors] = useState({
@@ -30,7 +33,9 @@ export default function SignIn (props) {
   const [requirePass, setRequirePass] = useState(false)
   const [passControle, setPassControle] = useState(false)
 
-  const { changeAuthState } = props
+  useEffect(() => {
+    setState({ ...state, email: username || '' })
+  }, [username])
 
   function showResetPass () {
     setRequirePass(true)

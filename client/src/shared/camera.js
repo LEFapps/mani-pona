@@ -1,20 +1,17 @@
+import log from 'loglevel'
 import React, { useState, useEffect } from 'react'
 
-import { View, Text, StyleSheet } from 'react-native'
+import { View, Text } from 'react-native'
 import QrScanner from 'react-qr-scanner'
-import Button from '../shared/buttons/largeRoundTextButton'
 import { globalStyles } from '../styles/global'
 
 export default function Cam (props) {
   const [hasPermission, setHasPermission] = useState(null)
-  const [scanned, setScanned] = useState(false)
 
   const handleBarCodeScanned = barcode => {
-    // barcode in the format: {text: "loreco:scan/f8aca881b6f87f9aa42708943ce067ef8334e9e8/16000", rawBytes: Uint8Array(64), numBits: 512, resultPoints: Array(4), format: 11, …}
-    const { text } = barcode || {}
-    props.onBarCodeScanned(text)
-    // setScanned(true)
-    setScanned(barcode !== null)
+    // barcode in the general format: "loreco://<action>/<param 1>/<param 2>?/..."
+    log.debug('QrScanner/onScan:', barcode)
+    if (barcode) props.onBarCodeScanned(barcode)
   }
 
   const handleBarCodeError = err => {
@@ -27,24 +24,16 @@ export default function Cam (props) {
   return (
     <View style={globalStyles.screen}>
       <View style={globalStyles.camPlace}>
-        {scanned ? (
-          <Button
-            text={'Tik om opnieuw te scannen'}
-            onPress={() => setScanned(false)}
-          />
-        ) : (
-          <QrScanner
-            // legacyMode
-            // interval={5000}
-            delay={false}
-            // style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
-            // style={globalStyles.qrTextContainer}
-            onError={handleBarCodeError}
-            onScan={handleBarCodeScanned}
-          >
-            <Text>Requesting for camera permission</Text>
-          </QrScanner>
-        )}
+        <QrScanner
+          onLoad={props.onInit}
+          constraints={{ video: { facingMode: { exact: `environment` } } }}
+          delay={100}
+          onError={handleBarCodeError}
+          onScan={handleBarCodeScanned}
+          style={cameraStyle}
+        >
+          <Text>Requesting for camera permission</Text>
+        </QrScanner>
       </View>
 
       <View style={globalStyles.qrTextContainer}>
@@ -52,4 +41,9 @@ export default function Cam (props) {
       </View>
     </View>
   )
+}
+
+const cameraStyle = {
+  maxHeight: '60vh',
+  objectFit: 'fill'
 }

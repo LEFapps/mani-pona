@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react'
 import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs'
 import { NavigationContainer } from '@react-navigation/native'
-import { View } from 'react-native'
+import { View, Text } from 'react-native'
 import {
   MaterialIcons,
   MaterialCommunityIcons,
   Entypo
 } from '@expo/vector-icons'
+import Auth from '@aws-amplify/auth'
 
 import AccountStack from '../routes/stacks/accountStack'
 import HomeStack from './stacks/homeStack'
@@ -24,6 +25,7 @@ const iconProps = { size: 24 }
 const screens = ({ Nav }) => ({
   // Overview: (
   //   <Nav.Screen
+  //     key='Overview'
   //     name='Overview'
   //     tabBarLabel='Overview'
   //     component={HomeStack}
@@ -32,9 +34,10 @@ const screens = ({ Nav }) => ({
   //     )}
   //   />
   // ),
-  QR: (
+  LoREco: (
     <Nav.Screen
-      name='QR'
+      key='LoREco'
+      name='LoREco'
       component={QrStack}
       options={{
         drawerIcon: props => (
@@ -46,9 +49,25 @@ const screens = ({ Nav }) => ({
       }}
     />
   ),
-  'Transactie Geschiedenis': (
+  Betalingsopdrachten: (
     <Nav.Screen
-      name='Transactie Geschiedenis'
+      key='Betalingsopdrachten'
+      name='Betalingsopdrachten'
+      component={StandingOrderStack}
+      options={{
+        drawerIcon: props => (
+          <MaterialIcons name='loop' color={props.color} {...iconProps} />
+        ),
+        tabBarIcon: ({ focused, color = 'white' }) => (
+          <MaterialIcons name='loop' color={color} {...iconProps} />
+        )
+      }}
+    />
+  ),
+  Transacties: (
+    <Nav.Screen
+      key='Transacties'
+      name='Transacties'
       component={TransactionHistoryStack}
       options={{
         drawerIcon: props => (
@@ -60,9 +79,10 @@ const screens = ({ Nav }) => ({
       }}
     />
   ),
-  'Bijdrage Geschiedenis': (
+  Bijdragen: (
     <Nav.Screen
-      name='Bijdrage Geschiedenis'
+      key='Bijdragen'
+      name='Bijdragen'
       component={ContributionHistoryStack}
       options={{
         drawerIcon: props => (
@@ -82,22 +102,9 @@ const screens = ({ Nav }) => ({
       }}
     />
   ),
-  Betalingsopdrachten: (
-    <Nav.Screen
-      name='Betalingsopdrachten'
-      component={StandingOrderStack}
-      options={{
-        drawerIcon: props => (
-          <MaterialIcons name='loop' color={props.color} {...iconProps} />
-        ),
-        tabBarIcon: ({ focused, color = 'white' }) => (
-          <MaterialIcons name='loop' color={color} {...iconProps} />
-        )
-      }}
-    />
-  ),
   // 'Beheer Vrije Buffer': (
   //   <Nav.Screen
+  //     key='Beheer Vrije Buffer'
   //     name='Beheer Vrije Buffer'
   //     component={FreeBufferStack}
   //     options={{
@@ -110,6 +117,7 @@ const screens = ({ Nav }) => ({
   // ),
   // Contacten: (
   //   <Nav.Screen
+  //     key='Contacten'
   //     name='Contacten'
   //     component={ContactListStack}
   //     options={{
@@ -126,6 +134,7 @@ const screens = ({ Nav }) => ({
   // ),
   Account: (
     <Nav.Screen
+      key='Account'
       name='Account'
       component={AccountStack}
       options={{
@@ -143,40 +152,73 @@ const screens = ({ Nav }) => ({
 
 export default function drawerNavigator (props) {
   const [hasPending, setPending] = useState(null)
-  const [isReady, setReady] = useState(null)
+  const [isPolling, setPolling] = useState(null)
   const ManiClient = global.maniClient
   const Nav = createMaterialBottomTabNavigator()
   const navScreens = screens({ Nav })
 
   useEffect(() => {
-    if (!isReady) {
-      getPending().then(p => {
-        setPending(p)
-        setReady(true)
-      })
-    }
-  }, [isReady])
+    pollPending()
+    // return () => {
+    //   console.log('cleanup', isPolling)
+    //   isPolling && clearInterval(isPolling)
+    // }
+  })
 
   const getPending = async () => {
-    const data = await ManiClient.transactions.pending()
-    return data && data.length
+    await ManiClient.find(ManiClient.id).then(async found => {
+      if (found) {
+        // autoRegister
+        await Auth.currentSession()
+          .then(async data => {
+            const { 'custom:ledger': ledger } = data.idToken.payload
+            console.log('Cognito Ledger:', ledger)
+            console.log('Local Ledger:', ManiClient.id)
+            if (ManiClient.id !== ledger) await Auth.signOut({ global: true })
+          })
+          .catch(err => console.log(err))
+      }
+      ManiClient.transactions
+        .pending()
+        .then(pending => {
+          console.log('PENDING', pending)
+          setPending(pending)
+        })
+        .catch(e => {
+          console.error(e.message)
+          setPending(undefined)
+        })
+    })
   }
 
-  console.log(hasPending)
+  const pollPending = async () => {
+    if (!isPolling) {
+      await getPending()
+      // const poll = setInterval(() => getPending(), 5000)
+      // console.log('init poll', poll)
+      // setPolling(poll)
+      setPolling(true)
+    }
+  }
 
   if (props.authState === 'signedIn') {
     return (
       <View style={globalStyles.container}>
-        <NavigationContainer>
-          <Nav.Navigator barStyle={{ backgroundColor: colors.DarkerBlue }}>
-            {hasPending
-              ? ['Betalingsopdrachten'].map(screen => navScreens[screen])
-              : Object.keys(navScreens).map(screen => navScreens[screen])}
-          </Nav.Navigator>
-        </NavigationContainer>
+        {hasPending === null ? (
+          <Text>Rekening controleren...</Text>
+        ) : (
+          <NavigationContainer>
+            <Nav.Navigator
+              barStyle={{ backgroundColor: colors.DarkerBlue }}
+              initialRouteName={hasPending ? 'Betalingsopdrachten' : 'LoREco'}
+            >
+              {Object.keys(navScreens).map(screen => navScreens[screen])}
+            </Nav.Navigator>
+          </NavigationContainer>
+        )}
       </View>
     )
   } else {
-    return null
+    return <View />
   }
 }

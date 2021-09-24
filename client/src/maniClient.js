@@ -29,15 +29,15 @@ import {
 
 const log = msg => loglevel.error(msg)
 
-const storageKey = 'mani_client_key'
+const storageKey = 'mani_client_key_'
 
 function defaultContext () {
   return {}
 }
 const defaultKeyStore = {
-  async getKeys () {
+  async getKeys (index = 0) {
     try {
-      const key = await AsyncStorage.getItem(storageKey)
+      const key = await AsyncStorage.getItem(storageKey + index)
       if (key !== null) {
         // key previously stored
         return JSON.parse(key)
@@ -47,11 +47,19 @@ const defaultKeyStore = {
       log(e)
     }
   },
-  async saveKeys (keys) {
+  async saveKeys (keys, index = 0) {
     try {
-      await AsyncStorage.setItem(storageKey, JSON.stringify(keys))
+      await AsyncStorage.setItem(storageKey + index, JSON.stringify(keys))
     } catch (e) {
       // saving error
+      log(e)
+    }
+  },
+  async removeKeys (index = 0) {
+    try {
+      await AsyncStorage.removeItem(storageKey + index)
+    } catch (e) {
+      // removing error
       log(e)
     }
   }
@@ -61,20 +69,22 @@ const ManiClient = async ({
   graphqlClient,
   keyStore = defaultKeyStore,
   fail = true,
-  contextProvider = defaultContext
+  contextProvider = defaultContext,
+  regenerate = false
 }) => {
   const keyManager = await KeyManager(keyStore)
-  const id = await keyManager.fingerprint()
+  let id = await keyManager.fingerprint(regenerate)
   async function query (query, path, variables = {}, required = true) {
     const result = await graphqlClient.query({
       query,
       variables,
       context: contextProvider(),
-      fetchPolicy: 'no-cache'
+      fetchPolicy: 'no-cache',
+      errorPolicy: 'all'
     })
     if (result.errors) {
       log(result.errors)
-      if (fail) throw new Error(result.errors)
+      if (fail) throw new Error(result.errors[0].message)
     }
     const obj = get(result.data, path)
     if (required && fail && !obj) {
@@ -195,7 +205,10 @@ const ManiClient = async ({
     find,
     transactions,
     system,
-    admin
+    admin,
+    importKeys: keyManager.setKeys,
+    exposeKeys: keyManager.getKeys,
+    cleanup: keyManager.clear
   }
 }
 

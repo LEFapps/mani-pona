@@ -43,13 +43,20 @@ export const globalStyles = StyleSheet.create({
     fontSize: 16,
     marginTop: Platform.OS === 'android' ? StatusBar.currentHeight : 45,
     backgroundColor: 'white',
-    width: Dimensions.get('window').width,
-    height: Dimensions.get('window').height
+    width: '100vw',
+    height: 'auto',
+    minHeight:
+      Dimensions.get('window').height - Platform.OS === 'android'
+        ? StatusBar.currentHeight
+        : 45
   },
   main: {
-    marginHorizontal: 10,
+    flex: '0 1 100%',
+    width: '100%',
+    maxWidth: 768,
     marginTop: 5,
-    flex: 1
+    marginHorizontal: 'auto',
+    paddingHorizontal: 10
   },
   label: {
     fontSize: 22,
@@ -121,7 +128,7 @@ export const globalStyles = StyleSheet.create({
   },
   camPlace: {
     backgroundColor: 'red',
-    width: Dimensions.get('screen').width,
+    width: '100%',
     height: '100%',
     flexDirection: 'row',
     alignItems: 'center',
@@ -132,7 +139,7 @@ export const globalStyles = StyleSheet.create({
   },
   qrTextContainer: {
     position: 'absolute',
-    width: Dimensions.get('screen').width,
+    width: '100%',
     top: 0
   },
   qrText: {
@@ -142,5 +149,27 @@ export const globalStyles = StyleSheet.create({
     textAlign: 'center',
     color: 'white',
     fontSize: 20
+  },
+  centeredView: {
+    width: '100%',
+    flex: '1 1 100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 22
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 35,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5
   }
 })

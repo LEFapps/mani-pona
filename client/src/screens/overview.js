@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { View, Text, StyleSheet } from 'react-native'
+import Auth from '@aws-amplify/auth'
 import CustomButton from '../shared/buttons/button'
 import { globalStyles } from '../styles/global.js'
 import mani from '../../shared/mani'
@@ -7,8 +8,9 @@ import { colors } from '../helpers/helper'
 const { DarkerBlue, CurrencyColor } = colors
 
 export default function AccountBalance ({ navigation }) {
-  const [demu, setDemu] = useState({})
+  const [demurrage, setDemurrage] = useState({})
   const [income, setIncome] = useState({})
+  const [current, setCurrent] = useState({})
   const [ready, setReady] = useState(false)
   const ManiClient = global.maniClient
 
@@ -17,13 +19,39 @@ export default function AccountBalance ({ navigation }) {
   }, [])
 
   async function loadData () {
-    await ManiClient.system.parameters().then(demurage => {
-      setDemu(demurage)
-    })
-    await ManiClient.system.parameters().then(incomePrediction => {
-      setIncome(incomePrediction)
-    })
-    setReady(true)
+    await ManiClient.find(ManiClient.id)
+      .then(async found => {
+        console.log('Ledger registered:', !!found)
+        if (!found) {
+          // autoRegister
+          return await Auth.currentSession()
+            .then(async data => {
+              const {
+                email,
+                'custom:alias': alias,
+                'custom:ledger': ledger
+              } = data.idToken.payload
+              await ManiClient.register(alias || email)
+              loadData()
+            })
+            .catch(err => console.log(err))
+        }
+        await ManiClient.transactions
+          .current()
+          .then(setCurrent)
+          .catch(console.error)
+        await ManiClient.system
+          .parameters()
+          .then(({ demurrage, income }) => {
+            setDemurrage(demurrage) // int
+            setIncome(income) // mani
+          })
+          .catch(console.error)
+        setReady(true)
+      })
+      .catch(async e => {
+        console.error((e && e.message) || e)
+      })
   }
 
   if (ready) {
@@ -32,28 +60,34 @@ export default function AccountBalance ({ navigation }) {
         <View style={globalStyles.amountHeader}>
           <Text style={globalStyles.property}>Huidige rekeningstand:</Text>
           <Text style={globalStyles.price}>
-            {mani(ManiClient.balance || 0).format()}
+            {!!current.balance && current.balance.format()}
           </Text>
         </View>
 
         <View style={styles.part}>
           <Text style={styles.title}>Voorspellingen gegarandeerd inkomen</Text>
-          <Text style={styles.amount}>
-            +{mani(income.currentPrediction || 0).format()}
-          </Text>
+          <Text style={styles.amount}>+{income.format()}</Text>
           <CustomButton
             text='Bekijk voorspelling'
-            onPress={() => navigation.navigate('IncomePrediction', income)}
+            onPress={() =>
+              navigation.navigate('Bijdragen', {
+                screen: 'IncomePrediction',
+                params: { income, current }
+              })
+            }
           />
         </View>
         <View style={styles.part}>
           <Text style={styles.title}>Voorspellingen bijdrage</Text>
-          <Text style={styles.amount}>
-            {mani(demu.totalDemurage || 0).format()}
-          </Text>
+          <Text style={styles.amount}>{demurrage} %</Text>
           <CustomButton
             text='Bekijk voorspelling'
-            onPress={() => navigation.navigate('ContributionPrediction', demu)}
+            onPress={() =>
+              navigation.navigate('Bijdragen', {
+                screen: 'ContributionPrediction',
+                params: { demurrage, current }
+              })
+            }
           />
         </View>
       </View>

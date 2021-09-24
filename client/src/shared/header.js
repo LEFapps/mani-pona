@@ -21,7 +21,7 @@ export default function Header (props) {
 
 const styles = StyleSheet.create({
   header: {
-    width: Dimensions.get('screen').width,
+    width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center'

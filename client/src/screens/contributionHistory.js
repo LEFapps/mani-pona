@@ -28,15 +28,13 @@ export default function Home () {
       <View style={globalStyles.main}>
         <FlatList
           data={contributions}
-          keyExtractor={item => item.demurageId.toString()}
+          keyExtractor={item => JSON.stringify(item)} // TODO: handle keys smarter
           renderItem={({ item }) => (
             <Card>
               <Text style={globalStyles.property}>
                 {new Date(item.date).toLocaleDateString()}
               </Text>
-              <Text style={globalStyles.price}>
-                {mani(item.amount).format()}
-              </Text>
+              <Text style={globalStyles.price}>{item.amount.format()}</Text>
             </Card>
           )}
         />

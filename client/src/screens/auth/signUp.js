@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { TextInput, View, Text, Alert, Platform } from 'react-native'
+import { TextInput, View, Text } from 'react-native'
 import { globalStyles } from '../../styles/global.js'
 import Button from '../../shared/buttons/button'
 import Auth from '@aws-amplify/auth'
@@ -8,8 +8,10 @@ import {
   validatePassword,
   validatePasswordRepeat
 } from '../../helpers/validation'
+import Alert from '../../shared/alert'
 import { GotoConfirmSignUp, GotoSignIn } from './StateManagers.js'
 import i18n from 'i18n-js'
+import { resetClient } from '../../../App.js'
 
 export default function signUp (props) {
   const ManiClient = global.maniClient
@@ -18,8 +20,6 @@ export default function signUp (props) {
 
   const [state, setState] = useState(defaultState)
   const [errors, setErrors] = useState(defaultState)
-
-  const [user, setUser] = useState('')
 
   async function onSubmit () {
     const emailError = validateEmail(state.email)
@@ -32,20 +32,19 @@ export default function signUp (props) {
     } else {
       setState(defaultState)
       try {
-        await Auth.signUp({
+        await resetClient()
+        const { userConfirmed } = await Auth.signUp({
           username: state.email,
           password: state.password,
           attributes: {
             'custom:alias': state.alias,
-            'custom:ledger': ManiClient.id,
+            'custom:ledger': global.maniClient.id,
             email: state.email
           }
         })
-
-        await ManiClient.register(state.email)
-
-        const user = await Auth.signIn(state.email, state.password)
-        setUser(user)
+        if (userConfirmed)
+          props.onStateChange('signIn', { username: state.email })
+        else props.onStateChange('confirmSignUp', { username: state.email })
       } catch (error) {
         console.log(error)
         Alert.alert(i18n.t(error.code))
