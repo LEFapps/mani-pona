@@ -35,6 +35,26 @@ const SystemSchema = gql`
     demurrage: Currency!
     income: Currency!
   }
+
+  type User {
+    alias: String
+    sub: String
+    email: String
+    email_verified: StringBoolean
+    administrator: StringBoolean
+    status: String
+    enabled: Boolean
+    created: DateTime
+    lastModified: DateTime
+    ledger: String
+  }
+
+  type AccountType {
+    type: String!
+    income: Currency!
+    buffer: Currency!
+    demurrage: Float!
+  }
   
   type System {
     "The current income and demurrage settings, returns nothing when system hasn't been initialized yet"
@@ -45,13 +65,23 @@ const SystemSchema = gql`
     findkey(id: String!): Ledger
     "Register a new ledger, returns the id (fingerprint)"
     register(registration: LedgerRegistration!): String
+    "Find a user by username (email address)"
+    finduser(username: String!): User
+    "Show the available account types"
+    accountTypes: [AccountType]!
   }
 
   type Admin {
-    # apply demurrage and (basic) income to all accounts
+    "apply demurrage and (basic) income to all accounts"
     jubilee(ledger: String): Jubilee!
-    # initialize the system
+    "Initialize the system"
     init: String
+    "Change the type of the account associated with this username (email address)"
+    changeAccountType(username: String, type: String): String
+    "Disable user account"
+    disableAccount(username: String): String
+    "Enable user account"
+    enableAccount(username: String): String
   }
 
   type Query {

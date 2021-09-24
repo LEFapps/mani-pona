@@ -14,6 +14,11 @@ import {
   CONFIRM,
   CANCEL,
   FIND_KEY,
+  FIND_USER,
+  DISABLE_USER,
+  ENABLE_USER,
+  ACCOUNT_TYPES,
+  CHANGE_ACCOUNT_TYPE,
   JUBILEE,
   INIT,
   SYSTEM_PARAMETERS,
@@ -158,6 +163,12 @@ const ManiClient = async ({
       return fromDb(
         await query(SYSTEM_PARAMETERS, 'system.parameters', {}, false)
       )
+    },
+    async findUser (username) {
+      return query(FIND_USER, 'system.finduser', { username })
+    },
+    async accountTypes () {
+      return query(ACCOUNT_TYPES, 'system.accountTypes')
     }
   }
   const admin = {
@@ -166,6 +177,15 @@ const ManiClient = async ({
     },
     async init () {
       return query(INIT, 'admin.init')
+    },
+    async disableUser (username) {
+      return query(DISABLE_USER, 'admin.disableAccount', { username })
+    },
+    async enableUser (username) {
+      return query(ENABLE_USER, 'admin.enableAccount', { username })
+    },
+    async changeAccountType (username, type) {
+      return query(CHANGE_ACCOUNT_TYPE, 'admin.changeAccountType', { username, type })
     }
   }
   return {

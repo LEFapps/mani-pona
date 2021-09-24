@@ -1,4 +1,5 @@
 import { ApolloServer } from 'apollo-server-lambda'
+import { ApolloServerPluginLandingPageGraphQLPlayground } from 'apollo-server-core'
 import { DynamoPlus } from 'dynamo-plus'
 import Core from '../core/index'
 import typeDefs from '../graphql/typeDefs/index'
@@ -9,11 +10,15 @@ import { apolloLogPlugin, getLogger } from 'server-log'
 
 const log = getLogger('lambda:handler')
 
+const debug = process.env.DEBUG === 'true'
+const offline = process.env.IS_OFFLINE === 'true'
+const userpool = process.env.USER_POOL
+
 function contextProcessor (event) {
   const { headers } = event
   // fake the cognito interface if offline
-  let claims = process.env.IS_OFFLINE
-    ? JSON.parse(headers['x-claims'])
+  let claims = offline
+    ? JSON.parse(headers['x-claims'] || process.env.CLAIMS)
     : event.requestContext.authorizer.claims
   log.debug('User claims: %j', claims)
   return {
@@ -22,28 +27,39 @@ function contextProcessor (event) {
     admin: claims['custom:administrator']
   }
 }
+const core = Core(
+  DynamoPlus({
+    region: process.env.DYN_REGION,
+    maxRetries: 3
+  }),
+  userpool
+    ? CognitoUserPool(userpool)
+    : OfflineUserPool()
+)
 
-log.info(`Starting ApolloServer with DEBUG = ${process.env.DEBUG}`)
+log.info('Starting ApolloServer (debug: %s, offline: %s)', debug, offline)
+log.debug('ENV variables: %j', process.env)
 const server = new ApolloServer({
-  debug: process.env.DEBUG === 'true',
-  introspection: process.env.DEBUG === 'true',
+  debug,
+  introspection: debug,
   typeDefs,
   resolvers,
-  plugins: [apolloLogPlugin],
+  plugins: [apolloLogPlugin, ApolloServerPluginLandingPageGraphQLPlayground()],
+  cors: false,
   context: async ({ event, context }) => {
     return {
-      core: Core(
-        DynamoPlus({
-          region: process.env.DYN_REGION,
-          maxRetries: 3
-        }),
-        process.env.IS_OFFLINE
-          ? OfflineUserPool()
-          : CognitoUserPool(process.env.USER_POOL)
-      ),
+      core,
       ...contextProcessor(event)
     }
   }
 })
 
-exports.graphqlHandler = server.createHandler()
+const handler = server.createHandler()
+
+async function debugHandler (event, context) {
+  // log.debug('event: %j', event)
+  // log.debug('context: %j', context)
+  return handler(event, context)
+}
+
+exports.graphqlHandler = debug ? debugHandler : handler

@@ -7,6 +7,7 @@ const schema = gql`
   scalar DateTime
   scalar NonNegativeFloat
   scalar Currency
+  scalar StringBoolean
   
   type Query {
     time: DateTime!

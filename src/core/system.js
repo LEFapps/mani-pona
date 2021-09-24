@@ -3,7 +3,6 @@ import { KeyGenerator, Verifier, mani } from '../shared'
 import { getLogger } from 'server-log'
 
 const PARAMETERS = { income: mani(100), demurrage: 5.0 }
-
 const log = getLogger('core:system')
 
 export default function (ledgers, userpool) {
@@ -13,6 +12,27 @@ export default function (ledgers, userpool) {
     },
     async findkey (fingerprint) {
       return ledgers.publicKey(fingerprint)
+    },
+    async findUser (username) {
+      log.debug('Finding user %s', username)
+      return userpool.findUser(username)
+    },
+    getAccountTypes () {
+      return userpool.getAccountTypes()
+    },
+    async changeAccountType (Username, type) {
+      const allowedTypes = userpool.getAccountTypes().map((t) => t.type)
+      if (!allowedTypes.includes(type)) {
+        throw new Error(`Unknown account type ${type}, allowed values ${allowedTypes.join(',')}`)
+      }
+      log.debug('Setting account type to %s for user %s', type, Username)
+      userpool.changeAttributes(Username, { 'custom:type': type })
+    },
+    async disableAccount (Username) {
+      return userpool.disableAccount(Username)
+    },
+    async enableAccount (Username) {
+      return userpool.enableAccount(Username)
     },
     async init () {
       log.info('System init requested')

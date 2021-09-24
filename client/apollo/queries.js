@@ -142,6 +142,61 @@ const SYSTEM_PARAMETERS = gql`
     }
   }
 `
+const FIND_USER = gql`
+  query finduser($username: String!) {
+    system {
+      finduser(username: $username) {
+        alias
+        sub
+        email
+        email_verified
+        administrator
+        status
+        enabled
+        created
+        lastModified
+        ledger
+      }
+    }
+  }
+`
+
+const DISABLE_USER = gql`
+  mutation disableuser($username: String!) {
+    admin {
+      disableUser(username: $username)
+    }
+  }
+`
+
+const ENABLE_USER = gql`
+  mutation enableuser($username: String!) {
+    admin {
+      enableUser(username: $username)
+    }
+  }
+`
+const ACCOUNT_TYPES = gql`
+  query accounttypes {
+    system {
+      accountTypes {
+        type
+        income
+        buffer
+        demurrage
+      }
+    }
+  }
+`
+
+const CHANGE_ACCOUNT_TYPE = gql`
+  mutation changetype($username: String!,$type: String!) {
+    admin {
+      changeAccountType(username: $username, type: $type)
+    }
+  }
+`
+
 const INIT = gql`
   mutation init {
     admin {
@@ -161,6 +216,11 @@ export {
   CONFIRM,
   CANCEL,
   FIND_KEY,
+  FIND_USER,
+  DISABLE_USER,
+  ENABLE_USER,
+  ACCOUNT_TYPES,
+  CHANGE_ACCOUNT_TYPE,
   JUBILEE,
   INIT,
   SYSTEM_PARAMETERS,

@@ -11,7 +11,7 @@
     "test": "LOG_PREFIX=sumsy NODE_DEBUG=sumsy* LOG_LEVEL=error JEST_CIRCUS=1 LEDGER=manipona jest --bail",
     "test:debug": "LOG_PREFIX=sumsy NODE_DEBUG=sumsy:* LOG_LEVEL=debug JEST_CIRCUS=1 LEDGER=manipona jest --bail",
     "test:dynamodb": "NODE_ENV=development sls dynamodb start --inMemory",
-    "offline": "npm run build && DEBUG=true sls offline start",
+    "offline": "npm run build && sls offline start --stage offline",
     "deploy": "npm run build && sls deploy",
     "deploy-dev": "npm run deploy -- -s dev"
   },
@@ -40,7 +40,7 @@
     "rollup-plugin-hashbang": "^2.2.2",
     "serverless-appsync-simulator": "^0.8.1",
     "serverless-dynamodb-local": "^0.2.39",
-    "serverless-offline": "^6.8.0",
+    "serverless-offline": "^8.2.0",
     "serverless-stack-output": "^0.2.3",
     "serverless-webpack": "^5.3.5",
     "source-map-support": "^0.5.19",

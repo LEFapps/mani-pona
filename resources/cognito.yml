@@ -31,6 +31,9 @@ Resources:
           AttributeDataType: String
           Mutable: false
           Required: true
+        - Name: type
+          AttributeDataType: String
+          Mutable: true
       EmailVerificationMessage: 'Gebruik volgende code om uw account te verifiëren: {####}'
       EmailVerificationSubject: Welkom bij ${env:CLIENT}
       # LambdaConfig:

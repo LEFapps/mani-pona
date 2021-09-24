@@ -1,6 +1,7 @@
 'use strict';
 
 var apolloServerLambda = require('apollo-server-lambda');
+var apolloServerCore = require('apollo-server-core');
 var dynamoPlus = require('dynamo-plus');
 var assert = require('assert');
 var sha1 = require('sha1');
@@ -201,7 +202,7 @@ class Mani {
   }
 }
 
-const mani$1 = value => new Mani(value);
+const mani = value => new Mani(value);
 
 /**
  * In many ways, this is the heart of the system. Thread carefully.
@@ -287,7 +288,7 @@ function shadowEntry (ledger) {
     balance: new Mani(0)
   }
 }
-function addSignature$1 (entry, ledger, signature) {
+function addSignature (entry, ledger, signature) {
   assert__default['default'](_.isString(signature), 'signature');
   const result = { ...entry }; // cheap clone
   if (entry.ledger === ledger) {
@@ -358,7 +359,7 @@ const tools = {
   pad,
   other,
   shadowEntry,
-  addSignature: addSignature$1,
+  addSignature,
   toDb,
   fromDb,
   isSigned,
@@ -372,7 +373,7 @@ const tools = {
   flip
 };
 
-const log$8 = serverLog.getLogger('core:util');
+const log = serverLog.getLogger('core:util');
 /**
  * Note that the 'table' listed below should always be a core/ledgerTable object
  */
@@ -396,7 +397,7 @@ async function mapValuesAsync (object, asyncFn) {
  *  - destination: 'system'
  */
 async function getSources (table, input) {
-  log$8.debug('Getting sources for %j', input);
+  log.debug('Getting sources for %j', input);
   return mapValuesAsync(input, async (ledger, role, input) => {
     const current = await table.current(ledger);
     if (current) return current
@@ -415,7 +416,7 @@ async function getPayloadSources (table, { payloads }) {
   return mapValuesAsync(
     payloads,
     async ({ from: { ledger } }, role, payloads) => {
-      log$8.debug('Getting current on %s %s', role, ledger);
+      log.debug('Getting current on %s %s', role, ledger);
       return table.current(ledger, true)
     }
   )
@@ -578,7 +579,7 @@ async function getPendingSources (table, { targets }) {
   })
 }
 
-function addSignature (
+function addSignature$1 (
   { ledger, destination },
   { signature, counterSignature }
 ) {
@@ -591,7 +592,7 @@ function addSignature (
 async function addSystemSignatures (table, { sources, targets }, keys) {
   // autosigning system side
   // happens during system init, UBI and creation of new ledger
-  log$8.info(`Autosigning system (only during init)`);
+  log.info(`Autosigning system (only during init)`);
   assert__default['default'](
     targets.destination.ledger === 'system' &&
       targets.ledger.destination === 'system',
@@ -602,8 +603,8 @@ async function addSystemSignatures (table, { sources, targets }, keys) {
       await table.keys('system', true)
     );
   }
-  log$8.debug('Signing targets %j', targets);
-  log$8.debug('with keys %j', keys);
+  log.debug('Signing targets %j', targets);
+  log.debug('with keys %j', keys);
   // log(JSON.stringify(targets, null, 2))
   targets.destination.signature = await keys.privateKey.sign(
     targets.destination.challenge
@@ -646,7 +647,7 @@ async function addSignatures (
     const verifier = Verifier(publicKeyArmored);
     await verifier.verify(targets.ledger.challenge, signature); // throws error if wrong
     await verifier.verify(targets.destination.challenge, counterSignature); // throws error if wrong
-    targets = addSignature(targets, { signature, counterSignature });
+    targets = addSignature$1(targets, { signature, counterSignature });
   }
   return targets
 }
@@ -765,9 +766,8 @@ const StateMachine = (table) => {
   }
 };
 
-const PARAMETERS = { income: mani$1(100), demurrage: 5.0 };
-
-const log$7 = serverLog.getLogger('core:system');
+const PARAMETERS = { income: mani(100), demurrage: 5.0 };
+const log$1 = serverLog.getLogger('core:system');
 
 function System (ledgers, userpool) {
   return {
@@ -777,31 +777,52 @@ function System (ledgers, userpool) {
     async findkey (fingerprint) {
       return ledgers.publicKey(fingerprint)
     },
+    async findUser (username) {
+      log$1.debug('Finding user %s', username);
+      return userpool.findUser(username)
+    },
+    getAccountTypes () {
+      return userpool.getAccountTypes()
+    },
+    async changeAccountType (Username, type) {
+      const allowedTypes = userpool.getAccountTypes().map((t) => t.type);
+      if (!allowedTypes.includes(type)) {
+        throw new Error(`Unknown account type ${type}, allowed values ${allowedTypes.join(',')}`)
+      }
+      log$1.debug('Setting account type to %s for user %s', type, Username);
+      userpool.changeAttributes(Username, { 'custom:type': type });
+    },
+    async disableAccount (Username) {
+      return userpool.disableAccount(Username)
+    },
+    async enableAccount (Username) {
+      return userpool.enableAccount(Username)
+    },
     async init () {
-      log$7.info('System init requested');
+      log$1.info('System init requested');
       let keys = await ledgers.keys('system');
-      log$7.info('Checking keys');
+      log$1.info('Checking keys');
       if (keys) {
-        log$7.info('System already initialized');
+        log$1.info('System already initialized');
         return // idempotency
       }
-      log$7.info('Generating system keys');
+      log$1.info('Generating system keys');
       // initializing fresh system:
-      keys = await KeyGenerator({}, log$7.info).generate();
-      log$7.info('System keys generated');
+      keys = await KeyGenerator({}, log$1.info).generate();
+      log$1.info('System keys generated');
       const { publicKeyArmored, privateKeyArmored } = keys;
       const trans = ledgers.transaction();
       trans.putKey({ ledger: 'system', publicKeyArmored, privateKeyArmored });
       await StateMachine(ledgers)
         .getSources({ ledger: 'system', destination: 'system' })
-        .then(t => t.addAmount(mani$1(0)))
+        .then(t => t.addAmount(mani(0)))
         .then(t => t.addSystemSignatures(keys))
         .then(t => t.save())
-        .catch(err => log$7.error('System initialization failed\n%j', err));
-      log$7.debug('Database update: %j', trans.items());
-      log$7.info('System keys and parameters stored');
+        .catch(err => log$1.error('System initialization failed\n%j', err));
+      log$1.debug('Database update: %j', trans.items());
+      log$1.info('System keys and parameters stored');
       await trans.execute();
-      return `SuMsy initialized with ${mani$1(
+      return `SuMsy initialized with ${mani(
         100
       ).format()} income and 5% demurrage.`
     },
@@ -810,7 +831,7 @@ function System (ledgers, userpool) {
       // clients have to replace '<fingerprint>'
       return StateMachine(ledgers)
         .getSources({ ledger: '<fingerprint>', destination: 'system' })
-        .then(t => t.addAmount(mani$1(0)))
+        .then(t => t.addAmount(mani(0)))
         .then(t => t.getPrimaryEntry().challenge)
     },
     async register (registration) {
@@ -818,7 +839,7 @@ function System (ledgers, userpool) {
       const ledger = await Verifier(publicKeyArmored).fingerprint();
       const existing = await ledgers.current(ledger);
       if (existing) {
-        log$7.info('Ledger was already registered: %s', ledger);
+        log$1.info('Ledger was already registered: %s', ledger);
         return ledger // idempotency!
       }
       const transaction = ledgers.transaction();
@@ -837,17 +858,17 @@ function System (ledgers, userpool) {
         challenge: payload
       });
       await transaction.execute();
-      log$7.info('Registered ledger %s', ledger);
+      log$1.info('Registered ledger %s', ledger);
       return ledger
     },
     async jubilee (ledger) {
       const results = {
         ledgers: 0,
-        demurrage: mani$1(0),
-        income: mani$1(0)
+        demurrage: mani(0),
+        income: mani(0)
       };
       async function applyJubilee (ledger) {
-        log$7.debug('Applying jubilee to ledger %s', ledger);
+        log$1.debug('Applying jubilee to ledger %s', ledger);
         const transaction = ledgers.transaction();
         await StateMachine(transaction)
           .getSources({ ledger, destination: 'system' })
@@ -861,9 +882,9 @@ function System (ledgers, userpool) {
           })
           .then(t => t.addSystemSignatures())
           .then(t => t.save())
-          .catch(log$7.error);
+          .catch(log$1.error);
         await transaction.execute();
-        log$7.debug('Jubilee succesfully applied to ledger %s', ledger);
+        log$1.debug('Jubilee succesfully applied to ledger %s', ledger);
       }
       if (ledger) {
         await applyJubilee(ledger);
@@ -905,7 +926,7 @@ function ledger (ledgers, fingerprint) {
   }
 }
 
-const log$6 = serverLog.getLogger('core:transactions');
+const log$2 = serverLog.getLogger('core:transactions');
 
 /**
  * Operations on a single ledger.
@@ -928,7 +949,7 @@ var Transactions = (ledgers, fingerprint) => {
     async create (proof) {
       const existing = await ledger$1.pending();
       if (existing && existing.challenge === proof.payload) {
-        log$6.info(`Transaction ${proof.payload} was already created`);
+        log$2.info(`Transaction ${proof.payload} was already created`);
         return existing.next // idempotency
       }
       let next;
@@ -950,7 +971,7 @@ var Transactions = (ledgers, fingerprint) => {
       // proof contains signature, counterSignature, payload
       const existing = await ledger$1.current();
       if (existing && existing.challenge === proof.payload) {
-        log$6.info(`Transaction ${proof.payload} was already confirmed`);
+        log$2.info(`Transaction ${proof.payload} was already confirmed`);
         return existing.next // idempotency
       }
       let next;
@@ -961,7 +982,7 @@ var Transactions = (ledgers, fingerprint) => {
         .then(t => t.addSignatures({ ledger: fingerprint, ...proof }))
         .then(t => {
           next = t.getPrimaryEntry().next;
-          log$6.debug('Primary entry: %j', t.getPrimaryEntry());
+          log$2.debug('Primary entry: %j', t.getPrimaryEntry());
           return t
         })
         .then(t => t.save());
@@ -992,7 +1013,7 @@ var Transactions = (ledgers, fingerprint) => {
   }
 };
 
-const log$5 = serverLog.getLogger('dynamodb:table');
+const log$3 = serverLog.getLogger('dynamodb:table');
 const methods = ['get', 'put', 'query', 'update'];
 
 /**
@@ -1022,16 +1043,16 @@ const table = function (db, options = {}) {
     {}
   );
   async function getItem (Key, errorMsg) {
-    log$5.debug('Getting item: \n%j', Key);
+    log$3.debug('Getting item: \n%j', Key);
     try {
       const result = await t.get({ Key });
       if (errorMsg && !result.Item) {
         throw errorMsg
       }
-      log$5.debug('Found item: %o', result.Item);
+      log$3.debug('Found item: %o', result.Item);
       return tools.fromDb(result.Item)
     } catch (err) {
-      log$5.error(err);
+      log$3.error(err);
       throw err
     }
   }
@@ -1047,7 +1068,7 @@ const table = function (db, options = {}) {
       return t.put({ Item })
     },
     attributes (attributes) {
-      return table(db, TableName, { AttributesToGet: attributes, ...options })
+      return table(db, TableName)
     },
     transaction () {
       const TransactItems = [];
@@ -1087,10 +1108,10 @@ const table = function (db, options = {}) {
         async execute () {
           const result = await db.transactWrite({ TransactItems });
           if (result.err) {
-            log$5.error('Error executing transaction: %j', result.err);
+            log$3.error('Error executing transaction: %j', result.err);
             throw result.err
           }
-          log$5.debug('Database updated:\n%j', TransactItems);
+          log$3.debug('Database updated:\n%j', TransactItems);
           return TransactItems.length
         },
         transaction () {
@@ -1188,11 +1209,11 @@ function ledgers (table, prefix = '') {
   }
 }
 
-const mani = (table) => ledgers(table, '');
+const mani$1 = (table) => ledgers(table, '');
 
 function Core (db, userpool) {
   const table$1 = table(db);
-  const ledgers = mani(table$1);
+  const ledgers = mani$1(table$1);
   return {
     system: () => System(ledgers, userpool),
     mani: (fingerprint) => Transactions(ledgers, fingerprint)
@@ -1234,6 +1255,26 @@ const SystemSchema = apolloServerLambda.gql`
     demurrage: Currency!
     income: Currency!
   }
+
+  type User {
+    alias: String
+    sub: String
+    email: String
+    email_verified: StringBoolean
+    administrator: StringBoolean
+    status: String
+    enabled: Boolean
+    created: DateTime
+    lastModified: DateTime
+    ledger: String
+  }
+
+  type AccountType {
+    type: String!
+    income: Currency!
+    buffer: Currency!
+    demurrage: Float!
+  }
   
   type System {
     "The current income and demurrage settings, returns nothing when system hasn't been initialized yet"
@@ -1244,13 +1285,23 @@ const SystemSchema = apolloServerLambda.gql`
     findkey(id: String!): Ledger
     "Register a new ledger, returns the id (fingerprint)"
     register(registration: LedgerRegistration!): String
+    "Find a user by username (email address)"
+    finduser(username: String!): User
+    "Show the available account types"
+    accountTypes: [AccountType]!
   }
 
   type Admin {
-    # apply demurrage and (basic) income to all accounts
+    "apply demurrage and (basic) income to all accounts"
     jubilee(ledger: String): Jubilee!
-    # initialize the system
+    "Initialize the system"
     init: String
+    "Change the type of the account associated with this username (email address)"
+    changeAccountType(username: String, type: String): String
+    "Disable user account"
+    disableAccount(username: String): String
+    "Enable user account"
+    enableAccount(username: String): String
   }
 
   type Query {
@@ -1263,7 +1314,7 @@ const SystemSchema = apolloServerLambda.gql`
   }
 `;
 
-var transactions$1 = apolloServerLambda.gql`
+var transactions = apolloServerLambda.gql`
   type Transaction {
     "ID of the origin ledger (should be user account)"
     ledger: String!
@@ -1327,13 +1378,14 @@ const schema = apolloServerLambda.gql`
   scalar DateTime
   scalar NonNegativeFloat
   scalar Currency
+  scalar StringBoolean
   
   type Query {
     time: DateTime!
   }
 `;
 
-var typeDefs = merge.mergeTypeDefs([schema, SystemSchema, transactions$1]);
+var typeDefs = merge.mergeTypeDefs([schema, SystemSchema, transactions]);
 
 const currency = new graphql.GraphQLScalarType({
   name: 'Currency',
@@ -1344,12 +1396,12 @@ const currency = new graphql.GraphQLScalarType({
       return value.format()
     } else {
       // note that this is quite permissive and will even allow something like "MANI 10 00,5" as input
-      return mani$1(value).format()
+      return mani(value).format()
     }
   },
   // value from the client
   parseValue (value) {
-    return mani$1(value)
+    return mani(value)
   },
   // value from client in AST representation
   parseLiteral (ast) {
@@ -1358,11 +1410,33 @@ const currency = new graphql.GraphQLScalarType({
         `Unknown representation of currency ${'value' in ast && ast.value}`
       )
     }
-    return mani$1(ast.value)
+    return mani(ast.value)
   }
 });
 
-const log$3 = serverLog.getLogger('graphql:system');
+var StringBoolean = new graphql.GraphQLScalarType({
+  name: 'StringBoolean',
+  description: 'Custom scalar type for working consistently with booleans that are represented by strings internally',
+  // value sent to the client
+  serialize (value) {
+    return value === 'true'
+  },
+  // value from the client
+  parseValue (value) {
+    return `${value}`
+  },
+  // value from client in AST representation
+  parseLiteral (ast) {
+    if (ast.kind !== language.Kind.BOOLEAN) {
+      throw new TypeError(
+        `Unknown representation of boolean ${'value' in ast && ast.value}`
+      )
+    }
+    return `${ast.value}`
+  }
+});
+
+const log$5 = serverLog.getLogger('graphql:system');
 
 var system = {
   Query: {
@@ -1373,7 +1447,7 @@ var system = {
   'Mutation': {
     'admin': (_, args, { core, admin, ledger }) => {
       if (!admin) {
-        log$3.error(`Illegal system access attempt by ${ledger}`);
+        log$5.error(`Illegal system access attempt by ${ledger}`);
         throw new apolloServer.ForbiddenError('Access denied')
       }
       return core.system()
@@ -1391,6 +1465,12 @@ var system = {
     },
     'findkey': async (system, { id }) => {
       return system.findkey(id)
+    },
+    'finduser': async (system, { username }) => {
+      return system.findUser(username)
+    },
+    'accountTypes': async (system) => {
+      return system.getAccountTypes()
     }
   },
   'Admin': {
@@ -1399,13 +1479,28 @@ var system = {
     },
     'jubilee': async (system, { ledger }) => {
       return system.jubilee(ledger)
+    },
+    'changeAccountType': async (system, { username, type }) => {
+      const result = await system.changeAccountType(username, type);
+      log$5.debug('Changed account %s to type %s, result %j', username, type, result);
+      return `Changed account type of ${username} to ${type}`
+    },
+    'disableAccount': async (system, { username }) => {
+      const result = await system.disableAccount(username);
+      log$5.debug('Disabled account %s, result %j', username, result);
+      return `Disabled account ${username}`
+    },
+    'enableAccount': async (system, { username }) => {
+      const result = await system.enableAccount(username);
+      log$5.debug('Enabled account %s, result %j', username, result);
+      return `Enabled account ${username}`
     }
   }
 };
 
-const log$2 = serverLog.getLogger('graphql:transactions');
+const log$6 = serverLog.getLogger('graphql:transactions');
 
-var transactions = {
+var transactions$1 = {
   Query: {
     ledger: (_, { id }) => {
       return id // optional: check if this even exists?
@@ -1415,7 +1510,7 @@ var transactions = {
     transactions: (id, arg, { core, ledger }) => {
       if (id !== ledger) {
         const err = `Illegal access attempt detected from ${ledger} on ${id}`;
-        log$2.error(err);
+        log$6.error(err);
         throw new apolloServer.ForbiddenError(err)
       }
       return core.mani(id)
@@ -1436,7 +1531,7 @@ var transactions = {
       }
     },
     recent: async transactions => {
-      log$2.debug(
+      log$6.debug(
         'recent transactions requested for %s',
         transactions.fingerprint
       );
@@ -1462,21 +1557,76 @@ var resolvers = _.merge(
     DateTime: graphqlScalars.DateTimeResolver,
     NonNegativeFloat: graphqlScalars.NonNegativeFloatResolver
   },
-  { Currency: currency },
+  { Currency: currency, StringBoolean },
   {
     Query: {
       time: () => new Date(Date.now())
     }
   },
   system,
-  transactions
+  transactions$1
 );
+
+const log$7 = serverLog.getLogger('cognito');
 
 // TODO: continue the pagination token
 const CognitoUserPool = (UserPoolId) => {
+  log$7.debug('Configured with user pool %s', UserPoolId);
+  const convertAttributes = (attr) => _.reduce(attr, (acc, att) => {
+    acc[att.Name.replace('custom:', '')] = att.Value;
+    return acc
+  }, {});
+  const convertUser = ({ Attributes, UserAttributes, ...user }) => {
+    const {
+      Username: username,
+      UserStatus: status,
+      UserCreateDate: created,
+      UserLastModifiedDate: lastModified,
+      Enabled: enabled } = user;
+    return {
+      username,
+      status,
+      created,
+      lastModified,
+      enabled,
+      ...convertAttributes(Attributes), // this is what listUsers uses...
+      ...convertAttributes(UserAttributes) // ... and this is what adminGetUser uses
+    }
+  };
+  const provider = new AWS__default['default'].CognitoIdentityServiceProvider();
   return {
+    getAccountTypes () {
+      const config = process.env.ACCOUNT_TYPES;
+      if (!config) {
+        log$7.error('Missing ACCOUNT_TYPES ENV variable');
+        return []
+      }
+      return JSON.parse(config)
+    },
+    disableUser (Username) {
+      provider.adminDisableUser = util.promisify(provider.adminDisableUser);
+      return provider.adminDisableUser({
+        UserPoolId,
+        Username
+      })
+    },
+    enableUser (Username) {
+      provider.adminEnableUser = util.promisify(provider.adminEnableUser);
+      return provider.adminEnableUser({
+        UserPoolId,
+        Username
+      })
+    },
+    changeAttributes (Username, attributes) {
+      provider.adminUpdateUserAttributes = util.promisify(provider.adminUpdateUserAttributes);
+      const UserAttributes = Object.entries(attributes).map(([Name, Value]) => { return { Name, Value } });
+      return provider.adminUpdateUserAttributes({
+        UserPoolId,
+        Username,
+        UserAttributes
+      })
+    },
     listJubileeUsers: async (PaginationToken) => {
-      const provider = new AWS__default['default'].CognitoIdentityServiceProvider();
       provider.listUsersPromise = util.promisify(provider.listUsers);
       const params = {
         UserPoolId,
@@ -1487,20 +1637,23 @@ const CognitoUserPool = (UserPoolId) => {
       if (cognitoUsers.err) {
         throw cognitoUsers.err
       }
-      return cognitoUsers.data.Users.map(({ Username, Attributes }) => {
-        return {
-          username: Username,
-          ..._.reduce(Attributes, (acc, att) => {
-            acc[att.Name] = att.Value;
-            return acc
-          }, {})
-        }
-      })
+      log$7.debug('Found %n users', cognitoUsers.data.Users.length);
+      return cognitoUsers.data.Users.map(convertUser)
+    },
+    findUser: async (Username) => {
+      provider.adminGetUser = util.promisify(provider.adminGetUser);
+      const result = await provider.adminGetUser({ UserPoolId, Username });
+      if (result) {
+        log$7.debug('Cognito result: %j', result);
+        const user = convertUser(result);
+        log$7.debug('User: %j', user);
+        return user
+      }
     }
   }
 };
 
-const log$1 = serverLog.getLogger('lambda:offlineuserpool');
+const log$8 = serverLog.getLogger('lambda:offlineuserpool');
 
 /**
  * For offline development only!
@@ -1511,9 +1664,9 @@ const log$1 = serverLog.getLogger('lambda:offlineuserpool');
  */
 const OfflineUserPool = (path = '.jubilee.users.json') => {
   const contents = fs__default['default'].readFileSync(path, { encoding: 'utf-8' });
-  if (!contents) log$1.error(`Please make sure ${path} is present`);
+  if (!contents) log$8.error(`Please make sure ${path} is present`);
   const jubilee = JSON.parse(contents);
-  log$1.info(`Loaded jubilee users from ${path}`);
+  log$8.info(`Loaded jubilee users from ${path}`);
   return {
     // Users that have been added to the "jubilee" group
     async listJubileeUsers () {
@@ -1522,43 +1675,58 @@ const OfflineUserPool = (path = '.jubilee.users.json') => {
   }
 };
 
-const log = serverLog.getLogger('lambda:handler');
+const log$9 = serverLog.getLogger('lambda:handler');
+
+const debug = process.env.DEBUG === 'true';
+const offline = process.env.IS_OFFLINE === 'true';
+const userpool = process.env.USER_POOL;
 
 function contextProcessor (event) {
   const { headers } = event;
   // fake the cognito interface if offline
-  let claims = process.env.IS_OFFLINE
-    ? JSON.parse(headers['x-claims'])
+  let claims = offline
+    ? JSON.parse(headers['x-claims'] || process.env.CLAIMS)
     : event.requestContext.authorizer.claims;
-  log.debug('User claims: %j', claims);
+  log$9.debug('User claims: %j', claims);
   return {
     ledger: claims['custom:ledger'],
     verified: claims.email_verified,
     admin: claims['custom:administrator']
   }
 }
+const core = Core(
+  dynamoPlus.DynamoPlus({
+    region: process.env.DYN_REGION,
+    maxRetries: 3
+  }),
+  userpool
+    ? CognitoUserPool(userpool)
+    : OfflineUserPool()
+);
 
-log.info(`Starting ApolloServer with DEBUG = ${process.env.DEBUG}`);
+log$9.info('Starting ApolloServer (debug: %s, offline: %s)', debug, offline);
+log$9.debug('ENV variables: %j', process.env);
 const server = new apolloServerLambda.ApolloServer({
-  debug: process.env.DEBUG === 'true',
-  introspection: process.env.DEBUG === 'true',
+  debug,
+  introspection: debug,
   typeDefs,
   resolvers,
-  plugins: [serverLog.apolloLogPlugin],
+  plugins: [serverLog.apolloLogPlugin, apolloServerCore.ApolloServerPluginLandingPageGraphQLPlayground()],
+  cors: false,
   context: async ({ event, context }) => {
     return {
-      core: Core(
-        dynamoPlus.DynamoPlus({
-          region: process.env.DYN_REGION,
-          maxRetries: 3
-        }),
-        process.env.IS_OFFLINE
-          ? OfflineUserPool()
-          : CognitoUserPool(process.env.USER_POOL)
-      ),
+      core,
       ...contextProcessor(event)
     }
   }
 });
 
-exports.graphqlHandler = server.createHandler();
+const handler = server.createHandler();
+
+async function debugHandler (event, context) {
+  // log.debug('event: %j', event)
+  // log.debug('context: %j', context)
+  return handler(event, context)
+}
+
+exports.graphqlHandler = debug ? debugHandler : handler;
