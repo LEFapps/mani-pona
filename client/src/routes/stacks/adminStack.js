@@ -4,9 +4,8 @@ import { Text } from 'react-native'
 import { createDrawerNavigator } from '@react-navigation/drawer'
 import { useIsFocused } from '@react-navigation/native'
 
-import Dashboard from '../../screens/admin/Dashboard'
-import Parameters from '../../screens/admin/Parameters'
-import Users from '../../screens/admin/Users'
+import { Dashboard, Parameters, Users } from '../../screens/admin/stacks'
+
 import Header from '../../shared/header'
 
 const AdminDrawer = createDrawerNavigator()
@@ -47,10 +46,10 @@ export const Admin = () => {
         initialRouteName='parameters'
         screenOptions={headerOptions}
       >
-        {/* {adminScreens.map((screen, key) => (
+        {adminScreens.map((screen, key) => (
           <AdminDrawer.Screen {...screen} key={key} />
-        ))} */}
-        <AdminDrawer.Screen
+        ))}
+        {/* <AdminDrawer.Screen
           name={'dashboard'}
           component={Dashboard}
           options={{ drawerLabel: 'Dashboard' }}
@@ -64,7 +63,7 @@ export const Admin = () => {
           name={'users'}
           component={Users}
           options={{ drawerLabel: 'Rekeningen' }}
-        />
+        /> */}
       </AdminDrawer.Navigator>
     )
   )
