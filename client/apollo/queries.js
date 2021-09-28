@@ -197,6 +197,14 @@ const CHANGE_ACCOUNT_TYPE = gql`
   }
 `
 
+const FORCE_SYSTEM_PAYMENT = gql`
+    mutation force($ledger: String!, $amount: Currency!) {
+      admin {
+        forceSystemPayment(ledger: $ledger, amount: $amount)
+      }
+    }
+`
+
 const INIT = gql`
   mutation init {
     admin {
@@ -221,6 +229,7 @@ export {
   ENABLE_USER,
   ACCOUNT_TYPES,
   CHANGE_ACCOUNT_TYPE,
+  FORCE_SYSTEM_PAYMENT,
   JUBILEE,
   INIT,
   SYSTEM_PARAMETERS,

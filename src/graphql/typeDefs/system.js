@@ -31,9 +31,14 @@ const SystemSchema = gql`
   }
 
   type Jubilee {
-    ledgers: Int
+    "Number of ledgers process in this batch"
+    ledgers: Int!
+    "Demurrage removed in this batch"
     demurrage: Currency!
+    "Income added in this batch"
     income: Currency!
+    "If the process is not finished yet (more batches available), it returns a paginationToken"
+    nextToken: String
   }
 
   type User {
@@ -73,7 +78,7 @@ const SystemSchema = gql`
 
   type Admin {
     "apply demurrage and (basic) income to all accounts"
-    jubilee(ledger: String): Jubilee!
+    jubilee(paginationToken: String): Jubilee!
     "Initialize the system"
     init: String
     "Change the type of the account associated with this username (email address)"
@@ -82,6 +87,8 @@ const SystemSchema = gql`
     disableAccount(username: String): String
     "Enable user account"
     enableAccount(username: String): String
+    "Force a system payment"
+    forceSystemPayment(ledger: String!, amount: Currency!): String
   }
 
   type Query {

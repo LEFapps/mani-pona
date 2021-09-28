@@ -1,15 +1,13 @@
 import AWS from 'aws-sdk'
 import { promisify } from 'util'
-import { reduce } from 'lodash'
-
 import { getLogger } from 'server-log'
 
 const log = getLogger('cognito')
 
-// TODO: continue the pagination token
 const CognitoUserPool = (UserPoolId) => {
-  log.debug('Configured with user pool %s', UserPoolId)
-  const convertAttributes = (attr) => reduce(attr, (acc, att) => {
+  const USER_LIST_LIMIT = parseInt(process.env.COGNITO_LIMIT) || 20
+  log.debug('Cognito configured with user pool %s and list limit %n', UserPoolId, USER_LIST_LIMIT)
+  const convertAttributes = (attr) => attr.reduce((acc, att) => {
     acc[att.Name.replace('custom:', '')] = att.Value
     return acc
   }, {})
@@ -40,21 +38,21 @@ const CognitoUserPool = (UserPoolId) => {
       }
       return JSON.parse(config)
     },
-    disableUser (Username) {
+    async disableUser (Username) {
       provider.adminDisableUser = promisify(provider.adminDisableUser)
       return provider.adminDisableUser({
         UserPoolId,
         Username
       })
     },
-    enableUser (Username) {
+    async enableUser (Username) {
       provider.adminEnableUser = promisify(provider.adminEnableUser)
       return provider.adminEnableUser({
         UserPoolId,
         Username
       })
     },
-    changeAttributes (Username, attributes) {
+    async changeAttributes (Username, attributes) {
       provider.adminUpdateUserAttributes = promisify(provider.adminUpdateUserAttributes)
       const UserAttributes = Object.entries(attributes).map(([Name, Value]) => { return { Name, Value } })
       return provider.adminUpdateUserAttributes({
@@ -63,21 +61,25 @@ const CognitoUserPool = (UserPoolId) => {
         UserAttributes
       })
     },
-    listJubileeUsers: async (PaginationToken) => {
+    async listJubileeUsers (PaginationToken) {
       provider.listUsersPromise = promisify(provider.listUsers)
       const params = {
         UserPoolId,
         PaginationToken,
-        AttributesToGet: [ 'sub', 'username', 'cognito:user_status', 'status', 'ledger' ] // TODO: add extra verification/filters?
+        Limit: USER_LIST_LIMIT,
+        AttributesToGet: [ 'sub', 'username', 'cognito:user_status', 'status', 'ledger', 'type' ] // TODO: add extra verification/filters?
       }
-      const cognitoUsers = await provider.listUsersPromise(params)
-      if (cognitoUsers.err) {
-        throw cognitoUsers.err
+      const res = await provider.listUsersPromise(params)
+      if (res.err) {
+        throw res.err
       }
-      log.debug('Found %n users', cognitoUsers.data.Users.length)
-      return cognitoUsers.data.Users.map(convertUser)
+      log.debug('Found %n users', res.data.Users.length)
+      return {
+        users: res.data.Users.map(convertUser),
+        paginationToken: res.data.PaginationToken
+      }
     },
-    findUser: async (Username) => {
+    async findUser (Username) {
       provider.adminGetUser = promisify(provider.adminGetUser)
       const result = await provider.adminGetUser({ UserPoolId, Username })
       if (result) {

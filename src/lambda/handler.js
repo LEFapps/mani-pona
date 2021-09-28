@@ -1,6 +1,7 @@
 import { ApolloServer } from 'apollo-server-lambda'
 import { ApolloServerPluginLandingPageGraphQLPlayground } from 'apollo-server-core'
 import { DynamoPlus } from 'dynamo-plus'
+import http from 'http'
 import Core from '../core/index'
 import typeDefs from '../graphql/typeDefs/index'
 import resolvers from '../graphql/resolvers/index'
@@ -27,9 +28,13 @@ function contextProcessor (event) {
     admin: claims['custom:administrator']
   }
 }
+
+const offlineOptions = offline ? { endpoint: 'http://localhost:8000', httpOptions: { agent: new http.Agent({ keepAlive: true }) } } : {}
+
 const core = Core(
   DynamoPlus({
     region: process.env.DYN_REGION,
+    ...offlineOptions,
     maxRetries: 3
   }),
   userpool

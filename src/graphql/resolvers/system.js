@@ -42,8 +42,8 @@ export default {
     'init': async (system) => {
       return system.init()
     },
-    'jubilee': async (system, { ledger }) => {
-      return system.jubilee(ledger)
+    'jubilee': async (system, { paginationToken }) => {
+      return system.jubilee(paginationToken)
     },
     'changeAccountType': async (system, { username, type }) => {
       const result = await system.changeAccountType(username, type)

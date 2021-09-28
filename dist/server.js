@@ -3,6 +3,7 @@
 var apolloServerLambda = require('apollo-server-lambda');
 var apolloServerCore = require('apollo-server-core');
 var dynamoPlus = require('dynamo-plus');
+var http = require('http');
 var assert = require('assert');
 var sha1 = require('sha1');
 var _ = require('lodash');
@@ -20,6 +21,7 @@ var fs = require('fs');
 
 function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
 
+var http__default = /*#__PURE__*/_interopDefaultLegacy(http);
 var assert__default = /*#__PURE__*/_interopDefaultLegacy(assert);
 var sha1__default = /*#__PURE__*/_interopDefaultLegacy(sha1);
 var currency__default = /*#__PURE__*/_interopDefaultLegacy(currency$1);
@@ -476,10 +478,10 @@ function addAmount ({ targets: { ledger, destination } }, amount) {
   return { ledger, destination }
 }
 /**
- * Add Demmurage and Income.
+ * Add Demmurage and Income, optionally using a buffer.
  */
-function addDI ({ targets: { ledger, destination } }, { demurrage, income }) {
-  ledger.demurrage = ledger.balance.multiply(demurrage / 100);
+function addDI ({ targets: { ledger, destination } }, { demurrage, income, buffer }) {
+  ledger.demurrage = ledger.balance.subtract(buffer).multiply(demurrage / 100);
   ledger.income = income;
   ledger.amount = ledger.income.subtract(ledger.demurrage);
   ledger.balance = ledger.balance.subtract(ledger.demurrage).add(ledger.income);
@@ -813,7 +815,7 @@ function System (ledgers, userpool) {
       const { publicKeyArmored, privateKeyArmored } = keys;
       const trans = ledgers.transaction();
       trans.putKey({ ledger: 'system', publicKeyArmored, privateKeyArmored });
-      await StateMachine(ledgers)
+      await StateMachine(trans)
         .getSources({ ledger: 'system', destination: 'system' })
         .then(t => t.addAmount(mani(0)))
         .then(t => t.addSystemSignatures(keys))
@@ -861,18 +863,45 @@ function System (ledgers, userpool) {
       log$1.info('Registered ledger %s', ledger);
       return ledger
     },
-    async jubilee (ledger) {
+    async forceSystemPayment (ledger, amount) {
+      log$1.debug('Forcing system payment of %s on ledger %s', amount, ledger);
+      const pending = await ledgers.pending(ledger);
+      if (pending) {
+        if (pending.destination === 'system') {
+        // idempotency, we assume the client re-submitted
+          return 'succes'
+        } else {
+          throw new Error(`There is still a pending transaction on ledger ${ledger}`)
+        }
+      }
+      const keys = ledgers.keys('system', true);
+      const transaction = ledgers.transaction();
+      await StateMachine(transaction)
+        .getSources({ ledger, destination: 'system' })
+        .then(t => t.addAmount(amount))
+        .then(t => t.addSystemSignatures(keys))
+        .then(t => t.save())
+        .catch(err => log$1.error('Forced system payment failed\n%j', err));
+      await transaction.execute();
+      return `Success`
+    },
+    async jubilee (paginationToken) {
       const results = {
         ledgers: 0,
         demurrage: mani(0),
         income: mani(0)
       };
-      async function applyJubilee (ledger) {
+      // convert to a key-value(s) object for easy lookup
+      const types = userpool.getAccountTypes().reduce(({ type, ...attr }, acc) => {
+        acc[type] = attr;
+        return acc
+      }, {});
+      async function applyJubilee (ledger, DI) {
         log$1.debug('Applying jubilee to ledger %s', ledger);
         const transaction = ledgers.transaction();
         await StateMachine(transaction)
           .getSources({ ledger, destination: 'system' })
-          .then(t => t.addDI(PARAMETERS))
+          .then(t => t.addDI(DI))
           .then(t => {
             const entry = t.getPrimaryEntry();
             results.income = results.income.add(entry.income);
@@ -886,16 +915,21 @@ function System (ledgers, userpool) {
         await transaction.execute();
         log$1.debug('Jubilee succesfully applied to ledger %s', ledger);
       }
-      if (ledger) {
-        await applyJubilee(ledger);
-      } else {
-        const users = await userpool.listJubileeUsers();
-        for (let { ledger } of users) {
+      const { users, paginationToken: nextToken } = await userpool.listJubileeUsers(paginationToken);
+      for (let { ledger, type } of users) {
+        const DI = type ? types[type] : types['default'];
+        if (!DI) {
+          log$1.error('SKIPPING JUBILEE: Unable to determine jubilee type %s for ledger %s', type, ledger);
+        } else {
+          log$1.debug('Applying jubilee of type %s to ledger %s', type, ledger);
           // these for loops allow await!
-          await applyJubilee(ledger);
+          await applyJubilee(ledger, DI);
         }
       }
-      return results
+      return {
+        paginationToken: nextToken,
+        ...results
+      }
     }
   }
 }
@@ -1027,8 +1061,7 @@ const table = function (db, options = {}) {
   if (!TableName) {
     throw new Error('Please set ENV variable DYN_TABLE.')
   }
-  const t = _.reduce(
-    methods,
+  const t = methods.reduce(
     (table, method) => {
       table[method] = async param => {
         const arg = {
@@ -1251,9 +1284,14 @@ const SystemSchema = apolloServerLambda.gql`
   }
 
   type Jubilee {
-    ledgers: Int
+    "Number of ledgers process in this batch"
+    ledgers: Int!
+    "Demurrage removed in this batch"
     demurrage: Currency!
+    "Income added in this batch"
     income: Currency!
+    "If the process is not finished yet (more batches available), it returns a paginationToken"
+    nextToken: String
   }
 
   type User {
@@ -1293,7 +1331,7 @@ const SystemSchema = apolloServerLambda.gql`
 
   type Admin {
     "apply demurrage and (basic) income to all accounts"
-    jubilee(ledger: String): Jubilee!
+    jubilee(paginationToken: String): Jubilee!
     "Initialize the system"
     init: String
     "Change the type of the account associated with this username (email address)"
@@ -1302,6 +1340,8 @@ const SystemSchema = apolloServerLambda.gql`
     disableAccount(username: String): String
     "Enable user account"
     enableAccount(username: String): String
+    "Force a system payment"
+    forceSystemPayment(ledger: String!, amount: Currency!): String
   }
 
   type Query {
@@ -1477,8 +1517,8 @@ var system = {
     'init': async (system) => {
       return system.init()
     },
-    'jubilee': async (system, { ledger }) => {
-      return system.jubilee(ledger)
+    'jubilee': async (system, { paginationToken }) => {
+      return system.jubilee(paginationToken)
     },
     'changeAccountType': async (system, { username, type }) => {
       const result = await system.changeAccountType(username, type);
@@ -1569,10 +1609,10 @@ var resolvers = _.merge(
 
 const log$7 = serverLog.getLogger('cognito');
 
-// TODO: continue the pagination token
 const CognitoUserPool = (UserPoolId) => {
-  log$7.debug('Configured with user pool %s', UserPoolId);
-  const convertAttributes = (attr) => _.reduce(attr, (acc, att) => {
+  const USER_LIST_LIMIT = parseInt(process.env.COGNITO_LIMIT) || 20;
+  log$7.debug('Cognito configured with user pool %s and list limit %n', UserPoolId, USER_LIST_LIMIT);
+  const convertAttributes = (attr) => attr.reduce((acc, att) => {
     acc[att.Name.replace('custom:', '')] = att.Value;
     return acc
   }, {});
@@ -1603,21 +1643,21 @@ const CognitoUserPool = (UserPoolId) => {
       }
       return JSON.parse(config)
     },
-    disableUser (Username) {
+    async disableUser (Username) {
       provider.adminDisableUser = util.promisify(provider.adminDisableUser);
       return provider.adminDisableUser({
         UserPoolId,
         Username
       })
     },
-    enableUser (Username) {
+    async enableUser (Username) {
       provider.adminEnableUser = util.promisify(provider.adminEnableUser);
       return provider.adminEnableUser({
         UserPoolId,
         Username
       })
     },
-    changeAttributes (Username, attributes) {
+    async changeAttributes (Username, attributes) {
       provider.adminUpdateUserAttributes = util.promisify(provider.adminUpdateUserAttributes);
       const UserAttributes = Object.entries(attributes).map(([Name, Value]) => { return { Name, Value } });
       return provider.adminUpdateUserAttributes({
@@ -1626,21 +1666,25 @@ const CognitoUserPool = (UserPoolId) => {
         UserAttributes
       })
     },
-    listJubileeUsers: async (PaginationToken) => {
+    async listJubileeUsers (PaginationToken) {
       provider.listUsersPromise = util.promisify(provider.listUsers);
       const params = {
         UserPoolId,
         PaginationToken,
-        AttributesToGet: [ 'sub', 'username', 'cognito:user_status', 'status', 'ledger' ] // TODO: add extra verification/filters?
+        Limit: USER_LIST_LIMIT,
+        AttributesToGet: [ 'sub', 'username', 'cognito:user_status', 'status', 'ledger', 'type' ] // TODO: add extra verification/filters?
       };
-      const cognitoUsers = await provider.listUsersPromise(params);
-      if (cognitoUsers.err) {
-        throw cognitoUsers.err
+      const res = await provider.listUsersPromise(params);
+      if (res.err) {
+        throw res.err
       }
-      log$7.debug('Found %n users', cognitoUsers.data.Users.length);
-      return cognitoUsers.data.Users.map(convertUser)
+      log$7.debug('Found %n users', res.data.Users.length);
+      return {
+        users: res.data.Users.map(convertUser),
+        paginationToken: res.data.PaginationToken
+      }
     },
-    findUser: async (Username) => {
+    async findUser (Username) {
       provider.adminGetUser = util.promisify(provider.adminGetUser);
       const result = await provider.adminGetUser({ UserPoolId, Username });
       if (result) {
@@ -1694,9 +1738,13 @@ function contextProcessor (event) {
     admin: claims['custom:administrator']
   }
 }
+
+const offlineOptions = offline ? { endpoint: 'http://localhost:8000', httpOptions: { agent: new http__default['default'].Agent({ keepAlive: true }) } } : {};
+
 const core = Core(
   dynamoPlus.DynamoPlus({
     region: process.env.DYN_REGION,
+    ...offlineOptions,
     maxRetries: 3
   }),
   userpool

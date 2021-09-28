@@ -1,4 +1,3 @@
-import { reduce } from 'lodash'
 import { getLogger } from 'server-log'
 import tools from '../../client/shared/tools'
 const log = getLogger('dynamodb:table')
@@ -15,8 +14,7 @@ const table = function (db, options = {}) {
   if (!TableName) {
     throw new Error('Please set ENV variable DYN_TABLE.')
   }
-  const t = reduce(
-    methods,
+  const t = methods.reduce(
     (table, method) => {
       table[method] = async param => {
         const arg = {
