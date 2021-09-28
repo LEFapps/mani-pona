@@ -43,14 +43,14 @@ export default function AccountBalance ({ navigation }) {
         await ManiClient.system
           .parameters()
           .then(({ demurrage, income }) => {
-            setDemurrage(demurrage) // int
+            setDemurrage(demurrage) // int %
             setIncome(income) // mani
           })
           .catch(console.error)
         setReady(true)
       })
-      .catch(async e => {
-        console.error((e && e.message) || e)
+      .catch(e => {
+        console.error(e.message || e)
       })
   }
 

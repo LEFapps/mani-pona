@@ -1,16 +1,15 @@
 import React, { useState, useEffect } from 'react'
 import { View, Text, FlatList, TouchableOpacity } from 'react-native'
 
-import Card from '../shared/card'
-import { HistoryButton } from '../shared/buttons/historyButton'
-import { globalStyles } from '../styles/global'
-import MANI from '../../shared/mani'
 import { Contact } from '../shared/contact'
+import Card from '../shared/card'
+import FlatButton from '../shared/buttons/historyButton'
+
+import { globalStyles } from '../styles/global'
 
 export default function TransactionHitstory ({ navigation }) {
   const [transactions, setTransactions] = useState([])
-  const [transactionsToShow, setTransactionsToShow] = useState([])
-  const [contacts, setContacts] = useState([])
+  const [filter, setFilter] = useState('all')
   const [ready, setReady] = useState(false)
   const ManiClient = global.maniClient
 
@@ -18,83 +17,47 @@ export default function TransactionHitstory ({ navigation }) {
     loadData()
   }, [])
 
-  useEffect(() => {
-    setTransactionsToShow(transactions)
-  }, [transactions])
-
   async function loadData () {
     await ManiClient.transactions.recent().then(transactions => {
       setTransactions(transactions)
     })
-    // await ManiClient.contacts.all().then(contacts => {
-    //   setContacts(contacts)
-    // })
     setReady(true)
   }
 
-  function getContact (contactId) {
-    const contact = contacts[contactId]
-    if (contact) {
-      return contact.name
-    } else {
-      return 'Anoniem'
+  const filters = [
+    {
+      title: 'Alle',
+      onPress: () => setFilter('all'),
+      active: () => filter === 'all'
+    },
+    {
+      title: 'Betaald',
+      onPress: () => setFilter('payd'),
+      active: () => filter === 'payd'
+    },
+    {
+      title: 'Ontvangen',
+      onPress: () => setFilter('received'),
+      active: () => filter === 'received'
     }
-  }
+  ]
 
-  const [Background, setBackground] = useState({
-    all: 'white',
-    payd: 'transparent',
-    received: 'transparent'
+  const transactionsToShow = transactions.filter(({ amount }) => {
+    console.log(amount)
+    switch (filter) {
+      case 'payd':
+        return amount.negative()
+      case 'received':
+        return amount.positive()
+      default:
+        return true
+    }
   })
-
-  const filter = value => {
-    if (value == 'all') {
-      setTransactionsToShow(transactions)
-      setBackground({
-        all: 'white',
-        payd: 'transparent',
-        received: 'transparent'
-      })
-    } else if (value == 'payd') {
-      let payd = []
-      transactions.forEach(transaction => {
-        if (transaction.amount < 0) {
-          payd.push(transaction)
-        }
-      })
-      setTransactionsToShow(payd)
-      setBackground({
-        all: 'transparent',
-        payd: 'white',
-        received: 'transparent'
-      })
-    } else if (value == 'received') {
-      let recieved = []
-      transactions.forEach(transaction => {
-        if (transaction.amount > 0) {
-          recieved.push(transaction)
-        }
-      })
-      setTransactionsToShow(recieved)
-      setBackground({
-        all: 'transparent',
-        payd: 'transparent',
-        received: 'white'
-      })
-    }
-  }
 
   if (ready) {
     return (
       <View style={globalStyles.main}>
-        <HistoryButton
-          onPressAll={() => filter('all')}
-          onPressPayd={() => filter('payd')}
-          onPressReceived={() => filter('received')}
-          allBackground={Background.all}
-          paydBackground={Background.payd}
-          receivedBackground={Background.received}
-        />
+        <FlatButton options={filters} />
         <View>
           <FlatList
             keyExtractor={({ ledger, destination, date }) =>
