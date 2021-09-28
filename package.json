@@ -53,7 +53,7 @@
     "babel-plugin-graphql-tag": "^3.1.0",
     "currency.js": "^2.0.3",
     "dom-storage": "^2.1.0",
-    "dynamo-plus": "^1.7.0",
+    "dynamo-plus": "^1.7.1",
     "graphql": "^15.5.0",
     "graphql-scalars": "^1.6.1",
     "graphql-tools": "^7.0.2",

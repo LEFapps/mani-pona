@@ -4216,10 +4216,10 @@ dynalite@^3.0.0:
   optionalDependencies:
     leveldown "^5.2.1"
 
-dynamo-plus@^1.7.0:
-  version "1.7.0"
-  resolved "https://registry.yarnpkg.com/dynamo-plus/-/dynamo-plus-1.7.0.tgz#79600e64158889c901f730d7d9e0c49544eb1ded"
-  integrity sha512-wZa+DEJvCvuBsMgswlAZlQAUUxGyhmw+z0AB6JJtOdGMSpwjvZDCqRpchzxx43l2Y/b23p1aae3kWuzIhl/UdQ==
+dynamo-plus@^1.7.1:
+  version "1.7.1"
+  resolved "https://registry.yarnpkg.com/dynamo-plus/-/dynamo-plus-1.7.1.tgz#48752134459a7a158eacf3208cfaa2878b073ebe"
+  integrity sha512-jfcuuMrFqcGutH0y61iTJoE7jE1LPVwjkWs0Cd5UgPkk8/jetLaTfXwPtMwG79xGumnpzgQv9kf/LtVYLYEPeQ==
 
 dynamodb-localhost@0.0.9:
   version "0.0.9"

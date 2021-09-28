@@ -1,8 +1,10 @@
 import React, { useState } from 'react'
 import { TextInput, View, Text } from 'react-native'
+import Auth from '@aws-amplify/auth'
+
 import { globalStyles } from '../../styles/global.js'
 import Button from '../../shared/buttons/button'
-import Auth from '@aws-amplify/auth'
+import FlatButton from '../../shared/buttons/historyButton.js'
 import {
   validateEmail,
   validatePassword,
@@ -14,9 +16,13 @@ import i18n from 'i18n-js'
 import { resetClient } from '../../../App.js'
 
 export default function signUp (props) {
-  const ManiClient = global.maniClient
-
-  const defaultState = { alias: '', email: '', password: '', password2: '' }
+  const defaultState = {
+    alias: '',
+    email: '',
+    password: '',
+    password2: '',
+    requestedType: 'default'
+  }
 
   const [state, setState] = useState(defaultState)
   const [errors, setErrors] = useState(defaultState)
@@ -37,6 +43,7 @@ export default function signUp (props) {
           username: state.email,
           password: state.password,
           attributes: {
+            'custom:requestedType': state.requestedType,
             'custom:alias': state.alias,
             'custom:ledger': global.maniClient.id,
             email: state.email
@@ -51,6 +58,19 @@ export default function signUp (props) {
       }
     }
   }
+
+  const accountTypes = [
+    {
+      title: 'Standaardaccount',
+      onPress: () => setState({ ...state, requestedType: 'default' }),
+      active: () => state.requestedType === 'default'
+    },
+    {
+      title: 'Professioneel account',
+      onPress: () => setState({ ...state, requestedType: 'professional' }),
+      active: () => state.requestedType === 'professional'
+    }
+  ]
 
   if (props.authState === 'signUp') {
     return (
@@ -119,6 +139,9 @@ export default function signUp (props) {
             {!!errors.password2 && (
               <Text style={globalStyles.errorText}>{errors.password2}</Text>
             )}
+
+            <Text style={globalStyles.label}>Account Type</Text>
+            <FlatButton options={accountTypes} />
 
             <Button text='Registreren' onPress={() => onSubmit()} />
 
