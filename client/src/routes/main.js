@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useContext } from 'react'
 import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs'
 import { NavigationContainer } from '@react-navigation/native'
 import { View, Text } from 'react-native'
@@ -8,6 +8,8 @@ import {
   Entypo
 } from '@expo/vector-icons'
 import Auth from '@aws-amplify/auth'
+
+import { UserContext } from '../authenticator'
 
 import AdminStack from './stacks/AdminStack'
 import AccountStack from '../routes/stacks/accountStack'
@@ -22,8 +24,8 @@ import { colors } from '../helpers/helper'
 
 const iconProps = { size: 24 }
 
-const screens = ({ Nav }) => ({
-  // Overview: (
+const navScreens = {
+  // Overview: {component: ({Nav})=> (
   //   <Nav.Screen
   //     key='Overview'
   //     name='Overview'
@@ -33,76 +35,84 @@ const screens = ({ Nav }) => ({
   //       <MaterialIcons name='home' color={color} {...iconProps} />
   //     )}
   //   />
-  // ),
-  LoREco: (
-    <Nav.Screen
-      key='LoREco'
-      name='LoREco'
-      component={QrStack}
-      options={{
-        drawerIcon: props => (
-          <MaterialIcons name='home' color={props.color} {...iconProps} />
-        ),
-        tabBarIcon: ({ focused, color = 'white' }) => (
-          <MaterialIcons name='home' color={color} {...iconProps} />
-        )
-      }}
-    />
-  ),
-  Betalingsopdrachten: (
-    <Nav.Screen
-      key='Betalingsopdrachten'
-      name='Betalingsopdrachten'
-      component={StandingOrderStack}
-      options={{
-        drawerIcon: props => (
-          <MaterialIcons name='loop' color={props.color} {...iconProps} />
-        ),
-        tabBarIcon: ({ focused, color = 'white' }) => (
-          <MaterialIcons name='loop' color={color} {...iconProps} />
-        )
-      }}
-    />
-  ),
-  Transacties: (
-    <Nav.Screen
-      key='Transacties'
-      name='Transacties'
-      component={TransactionHistoryStack}
-      options={{
-        drawerIcon: props => (
-          <MaterialIcons name='history' color={props.color} {...iconProps} />
-        ),
-        tabBarIcon: ({ focused, color = 'white' }) => (
-          <MaterialIcons name='history' color={color} {...iconProps} />
-        )
-      }}
-    />
-  ),
-  Bijdragen: (
-    <Nav.Screen
-      key='Bijdragen'
-      name='Bijdragen'
-      component={ContributionHistoryStack}
-      options={{
-        drawerIcon: props => (
-          <MaterialIcons
-            name='swap-vertical-circle'
-            color={props.color}
-            {...iconProps}
-          />
-        ),
-        tabBarIcon: ({ focused, color = 'white' }) => (
-          <MaterialIcons
-            name='swap-vertical-circle'
-            color={color}
-            {...iconProps}
-          />
-        )
-      }}
-    />
-  ),
-  // 'Beheer Vrije Buffer': (
+  // )},
+  LoREco: {
+    component: ({ Nav }) => (
+      <Nav.Screen
+        key='LoREco'
+        name='LoREco'
+        component={QrStack}
+        options={{
+          drawerIcon: props => (
+            <MaterialIcons name='home' color={props.color} {...iconProps} />
+          ),
+          tabBarIcon: ({ focused, color = 'white' }) => (
+            <MaterialIcons name='home' color={color} {...iconProps} />
+          )
+        }}
+      />
+    )
+  },
+  Betalingsopdrachten: {
+    component: ({ Nav }) => (
+      <Nav.Screen
+        key='Betalingsopdrachten'
+        name='Betalingsopdrachten'
+        component={StandingOrderStack}
+        options={{
+          drawerIcon: props => (
+            <MaterialIcons name='loop' color={props.color} {...iconProps} />
+          ),
+          tabBarIcon: ({ focused, color = 'white' }) => (
+            <MaterialIcons name='loop' color={color} {...iconProps} />
+          )
+        }}
+      />
+    )
+  },
+  Transacties: {
+    component: ({ Nav }) => (
+      <Nav.Screen
+        key='Transacties'
+        name='Transacties'
+        component={TransactionHistoryStack}
+        options={{
+          drawerIcon: props => (
+            <MaterialIcons name='history' color={props.color} {...iconProps} />
+          ),
+          tabBarIcon: ({ focused, color = 'white' }) => (
+            <MaterialIcons name='history' color={color} {...iconProps} />
+          )
+        }}
+      />
+    )
+  },
+  Bijdragen: {
+    component: ({ Nav }) => (
+      <Nav.Screen
+        key='Bijdragen'
+        name='Bijdragen'
+        component={ContributionHistoryStack}
+        options={{
+          drawerIcon: props => (
+            <MaterialIcons
+              name='swap-vertical-circle'
+              color={props.color}
+              {...iconProps}
+            />
+          ),
+          tabBarIcon: ({ focused, color = 'white' }) => (
+            <MaterialIcons
+              name='swap-vertical-circle'
+              color={color}
+              {...iconProps}
+            />
+          )
+        }}
+      />
+    )
+  },
+  // 'Beheer Vrije Buffer': {component: ({Nav})=> (
   //   <Nav.Screen
   //     key='Beheer Vrije Buffer'
   //     name='Beheer Vrije Buffer'
@@ -114,8 +124,8 @@ const screens = ({ Nav }) => ({
   // tabBarIcon={({focused, color = 'white'}) => <MaterialIcons name='home' color={color} {...iconProps} />}
   //     }}
   //   />
-  // ),
-  // Contacten: (
+  // )},
+  // Contacten: {component: ({Nav})=> (
   //   <Nav.Screen
   //     key='Contacten'
   //     name='Contacten'
@@ -131,73 +141,58 @@ const screens = ({ Nav }) => ({
   // tabBarIcon={({focused, color = 'white'}) => <MaterialIcons name='contacts' color={color} {...iconProps} />}
   //     }}
   //   />
-  // ),
-  Account: (
-    <Nav.Screen
-      key='Account'
-      name='Account'
-      component={AccountStack}
-      options={{
-        tabBarIcon: ({ focused, color = 'white' }) => (
-          <MaterialCommunityIcons
-            name='account-circle'
-            color={color}
-            {...iconProps}
-          />
-        )
-      }}
-    />
-  ),
-  Admin: (
-    <Nav.Screen
-      key='Admin'
-      name='Admin'
-      component={AdminStack}
-      options={{
-        tabBarIcon: ({ focused, color = 'white' }) => (
-          <MaterialCommunityIcons name='wrench' color={color} {...iconProps} />
-        )
-      }}
-    />
-  )
-})
+  // )},
+  Account: {
+    component: ({ Nav }) => (
+      <Nav.Screen
+        key='Account'
+        name='Account'
+        component={AccountStack}
+        options={{
+          tabBarIcon: ({ focused, color = 'white' }) => (
+            <MaterialCommunityIcons
+              name='account-circle'
+              color={color}
+              {...iconProps}
+            />
+          )
+        }}
+      />
+    )
+  },
+  Admin: {
+    // onlyVisibleTo: ['administrator'],
+    component: ({ Nav }) => (
+      <Nav.Screen
+        key='Admin'
+        name='Admin'
+        component={AdminStack}
+        options={{
+          tabBarIcon: ({ focused, color = 'white' }) => (
+            <MaterialCommunityIcons
+              name='wrench'
+              color={color}
+              {...iconProps}
+            />
+          )
+        }}
+      />
+    )
+  }
+}
 
 export default function drawerNavigator (props) {
+  const user = useContext(UserContext)
   const [hasPending, setPending] = useState(null)
   const [isPolling, setPolling] = useState(null)
   const ManiClient = global.maniClient
   const Nav = createMaterialBottomTabNavigator()
-  const navScreens = screens({ Nav })
 
   useEffect(() => {
-    pollPending()
+    if (props.authState === 'signedIn') pollPending && pollPending()
   })
 
-  const getPending = async () => {
-    await Auth.currentSession()
-      .then(async data => {
-        // get attributes from Cognito claims
-        const { 'custom:ledger': ledger } = data.idToken.payload
-        console.log('Cognito Ledger:', ledger)
-        console.log('Local Ledger:', ManiClient.id)
-        // autoLogout if not signed in correctly,
-        // else check for pending transactions
-        if (ManiClient.id !== ledger) await Auth.signOut({ global: true })
-        else {
-          ManiClient.transactions
-            .pending()
-            .then(pending => {
-              console.log('PENDING', pending)
-              setPending(pending)
-            })
-            .catch(e => {
-              console.error(e.message)
-              setPending(undefined)
-            })
-        }
-      })
-      .catch(err => console.log(err))
-  }
+  if (props.authState !== 'signedIn' || !user) return <View />
 
   const pollPending = async () => {
     if (!isPolling) {
@@ -206,24 +201,55 @@ export default function drawerNavigator (props) {
     }
   }
 
-  if (props.authState === 'signedIn') {
-    return (
-      <View style={globalStyles.container}>
-        {hasPending === null ? (
-          <Text>Rekening controleren...</Text>
-        ) : (
-          <NavigationContainer>
-            <Nav.Navigator
-              barStyle={{ backgroundColor: colors.DarkerBlue }}
-              initialRouteName={hasPending ? 'Betalingsopdrachten' : 'LoREco'}
-            >
-              {Object.keys(navScreens).map(screen => navScreens[screen])}
-            </Nav.Navigator>
-          </NavigationContainer>
-        )}
-      </View>
-    )
-  } else {
-    return <View />
+  const getPending = async () => {
+    // get attributes from Cognito claims
+    const { 'custom:ledger': ledger } = user.attributes
+    console.log('Cognito Ledger:', ledger)
+    console.log('Local Ledger:', ManiClient.id)
+    // autoLogout if not signed in correctly,
+    // else check for pending transactions
+    if (ManiClient.id !== ledger) await Auth.signOut({ global: true })
+    else {
+      ManiClient.transactions
+        .pending()
+        .then(pending => {
+          console.log('PENDING', pending)
+          setPending(pending)
+        })
+        .catch(e => {
+          console.error(e.message)
+          setPending(undefined)
+        })
+    }
   }
+
+  const availableScreens = Object.keys(navScreens)
+    .map(key => {
+      const { onlyVisibleTo } = navScreens[key]
+      console.log(key, onlyVisibleTo)
+      const check = onlyVisibleTo
+        ? onlyVisibleTo.map(role => !!user.attributes[`custom:${role}`])
+        : [true]
+      return check.includes(true) && key
+    })
+    .filter(a => a)
+
+  return (
+    <View style={globalStyles.container}>
+      {hasPending === null ? (
+        <Text>Rekening controleren...</Text>
+      ) : (
+        <NavigationContainer>
+          <Nav.Navigator
+            barStyle={{ backgroundColor: colors.DarkerBlue }}
+            initialRouteName={hasPending ? 'Betalingsopdrachten' : 'LoREco'}
+          >
+            {availableScreens.map(screen =>
+              navScreens[screen].component({ Nav })
+            )}
+          </Nav.Navigator>
+        </NavigationContainer>
+      )}
+    </View>
+  )
 }
