@@ -10,7 +10,7 @@ export default function FlatButton (props) {
         <View style={styles.button}>
           <Text style={styles.buttonText}>
             {props.active ? '✔ ' : ''}
-            {props.text}
+            {props.text || props.title}
           </Text>
         </View>
       </TouchableOpacity>
