@@ -1609,20 +1609,26 @@ var resolvers = _.merge(
 
 const log$2 = serverLog.getLogger('cognito');
 
-const CognitoUserPool = (UserPoolId) => {
+const CognitoUserPool = UserPoolId => {
   const USER_LIST_LIMIT = parseInt(process.env.COGNITO_LIMIT) || 20;
-  log$2.debug('Cognito configured with user pool %s and list limit %n', UserPoolId, USER_LIST_LIMIT);
-  const convertAttributes = (attr) => attr.reduce((acc, att) => {
-    acc[att.Name.replace('custom:', '')] = att.Value;
-    return acc
-  }, {});
+  log$2.debug(
+    'Cognito configured with user pool %s and list limit %n',
+    UserPoolId,
+    USER_LIST_LIMIT
+  );
+  const convertAttributes = (attr = []) =>
+    attr.reduce((acc, att) => {
+      acc[att.Name.replace('custom:', '')] = att.Value;
+      return acc
+    }, {});
   const convertUser = ({ Attributes, UserAttributes, ...user }) => {
     const {
       Username: username,
       UserStatus: status,
       UserCreateDate: created,
       UserLastModifiedDate: lastModified,
-      Enabled: enabled } = user;
+      Enabled: enabled
+    } = user;
     return {
       username,
       status,
@@ -1658,8 +1664,12 @@ const CognitoUserPool = (UserPoolId) => {
       })
     },
     async changeAttributes (Username, attributes) {
-      provider.adminUpdateUserAttributes = util.promisify(provider.adminUpdateUserAttributes);
-      const UserAttributes = Object.entries(attributes).map(([Name, Value]) => { return { Name, Value } });
+      provider.adminUpdateUserAttributes = util.promisify(
+        provider.adminUpdateUserAttributes
+      );
+      const UserAttributes = Object.entries(attributes).map(([Name, Value]) => {
+        return { Name, Value }
+      });
       return provider.adminUpdateUserAttributes({
         UserPoolId,
         Username,
@@ -1672,7 +1682,14 @@ const CognitoUserPool = (UserPoolId) => {
         UserPoolId,
         PaginationToken,
         Limit: USER_LIST_LIMIT,
-        AttributesToGet: [ 'sub', 'username', 'cognito:user_status', 'status', 'ledger', 'type' ] // TODO: add extra verification/filters?
+        AttributesToGet: [
+          'sub',
+          'username',
+          'cognito:user_status',
+          'status',
+          'ledger',
+          'type'
+        ] // TODO: add extra verification/filters?
       };
       const res = await provider.listUsersPromise(params);
       if (res.err) {
