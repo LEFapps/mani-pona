@@ -161,7 +161,7 @@ const navScreens = {
     )
   },
   Admin: {
-    // onlyVisibleTo: ['administrator'],
+    onlyVisibleTo: ['administrator'],
     component: ({ Nav }) => (
       <Nav.Screen
         key='Admin'
