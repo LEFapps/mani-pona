@@ -1,16 +1,11 @@
 import React from 'react'
 import { Text } from 'react-native'
-// import { createDrawerNavigator } from 'react-navigation-drawer-no-warnings'
-import { createDrawerNavigator } from '@react-navigation/drawer'
+import { createStackNavigator } from '@react-navigation/stack'
 import { useIsFocused } from '@react-navigation/native'
 
-import { Dashboard, Parameters, Users } from '../../screens/admin/stacks'
+import { Dashboard, Parameters, Users, User } from '../../screens/admin'
 
-import Header from '../../shared/header'
-
-const AdminDrawer = createDrawerNavigator()
-
-const title = name => <Header title={name} icon='menu' />
+const AdminStack = createStackNavigator()
 
 export const Admin = () => {
   const isFocused = useIsFocused()
@@ -26,45 +21,35 @@ export const Admin = () => {
     {
       name: 'dashboard',
       component: Dashboard,
-      options: { drawerLabel: 'Dashboard' }
+      options: { title: 'Dashboard' }
     },
     {
       name: 'parameters',
       component: Parameters,
-      options: { drawerLabel: 'Parameters' }
+      options: { title: 'Parameters' }
     },
     {
       name: 'users',
       component: Users,
-      options: { drawerLabel: 'Rekeningen' }
+      options: { title: 'Rekeningen' }
+    },
+    {
+      name: 'users/user',
+      component: User,
+      options: { title: 'Rekening' }
     }
   ]
 
   return (
     isFocused && (
-      <AdminDrawer.Navigator
+      <AdminStack.Navigator
         initialRouteName='parameters'
         screenOptions={headerOptions}
       >
         {adminScreens.map((screen, key) => (
-          <AdminDrawer.Screen {...screen} key={key} />
+          <AdminStack.Screen {...screen} key={key} />
         ))}
-        {/* <AdminDrawer.Screen
-          name={'dashboard'}
-          component={Dashboard}
-          options={{ drawerLabel: 'Dashboard' }}
-        />
-        <AdminDrawer.Screen
-          name={'parameters'}
-          component={Parameters}
-          options={{ drawerLabel: 'Parameters' }}
-        />
-        <AdminDrawer.Screen
-          name={'users'}
-          component={Users}
-          options={{ drawerLabel: 'Rekeningen' }}
-        /> */}
-      </AdminDrawer.Navigator>
+      </AdminStack.Navigator>
     )
   )
 }
