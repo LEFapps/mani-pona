@@ -1,19 +1,15 @@
-import React, { useState, useEffect, Fragment } from 'react'
-import { Text, TextInput, View, Dimensions, LogBox, Modal } from 'react-native'
+import React, { useState } from 'react'
+import { View } from 'react-native'
 import { Authenticator, VerifyContact } from 'aws-amplify-react-native'
-import { Amplify, Analytics, Auth } from 'aws-amplify'
-import log from 'loglevel'
+import { Auth } from 'aws-amplify'
 
 import SignIn from '../src/screens/auth/signIn'
 import SignUp from '../src/screens/auth/signUp'
 import ConfirmSignUp from '../src/screens/auth/confirmSignUp'
 import KeyPrompt from '../src/screens/auth/keyPrompt'
 import Navigation from '../src/routes/main'
-import CustomButton from './shared/buttons/button'
 
-import config from '../aws-config'
-import { globalStyles } from './styles/global'
-import { resetClient } from '../App'
+export const UserContext = React.createContext(false)
 
 export default () => {
   const { maniClient } = global
@@ -21,6 +17,7 @@ export default () => {
   // Keys present?
   const [isNew, setNew] = useState(!maniClient.id)
   const [hasKeys, setKeys] = useState(maniClient.id)
+  const [user, setUser] = useState(false)
   console.log('hasKeys', hasKeys)
 
   if (!hasKeys)
@@ -33,26 +30,30 @@ export default () => {
       />
     )
   return (
-    <Authenticator
-      container={({ children }) => {
-        return <View style={styles.container}>{children}</View>
-      }}
-      hideDefault
-      authState={isNew ? 'signUp' : 'signIn'}
-      onStateChange={authState => {
-        console.log('authState', authState)
-        if (['signIn', 'signUp'].includes(authState))
-          setKeys(global.maniClient.id)
-        if (authState === 'verifyContact') return 'signedIn'
-        return authState
-      }}
-    >
-      <Navigation />
-      <SignIn override={'SignIn'} />
-      <SignUp override={'SignUp'} />
-      <ConfirmSignUp override={'confirmSignUp'} />
-      <VerifyContact />
-    </Authenticator>
+    <UserContext.Provider value={user}>
+      <Authenticator
+        container={({ children }) => {
+          return <View style={styles.container}>{children}</View>
+        }}
+        hideDefault
+        authState={isNew ? 'signUp' : 'signIn'}
+        onStateChange={authState => {
+          console.log('authState', authState)
+          if (authState === 'signedIn')
+            Auth.currentAuthenticatedUser().then(setUser)
+          if (['signIn', 'signUp'].includes(authState))
+            setKeys(global.maniClient.id)
+          if (authState === 'verifyContact') return 'signedIn'
+          return authState
+        }}
+      >
+        <Navigation />
+        <SignIn override={'SignIn'} />
+        <SignUp override={'SignUp'} />
+        <ConfirmSignUp override={'confirmSignUp'} />
+        <VerifyContact />
+      </Authenticator>
+    </UserContext.Provider>
   )
 }
 
