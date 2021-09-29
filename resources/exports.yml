@@ -16,6 +16,6 @@ Outputs:
       Ref: ClientBucket
   Region:
     Value: ${self:provider.region}
-  CloudFrontDistribution:
-    Value:
-      Ref: CloudFrontDistribution
+#  CloudFrontDistribution:
+#    Value:
+#      Ref: CloudFrontDistribution

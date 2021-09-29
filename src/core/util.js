@@ -118,10 +118,10 @@ function addAmount ({ targets: { ledger, destination } }, amount) {
   return { ledger, destination }
 }
 /**
- * Add Demmurage and Income.
+ * Add Demmurage and Income, optionally using a buffer.
  */
-function addDI ({ targets: { ledger, destination } }, { demurrage, income }) {
-  ledger.demurrage = ledger.balance.multiply(demurrage / 100)
+function addDI ({ targets: { ledger, destination } }, { demurrage, income, buffer }) {
+  ledger.demurrage = ledger.balance.subtract(buffer).multiply(demurrage / 100)
   ledger.income = income
   ledger.amount = ledger.income.subtract(ledger.demurrage)
   ledger.balance = ledger.balance.subtract(ledger.demurrage).add(ledger.income)

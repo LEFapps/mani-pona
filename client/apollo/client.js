@@ -3,8 +3,7 @@ import { setContext } from '@apollo/client/link/context'
 import { Auth } from 'aws-amplify'
 import config from '../sls-output.json'
 
-const testing = process.env.REACT_APP_TEST
-const ServiceEndpoint = config.ServiceEndpoint || 'http://localhost:3000'
+const ServiceEndpoint = config.ServiceEndpoint
 
 const AuthLink = setContext(async (_, { headers }) => {
   // return the headers to the context so httpLink can read them

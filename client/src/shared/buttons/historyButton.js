@@ -3,7 +3,7 @@ import { StyleSheet, TouchableOpacity, Text, View } from 'react-native'
 import { colors } from '../../helpers/helper'
 const { DarkerBlue } = colors
 
-export default ({ options = [], ...props }) => {
+export const FlatButton = ({ options = [], ...props }) => {
   return (
     <View style={styles.everything}>
       {options.map(({ active, onPress, title, ...option }, index) => {
@@ -16,7 +16,6 @@ export default ({ options = [], ...props }) => {
           >
             <View
               style={{
-                // marginHorizontal: 0,
                 paddingVertical: 4,
                 paddingHorizontal: 12,
                 borderRadius: 4,
@@ -34,48 +33,7 @@ export default ({ options = [], ...props }) => {
   )
 }
 
-export const HistoryButton = props => {
-  return (
-    <View style={styles.everything}>
-      <TouchableOpacity onPress={props.onPressAll} style={styles.touchable}>
-        <View
-          style={{
-            backgroundColor: props.allBackground,
-            borderRadius: 4,
-            paddingVertical: 4
-          }}
-        >
-          <Text style={styles.buttonText}>Alle</Text>
-        </View>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={props.onPressPayd} style={styles.touchable}>
-        <View
-          style={{
-            backgroundColor: props.paydBackground,
-            borderRadius: 4,
-            paddingVertical: 4
-          }}
-        >
-          <Text style={styles.buttonText}>Betaald</Text>
-        </View>
-      </TouchableOpacity>
-      <TouchableOpacity
-        onPress={props.onPressReceived}
-        style={styles.touchable}
-      >
-        <View
-          style={{
-            backgroundColor: props.receivedBackground,
-            borderRadius: 4,
-            paddingVertical: 4
-          }}
-        >
-          <Text style={styles.buttonText}>Ontvangen</Text>
-        </View>
-      </TouchableOpacity>
-    </View>
-  )
-}
+export default FlatButton
 
 const styles = StyleSheet.create({
   everything: {
@@ -89,19 +47,18 @@ const styles = StyleSheet.create({
     marginVertical: 8
   },
   touchable: {
-    flex: '1 1 33.33%',
-    // fontSize: 25,
+    flexBasis: 'auto',
+    flexGrow: 1,
+    flexShrink: 0,
     textAlign: 'center',
     whiteSpace: 'nowrap'
-    // paddingHorizontal: 12,
-    // paddingVertical: 4,
-    // marginHorizontal: 8
   },
   buttonText: {
     // borderRadius: 4,
     fontSize: 16,
     textAlign: 'center',
     fontWeight: 'inherit',
-    color: 'inherit'
+    color: 'inherit',
+    whiteSpace: 'nowrap'
   }
 })

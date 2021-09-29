@@ -3,6 +3,7 @@ import loglevel from 'loglevel'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { KeyManager } from './helpers/keymanager'
 import { flip, fromDb } from '../shared/tools'
+import { mani } from '../shared/mani'
 import {
   REGISTER,
   SYSTEM_CHALLENGE,
@@ -14,6 +15,12 @@ import {
   CONFIRM,
   CANCEL,
   FIND_KEY,
+  FIND_USER,
+  DISABLE_USER,
+  ENABLE_USER,
+  ACCOUNT_TYPES,
+  FORCE_SYSTEM_PAYMENT,
+  CHANGE_ACCOUNT_TYPE,
   JUBILEE,
   INIT,
   SYSTEM_PARAMETERS,
@@ -168,14 +175,55 @@ const ManiClient = async ({
       return fromDb(
         await query(SYSTEM_PARAMETERS, 'system.parameters', {}, false)
       )
+    },
+    async findUser (username) {
+      return query(FIND_USER, 'system.finduser', { username })
+    },
+    async accountTypes () {
+      return query(ACCOUNT_TYPES, 'system.accountTypes')
     }
   }
   const admin = {
-    async jubilee () {
-      return fromDb(await query(JUBILEE, 'admin.jubilee', { ledger: id }))
+    /**
+     * Apply the jubilee to all accounts. Callback is available with intermediate results:
+     * `cb({ledgers, demurrage, income}, <is the process finished? true| false>)
+     */
+    async jubilee (cb = () => {}) {
+      const results = {
+        ledgers: 0,
+        demurrage: mani(0),
+        income: mani(0)
+      }
+      async function jubileeBatch (paginationToken) {
+        const { nextToken, ledgers, income, demurrage } = fromDb(await query(JUBILEE, 'admin.jubilee', { paginationToken }))
+        results.income = results.income.add(income)
+        results.demurrage = results.demurrage.add(demurrage)
+        results.ledgers += ledgers
+        if (nextToken) {
+          log('Continuing jubilee with paginationToken ' + nextToken)
+          cb(results, false)
+          await jubileeBatch(nextToken)
+        } else {
+          log('Finished jubilee: ' + JSON.stringify(results))
+          cb(results, true)
+        }
+      }
+      await jubileeBatch()
     },
     async init () {
       return query(INIT, 'admin.init')
+    },
+    async disableUser (username) {
+      return query(DISABLE_USER, 'admin.disableAccount', { username })
+    },
+    async enableUser (username) {
+      return query(ENABLE_USER, 'admin.enableAccount', { username })
+    },
+    async changeAccountType (username, type) {
+      return query(CHANGE_ACCOUNT_TYPE, 'admin.changeAccountType', { username, type })
+    },
+    async forceSystemPayment (ledger, amount) {
+      return query(FORCE_SYSTEM_PAYMENT, 'admin.forceSystemPayment', { ledger, amount: amount.format() })
     }
   }
   return {

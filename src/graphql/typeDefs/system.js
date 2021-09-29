@@ -31,9 +31,34 @@ const SystemSchema = gql`
   }
 
   type Jubilee {
-    ledgers: Int
+    "Number of ledgers process in this batch"
+    ledgers: Int!
+    "Demurrage removed in this batch"
     demurrage: Currency!
+    "Income added in this batch"
     income: Currency!
+    "If the process is not finished yet (more batches available), it returns a paginationToken"
+    nextToken: String
+  }
+
+  type User {
+    alias: String
+    sub: String
+    email: String
+    email_verified: StringBoolean
+    administrator: StringBoolean
+    status: String
+    enabled: Boolean
+    created: DateTime
+    lastModified: DateTime
+    ledger: String
+  }
+
+  type AccountType {
+    type: String!
+    income: Currency!
+    buffer: Currency!
+    demurrage: Float!
   }
   
   type System {
@@ -45,13 +70,25 @@ const SystemSchema = gql`
     findkey(id: String!): Ledger
     "Register a new ledger, returns the id (fingerprint)"
     register(registration: LedgerRegistration!): String
+    "Find a user by username (email address)"
+    finduser(username: String!): User
+    "Show the available account types"
+    accountTypes: [AccountType]!
   }
 
   type Admin {
-    # apply demurrage and (basic) income to all accounts
-    jubilee(ledger: String): Jubilee!
-    # initialize the system
+    "apply demurrage and (basic) income to all accounts"
+    jubilee(paginationToken: String): Jubilee!
+    "Initialize the system"
     init: String
+    "Change the type of the account associated with this username (email address)"
+    changeAccountType(username: String, type: String): String
+    "Disable user account"
+    disableAccount(username: String): String
+    "Enable user account"
+    enableAccount(username: String): String
+    "Force a system payment"
+    forceSystemPayment(ledger: String!, amount: Currency!): String
   }
 
   type Query {

@@ -1,4 +1,4 @@
-import hashbang from 'rollup-plugin-hashbang'
+// import hashbang from 'rollup-plugin-hashbang'
 
 export default [{
   input: 'src/lambda/handler.js',
@@ -6,7 +6,9 @@ export default [{
     file: 'dist/server.js',
     format: 'cjs'
   }
-}, {
+}
+  /*
+  , {
   input: 'cli/index.js',
   output: {
     file: 'dist/cli.js',
@@ -17,4 +19,5 @@ export default [{
   plugins: [
     hashbang()
   ]
-}]
+} */
+]

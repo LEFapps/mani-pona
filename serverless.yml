@@ -1,4 +1,6 @@
-service: ${env:CLIENT, 'dev'}-mani-pona
+service: ${env:CLIENT}-mani
+useDotenv: true
+variablesResolutionMode: 20210326
 
 provider:
   name: aws
@@ -20,6 +22,26 @@ provider:
         - dynamodb:*
       Resource: '*'
 
+# Warning: the dynamodb shell does NOT work in Firefox, only in Chrome
+custom:
+  debug: ${env:DEBUG, true} # debug mode (string values or 0|1 are converted)
+  dotenv:
+    basePath: env/
+  output:
+    file: client/sls-output.json
+  dynamodb:
+    stages:
+      - test
+      - dev
+      - offline
+    start:
+      inMemory: true
+      migrate: true
+  prefix: ${self:service}-${self:provider.stage}
+  tableName: ${self:service}-ledgers
+  serverless-offline:
+    allowCache: true
+
 package:
   # individually: true
   patterns:
@@ -31,7 +53,7 @@ package:
 
 plugins:
   # - serverless-webpack
-  - serverless-dotenv-plugin
+  # - serverless-dotenv-plugin
   # WARNING! This is serverless-dynamodb-local from https://github.com/99x/serverless-dynamodb-local
   # it is different from the official serverless docs!
   - serverless-dynamodb-local
@@ -59,58 +81,17 @@ functions:
             authorizerId:
               Ref: ApiGatewayAuthorizer
     environment:
-      DYN_REGION: ${env:DYN_REGION}
-      DYN_TABLE: ${env:DYN_TABLE}
-      DEBUG: ${env:DEBUG, self:custom.debug}
+      DYN_TABLE: ${self:custom.tableName}
+      DEBUG: ${self:custom.debug}
       NODE_DEBUG: ${env:NODE_DEBUG, 'sumsy*'}
       LOG_LEVEL: ${env:LOG_LEVEL, 'error'}
-      LOG_PREFIX: ${env:LOG_PREFIX, 'sumsy'}
-
-    # From the documentation (https://www.serverless.com/framework/docs/providers/aws/events/apigateway/):
-    # If you want more control over which attributes are exposed as claims you can switch to integration: lambda and add the following configuration. The claims will be exposed at events.cognitoPoolClaims.
-    # E.g.
-    #  integration: lambda
-    #  authorizer:
-    #    arn: arn:aws:cognito-idp:us-east-1:xxx:userpool/us-east-1_ZZZ
-    #    claims:
-    #      - email
-    #      - nickname
-
-    # If you are creating the Cognito User Pool in the resources section of the same template, you can refer to the ARN using the Fn::GetAtt attribute from CloudFormation. To do so, you must give your authorizer a name and specify a type of COGNITO_USER_POOLS:
-    #
-    # authorizer:
-    #   name: MyAuthorizer
-    #   type: COGNITO_USER_POOLS
-    #     arn:
-    #       Fn::GetAtt:
-    #         - CognitoUserPool
-    #         - Arn
-    #
-    # ---
-    # resources:
-    #   Resources:
-    #     CognitoUserPool:
-    #       Type: 'AWS::Cognito::UserPool'
-    #       Properties: ...
+      LOG_PREFIX: sumsy
+      ACCOUNT_TYPES: ${env:ACCOUNT_TYPES, '[{"type":"default","income":0,"buffer":0,"demurrage":2.5},{"type":"verified","income":0,"buffer":5,"demurrage":2.5},{"type":"guaranteed_income","income":16,"buffer":5,"demurrage":2.5},{"type":"professional","income":0,"buffer":5,"demurrage":0.5}]'}
 
 resources:
   - ${file(resources/dynamo.yml)}
-  - ${file(resources/cloudfront.yml)}
-  - ${file(resources/cognito.yml)}
   - ${file(resources/client.yml)}
+  - ${file(resources/cognito.yml)}
   - ${file(resources/exports.yml)}
+  - ${file(resources/cloudfront.yml)}
 
-# Warning: the dynamodb shell does NOT work in Firefox, only in Chrome
-custom:
-  debug: ${env:DEBUG, true} # debug mode (string values or 0|1 are converted)
-  dotenv:
-    basePath: env/
-  output:
-    file: client/sls-output.json
-  dynamodb:
-    stages:
-      - test
-      - dev
-    start:
-      inMemory: true
-      migrate: true

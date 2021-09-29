@@ -2,7 +2,7 @@ Resources:
   ClientBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: ${self:service}-${self:provider.stage}-client
+      BucketName: ${self:custom.prefix}-client-bucket
       WebsiteConfiguration:
         IndexDocument: "index.html"
         ErrorDocument: "index.html"
@@ -27,6 +27,7 @@ Resources:
               - x-amz-request-id
               - x-amz-id-2
               - ETag
+              - access-control-allow-origin
   ClientBucketPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:

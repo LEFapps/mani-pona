@@ -3,7 +3,7 @@ Resources:
     Type: AWS::CloudFront::Distribution
     Properties:
       DistributionConfig:
-        Comment: mani-pona-${self:provider.stage}-client
+        Comment: ${self:custom.prefix}-client
         CustomErrorResponses:
           - ErrorCachingMinTTL: 0
             ErrorCode: 403
@@ -29,17 +29,14 @@ Resources:
         Enabled: true
         IPV6Enabled: true
         Origins:
-          - Id: Client
+          - Id: ${self:custom.prefix}-client-origin
+            S3OriginConfig:
+              OriginAccessIdentity: ''
             DomainName:
               Fn::Join:
                 - ""
                 - - Ref: ClientBucket
-                  - "."
-                  - "s3-app-"
+                  - ".s3."
                   - ${self:provider.region}
                   - ".amazonaws.com"
-            CustomOriginConfig:
-              HTTPPort: 80
-              HTTPSPort: 443
-              OriginProtocolPolicy: http-only
         PriceClass: PriceClass_100

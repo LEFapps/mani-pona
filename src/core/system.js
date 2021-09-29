@@ -3,7 +3,6 @@ import { KeyGenerator, Verifier, mani } from '../shared'
 import { getLogger } from 'server-log'
 
 const PARAMETERS = { income: mani(100), demurrage: 5.0 }
-
 const log = getLogger('core:system')
 
 export default function (ledgers, userpool) {
@@ -13,6 +12,27 @@ export default function (ledgers, userpool) {
     },
     async findkey (fingerprint) {
       return ledgers.publicKey(fingerprint)
+    },
+    async findUser (username) {
+      log.debug('Finding user %s', username)
+      return userpool.findUser(username)
+    },
+    getAccountTypes () {
+      return userpool.getAccountTypes()
+    },
+    async changeAccountType (Username, type) {
+      const allowedTypes = userpool.getAccountTypes().map((t) => t.type)
+      if (!allowedTypes.includes(type)) {
+        throw new Error(`Unknown account type ${type}, allowed values ${allowedTypes.join(',')}`)
+      }
+      log.debug('Setting account type to %s for user %s', type, Username)
+      userpool.changeAttributes(Username, { 'custom:type': type })
+    },
+    async disableAccount (Username) {
+      return userpool.disableAccount(Username)
+    },
+    async enableAccount (Username) {
+      return userpool.enableAccount(Username)
     },
     async init () {
       log.info('System init requested')
@@ -29,7 +49,7 @@ export default function (ledgers, userpool) {
       const { publicKeyArmored, privateKeyArmored } = keys
       const trans = ledgers.transaction()
       trans.putKey({ ledger: 'system', publicKeyArmored, privateKeyArmored })
-      await StateMachine(ledgers)
+      await StateMachine(trans)
         .getSources({ ledger: 'system', destination: 'system' })
         .then(t => t.addAmount(mani(0)))
         .then(t => t.addSystemSignatures(keys))
@@ -77,18 +97,45 @@ export default function (ledgers, userpool) {
       log.info('Registered ledger %s', ledger)
       return ledger
     },
-    async jubilee (ledger) {
+    async forceSystemPayment (ledger, amount) {
+      log.debug('Forcing system payment of %s on ledger %s', amount, ledger)
+      const pending = await ledgers.pending(ledger)
+      if (pending) {
+        if (pending.destination === 'system') {
+        // idempotency, we assume the client re-submitted
+          return 'succes'
+        } else {
+          throw new Error(`There is still a pending transaction on ledger ${ledger}`)
+        }
+      }
+      const keys = ledgers.keys('system', true)
+      const transaction = ledgers.transaction()
+      await StateMachine(transaction)
+        .getSources({ ledger, destination: 'system' })
+        .then(t => t.addAmount(amount))
+        .then(t => t.addSystemSignatures(keys))
+        .then(t => t.save())
+        .catch(err => log.error('Forced system payment failed\n%j', err))
+      await transaction.execute()
+      return `Success`
+    },
+    async jubilee (paginationToken) {
       const results = {
         ledgers: 0,
         demurrage: mani(0),
         income: mani(0)
       }
-      async function applyJubilee (ledger) {
+      // convert to a key-value(s) object for easy lookup
+      const types = userpool.getAccountTypes().reduce(({ type, ...attr }, acc) => {
+        acc[type] = attr
+        return acc
+      }, {})
+      async function applyJubilee (ledger, DI) {
         log.debug('Applying jubilee to ledger %s', ledger)
         const transaction = ledgers.transaction()
         await StateMachine(transaction)
           .getSources({ ledger, destination: 'system' })
-          .then(t => t.addDI(PARAMETERS))
+          .then(t => t.addDI(DI))
           .then(t => {
             const entry = t.getPrimaryEntry()
             results.income = results.income.add(entry.income)
@@ -102,16 +149,21 @@ export default function (ledgers, userpool) {
         await transaction.execute()
         log.debug('Jubilee succesfully applied to ledger %s', ledger)
       }
-      if (ledger) {
-        await applyJubilee(ledger)
-      } else {
-        const users = await userpool.listJubileeUsers()
-        for (let { ledger } of users) {
+      const { users, paginationToken: nextToken } = await userpool.listJubileeUsers(paginationToken)
+      for (let { ledger, type } of users) {
+        const DI = type ? types[type] : types['default']
+        if (!DI) {
+          log.error('SKIPPING JUBILEE: Unable to determine jubilee type %s for ledger %s', type, ledger)
+        } else {
+          log.debug('Applying jubilee of type %s to ledger %s', type, ledger)
           // these for loops allow await!
-          await applyJubilee(ledger)
+          await applyJubilee(ledger, DI)
         }
       }
-      return results
+      return {
+        paginationToken: nextToken,
+        ...results
+      }
     }
   }
 }
