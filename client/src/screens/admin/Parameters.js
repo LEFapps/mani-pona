@@ -26,7 +26,6 @@ const Screen = ({ navigation, route }) => {
 
   return (
     <View style={globalStyles.main}>
-      <Button title={'←'} onPress={navigation.openDrawer} />
       {!!errorText && (
         <View style={globalStyles.paragraph}>
           <Text style={globalStyles.errorText}>{errorText}</Text>
