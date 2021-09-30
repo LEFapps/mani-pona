@@ -227,6 +227,13 @@ const ManiClient = async ({
         ledger,
         amount: amount.format()
       })
+    },
+    async current (ledger) {
+      const current = await query(CURRENT, 'ledger.transactions.current', {
+        id: ledger
+      })
+      // log(JSON.stringify(current, null, 2))
+      return fromDb(current)
     }
   }
   return {
