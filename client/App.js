@@ -54,7 +54,5 @@ export default function App () {
     setIsSplashFinished(!!global.maniClient)
   }
 
-  console.log('isSplashFinished', isSplashFinished)
-
   return isSplashFinished ? <Authenticator /> : <Splash />
 }

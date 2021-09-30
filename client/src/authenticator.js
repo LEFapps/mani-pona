@@ -18,7 +18,6 @@ export default () => {
   const [isNew, setNew] = useState(!maniClient.id)
   const [hasKeys, setKeys] = useState(maniClient.id)
   const [user, setUser] = useState(false)
-  console.log('hasKeys', hasKeys)
 
   if (!hasKeys)
     return (
@@ -38,7 +37,6 @@ export default () => {
         hideDefault
         authState={isNew ? 'signUp' : 'signIn'}
         onStateChange={authState => {
-          console.log('authState', authState)
           if (authState === 'signedIn')
             Auth.currentAuthenticatedUser().then(setUser)
           if (['signIn', 'signUp'].includes(authState))

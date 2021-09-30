@@ -62,7 +62,7 @@ export default function StandingOrder ({ navigation }) {
                         ManiClient.transactions
                           .confirm(challenge)
                           .then(confirm => {
-                            console.log('confirm', confirm)
+                            // console.log('CONFIRM', confirm)
                             navigation.navigate('LoREco')
                           })
                           .catch(console.error)
@@ -74,7 +74,7 @@ export default function StandingOrder ({ navigation }) {
                         ManiClient.transactions
                           .cancel(challenge)
                           .then(cancel => {
-                            console.log('cancel', cancel)
+                            // console.log('CANCEL', cancel)
                             navigation.navigate('LoREco')
                           })
                           .catch(lorrconsole.error)

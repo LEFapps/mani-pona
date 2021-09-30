@@ -53,7 +53,7 @@ export default function signUp (props) {
           props.onStateChange('signIn', { username: state.email })
         else props.onStateChange('confirmSignUp', { username: state.email })
       } catch (error) {
-        console.log(error)
+        console.error(error)
         Alert.alert(i18n.t(error.code))
       }
     }

@@ -24,9 +24,8 @@ const monthStrings = [
 
 export default function Predictions ({ route }) {
   const { income, demurrage, current } = route.params
-  console.log(income, demurrage, current)
 
-  const buffer = 5
+  const buffer = 5 // TODO: get from user or type
   const start = new Date().getMonth() + 1
   let prev = current.balance
   const predictions = monthStrings.map((m, i) => {

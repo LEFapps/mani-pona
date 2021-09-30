@@ -21,7 +21,7 @@ export default function AccountBalance ({ navigation }) {
   async function loadData () {
     await ManiClient.find(ManiClient.id)
       .then(async found => {
-        console.log('Ledger registered:', !!found)
+        // console.log('Ledger registered:', !!found)
         if (!found) {
           // autoRegister
           return await Auth.currentSession()

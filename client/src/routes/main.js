@@ -204,18 +204,13 @@ export default function drawerNavigator (props) {
   const getPending = async () => {
     // get attributes from Cognito claims
     const { 'custom:ledger': ledger } = user.attributes
-    console.log('Cognito Ledger:', ledger)
-    console.log('Local Ledger:', ManiClient.id)
     // autoLogout if not signed in correctly,
     // else check for pending transactions
     if (ManiClient.id !== ledger) await Auth.signOut({ global: true })
     else {
       ManiClient.transactions
         .pending()
-        .then(pending => {
-          console.log('PENDING', pending)
-          setPending(pending)
-        })
+        .then(setPending)
         .catch(e => {
           console.error(e.message)
           setPending(undefined)
@@ -226,7 +221,6 @@ export default function drawerNavigator (props) {
   const availableScreens = Object.keys(navScreens)
     .map(key => {
       const { onlyVisibleTo } = navScreens[key]
-      console.log(key, onlyVisibleTo)
       const check = onlyVisibleTo
         ? onlyVisibleTo.map(role => !!user.attributes[`custom:${role}`])
         : [true]

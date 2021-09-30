@@ -22,8 +22,6 @@ const Screen = ({ navigation, route }) => {
       .catch(e => setError(e.message || e))
   }
 
-  console.log('PARAMETERS Screen', !!parameters, navigation.isFocused())
-
   return (
     <View style={globalStyles.main}>
       {!!errorText && (
