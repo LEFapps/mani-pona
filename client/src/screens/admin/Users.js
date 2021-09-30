@@ -15,6 +15,7 @@ import Button from '../../shared/buttons/button'
 import Card from '../../shared/card'
 
 import { globalStyles } from '../../styles/global'
+import universalAlert from '../../shared/alert'
 
 const EditIcon = props => (
   <MaterialCommunityIcons
@@ -48,12 +49,14 @@ export const Dashboard = ({ navigation, route }) => {
             .then(({ balance, income, demurrage }) =>
               setDetails({ balance, income, demurrage })
             )
-            .catch(console.error)
+            .catch(e => {
+              console.error('findUser/current', e)
+            })
         }
       })
       .catch(e => {
         setBusy(false)
-        console.error('findUser', e)
+        console.error('search/findUser', e)
         setError(e.message || e)
       })
   }
@@ -108,8 +111,11 @@ export const Dashboard = ({ navigation, route }) => {
                         visible={openEditor === item}
                         user={{ ...result, ...details }}
                         onClose={refetch => {
-                          refetch && doSearch()
-                          setEditor()
+                          if (refetch === true) {
+                            refetch && doSearch()
+                            setEditor()
+                          }
+                          if (refetch) universalAlert.alert(refetch)
                         }}
                       />
                     )}

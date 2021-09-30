@@ -12,6 +12,7 @@ import Modal from 'modal-react-native-web'
 import QRCode from 'react-native-qrcode-svg'
 
 import CustomButton from '../../shared/buttons/button'
+import Alert from '../../shared/alert'
 import { globalStyles } from '../../styles/global'
 
 const KeyTabs = createMaterialTopTabNavigator()
@@ -92,10 +93,16 @@ const ExportKeys = () => {
   const [isBusy, setBusy] = useState()
   const getKeys = async () => {
     setBusy(true)
-    maniClient.exposeKeys().then(({ privateKeyArmored, publicKeyArmored }) => {
-      setKeys([privateKeyArmored, publicKeyArmored])
-      setBusy(false)
-    })
+    maniClient
+      .exposeKeys()
+      .then(({ privateKeyArmored, publicKeyArmored }) => {
+        setKeys([privateKeyArmored, publicKeyArmored])
+        setBusy(false)
+      })
+      .catch(e => {
+        console.error('exposeKeys', e)
+        e && Alert.alert(e.message)
+      })
   }
 
   return (

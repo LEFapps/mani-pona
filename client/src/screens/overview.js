@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ScrollView } from 'react-native'
 import Auth from '@aws-amplify/auth'
 import CustomButton from '../shared/buttons/button'
 import { globalStyles } from '../styles/global.js'
-import mani from '../../shared/mani'
+import Alert from '../shared/alert'
 import { colors } from '../helpers/helper'
 const { DarkerBlue, CurrencyColor } = colors
 
@@ -12,14 +12,15 @@ export default function AccountBalance ({ navigation }) {
   const [income, setIncome] = useState({})
   const [current, setCurrent] = useState({})
   const [ready, setReady] = useState(false)
-  const ManiClient = global.maniClient
+  const { maniClient } = global
 
   useEffect(() => {
     loadData()
   }, [])
 
   async function loadData () {
-    await ManiClient.find(ManiClient.id)
+    await maniClient
+      .find(maniClient.id)
       .then(async found => {
         // console.log('Ledger registered:', !!found)
         if (!found) {
@@ -31,26 +32,36 @@ export default function AccountBalance ({ navigation }) {
                 'custom:alias': alias,
                 'custom:ledger': ledger
               } = data.idToken.payload
-              await ManiClient.register(alias || email)
+              await maniClient.register(alias || email)
               loadData()
             })
-            .catch(err => console.log(err))
+            .catch(e => {
+              console.error('loadData/auth', e)
+              e && Alert.alert(e.message)
+            })
         }
-        await ManiClient.transactions
+        await maniClient.transactions
           .current()
           .then(setCurrent)
-          .catch(console.error)
-        await ManiClient.system
+          .catch(e => {
+            console.error('loadData/current', e)
+            e && Alert.alert(e.message)
+          })
+        await maniClient.system
           .parameters()
           .then(({ demurrage, income }) => {
             setDemurrage(demurrage) // int %
             setIncome(income) // mani
           })
-          .catch(console.error)
+          .catch(e => {
+            console.error('loadData/params', e)
+            e && Alert.alert(e.message)
+          })
         setReady(true)
       })
       .catch(e => {
-        console.error(e.message || e)
+        console.error('loadData/find', e)
+        e && Alert.alert(e.message)
       })
   }
 

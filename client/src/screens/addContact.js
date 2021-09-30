@@ -6,7 +6,7 @@ import { validateNotEmpty } from '../helpers/validation'
 
 export default function AddContact ({ route, navigation }) {
   const { type, data } = route.params
-  const ManiClient = global.maniClient
+  const { maniClient } = global
   const [state, setState] = useState({
     contactName: ''
   })
@@ -16,9 +16,12 @@ export default function AddContact ({ route, navigation }) {
 
   async function addContact () {
     let lastId = null
-    await ManiClient.contacts.all().then(contacts => {
-      lastId = contacts[contacts.length - 1]['contactId']
-    })
+    await maniClient.contacts
+      .all()
+      .then(contacts => {
+        lastId = contacts[contacts.length - 1]['contactId']
+      })
+      .catch(console.error)
     Alert.alert('Niet Geimplementeerd')
     navigation.navigate('Transaction', { contactId: lastId + 1, peerId: data })
   }

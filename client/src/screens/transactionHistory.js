@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { View, Text, FlatList, TouchableOpacity } from 'react-native'
 
 import { Contact } from '../shared/contact'
+import Alert from '../shared/alert'
 import Card from '../shared/card'
 import FlatButton from '../shared/buttons/historyButton'
 
@@ -17,11 +18,17 @@ export default function TransactionHitstory ({ navigation }) {
     loadData()
   }, [])
 
-  async function loadData () {
-    await ManiClient.transactions.recent().then(transactions => {
-      setTransactions(transactions)
-    })
-    setReady(true)
+  function loadData () {
+    ManiClient.transactions
+      .recent()
+      .then(transactions => {
+        setTransactions(transactions)
+        setReady(true)
+      })
+      .catch(e => {
+        console.error('transactions/recent', e)
+        e && Alert.alert(e.message)
+      })
   }
 
   const filters = [
@@ -32,8 +39,8 @@ export default function TransactionHitstory ({ navigation }) {
     },
     {
       title: 'Betaald',
-      onPress: () => setFilter('payd'),
-      active: () => filter === 'payd'
+      onPress: () => setFilter('paid'),
+      active: () => filter === 'paid'
     },
     {
       title: 'Ontvangen',
@@ -44,7 +51,7 @@ export default function TransactionHitstory ({ navigation }) {
 
   const transactionsToShow = transactions.filter(({ amount }) => {
     switch (filter) {
-      case 'payd':
+      case 'paid':
         return amount.negative()
       case 'received':
         return amount.positive()

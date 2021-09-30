@@ -27,7 +27,7 @@ log.enableAll()
 export const resetClient = async () => {
   const mc = await maniClient({ graphqlClient })
   global.maniClient = mc
-  console.log('resetting client', mc.id)
+  console.log('client/reset', mc.id)
   return mc
 }
 

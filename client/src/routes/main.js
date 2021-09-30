@@ -11,6 +11,8 @@ import Auth from '@aws-amplify/auth'
 
 import { UserContext } from '../authenticator'
 
+import Alert from '../shared/alert'
+
 import AdminStack from './stacks/adminStack'
 import AccountStack from '../routes/stacks/accountStack'
 import QrStack from '../routes/stacks/qrStack'
@@ -182,10 +184,10 @@ const navScreens = {
 }
 
 export default function drawerNavigator (props) {
+  const { maniClient } = global
   const user = useContext(UserContext)
   const [hasPending, setPending] = useState(null)
   const [isPolling, setPolling] = useState(null)
-  const ManiClient = global.maniClient
   const Nav = createMaterialBottomTabNavigator()
 
   useEffect(() => {
@@ -206,13 +208,18 @@ export default function drawerNavigator (props) {
     const { 'custom:ledger': ledger } = user.attributes
     // autoLogout if not signed in correctly,
     // else check for pending transactions
-    if (ManiClient.id !== ledger) await Auth.signOut({ global: true })
-    else {
-      ManiClient.transactions
+    if (maniClient.id !== ledger) {
+      Alert.alert(
+        'De sleutels op dit toestel komen niet overeen met het account waarmee je je aangemeld hebt. Je bent terug afgemeld.'
+      )
+      await Auth.signOut({ global: true })
+    } else {
+      maniClient.transactions
         .pending()
         .then(setPending)
         .catch(e => {
-          console.error(e.message)
+          console.error('main/pending', e)
+          e && Alert.alert(e.message)
           setPending(undefined)
         })
     }
@@ -231,7 +238,11 @@ export default function drawerNavigator (props) {
   return (
     <View style={globalStyles.container}>
       {hasPending === null ? (
-        <Text>Rekening controleren...</Text>
+        <View style={globalStyles.main}>
+          <Text style={globalStyles.bigText}>
+            {!!isPolling && 'Even geduld, we halen je rekening op...'}
+          </Text>
+        </View>
       ) : (
         <NavigationContainer>
           <Nav.Navigator

@@ -3,19 +3,17 @@ import { View, Text, TextInput, StyleSheet, ScrollView } from 'react-native'
 import QRCode from 'react-native-qrcode-svg'
 
 import { globalStyles } from '../styles/global'
-import { colors } from '../helpers/helper'
 import FlatButton from '../shared/buttons/historyButton'
 import Button from '../shared/buttons/button'
-import ManiError from '../helpers/error'
 
 export default function Receive () {
   const [getAmount, setAmount] = useState(0)
   const [getSign, setSign] = useState(100)
   const [getConfirm, setConfirm] = useState(false)
   const [getValue, setValue] = useState('')
-  const maniClient1 = global.maniClient
+  const { maniClient } = global
 
-  // maniClient1.transactions
+  // maniClient.transactions
   //   .current()
   //   .then(confirmation => {
   //     Alert.alert(confirmation.message + ': ' + confirmation.amount)
@@ -29,7 +27,7 @@ export default function Receive () {
 
   const createQr = () => {
     // barcode in the format: "loreco://scan/<fingerprint:destination>/<amount * 100>?"
-    setValue(`loreco://scan/${maniClient1.id}/${Number(getAmount) * getSign}`)
+    setValue(`loreco://scan/${maniClient.id}/${Number(getAmount) * getSign}`)
     setConfirm(true)
   }
 
@@ -60,7 +58,7 @@ export default function Receive () {
             <QRCode value={getValue} size={320} />
           </View>
           <Text style={globalStyles.bigText}>
-            Toon deze QR-Code om te ontvangen of betalen.
+            Toon deze QR-Code om een transactie te starten.
           </Text>
           <Button text='Nieuw' onPress={reset} />
         </View>

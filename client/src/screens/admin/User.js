@@ -4,6 +4,7 @@ import Modal from 'modal-react-native-web'
 
 import FlatButton from '../../shared/buttons/historyButton'
 import CustomButton from '../../shared/buttons/button'
+import Alert from '../../shared/alert'
 
 import { globalStyles } from '../../styles/global'
 
@@ -27,10 +28,12 @@ const Container = ({ visible, title, onCancel, children }) => {
 
 const enabled = ({ visible, user, onClose }) => {
   const { maniClient } = global
+
+  // Submit Action
   const action = () =>
     maniClient.admin[user.enabled ? 'disableUser' : 'enableUser'](user.email)
       .then(() => onClose(true))
-      .catch(e => onClose(e))
+      .catch(e => onClose(e && e.message))
   return (
     <Container
       visible={visible}
@@ -54,18 +57,26 @@ const type = ({ visible, user, onClose }) => {
     maniClient.system
       .accountTypes()
       .then(setTypes)
-      .catch(console.error)
+      .catch(e => {
+        console.error('editor/accounttypes', e)
+        e && Alert.alert(e.message)
+      })
   }, [])
+
+  // Radio Options
   const types = userTypes.map(({ type }) => ({
     active: () => type === newType,
     onPress: () => setType(type),
     title: type
   }))
+
+  // Submit Action
   const action = () =>
     maniClient.admin
       .changeAccountType(user.email, newType)
       .then(() => onClose(true))
-      .catch(e => onClose(e))
+      .catch(e => onClose(e && e.message))
+
   return (
     <Container
       visible={visible}
@@ -87,6 +98,7 @@ const balance = ({ visible, user, onClose }) => {
   const [amount, setAmount] = useState(0)
   const [sign, setSign] = useState(1)
 
+  // Radio Options
   const signs = [
     {
       title: '… verminderen met …',
@@ -100,11 +112,13 @@ const balance = ({ visible, user, onClose }) => {
     }
   ]
 
+  // submit action
   const action = () =>
     maniClient.admin
       .forceSystemPayment(user.ledger, amount * sign)
       .then(() => onClose(true))
-      .catch(e => onClose(e))
+      .catch(e => onClose(e && e.message))
+
   return (
     <Container
       visible={visible}
