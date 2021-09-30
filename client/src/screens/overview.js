@@ -67,25 +67,14 @@ export default function AccountBalance ({ navigation }) {
         <View style={styles.part}>
           <Text style={styles.title}>Voorspellingen gegarandeerd inkomen</Text>
           <Text style={styles.amount}>+{income.format()}</Text>
-          <CustomButton
-            text='Bekijk voorspelling'
-            onPress={() =>
-              navigation.navigate('Bijdragen', {
-                screen: 'IncomePrediction',
-                params: { income, current }
-              })
-            }
-          />
-        </View>
-        <View style={styles.part}>
           <Text style={styles.title}>Voorspellingen bijdrage</Text>
           <Text style={styles.amount}>{demurrage} %</Text>
           <CustomButton
-            text='Bekijk voorspelling'
+            text='Bekijk voorspellingen'
             onPress={() =>
               navigation.navigate('Bijdragen', {
-                screen: 'ContributionPrediction',
-                params: { demurrage, current }
+                screen: 'Predictions',
+                params: { demurrage, income, current }
               })
             }
           />

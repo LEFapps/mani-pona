@@ -1,13 +1,11 @@
 import React from 'react'
-import { NavigationContainer } from '@react-navigation/native'
 import { createStackNavigator } from '@react-navigation/stack'
 import { useIsFocused } from '@react-navigation/native'
 
 import Header from '../../shared/header'
 
 import ContributionHistory from '../../screens/contributionHistory'
-import IncomePrediction from '../../screens/incomePredictions'
-import ContributionPrediction from '../../screens/contributionPrediction'
+import Predictions from '../../screens/predictions'
 
 const Nav = createStackNavigator()
 
@@ -38,14 +36,9 @@ const contributionHistoryStack = () => {
           })}
         />
         <Nav.Screen
-          name='IncomePrediction'
-          component={IncomePrediction}
-          options={{ title: 'Voorspelling Inkomen', headerBackTitle: 'Terug' }}
-        />
-        <Nav.Screen
-          name='ContributionPrediction'
-          component={ContributionPrediction}
-          options={{ title: 'Voorspelling Bijdrage', headerBackTitle: 'Terug' }}
+          name='Predictions'
+          component={Predictions}
+          options={{ title: 'Voorspellingen', headerBackTitle: 'Terug' }}
         />
       </Nav.Navigator>
     )
