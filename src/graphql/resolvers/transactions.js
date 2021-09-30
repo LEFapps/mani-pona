@@ -10,8 +10,8 @@ export default {
     }
   },
   LedgerQuery: {
-    transactions: (id, arg, { core, ledger, admin }) => {
-      if (id !== ledger && !admin) {
+    transactions: (id, arg, { core, ledger }) => {
+      if (id !== ledger) {
         const err = `Illegal access attempt detected from ${ledger} on ${id}`
         log.error(err)
         throw new ForbiddenError(err)
