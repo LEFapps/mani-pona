@@ -8,7 +8,6 @@ const { DarkerBlue, CurrencyColor } = colors
 
 export default function ContributionPrediction ({ route }) {
   const { demurrage, current } = route.params
-  console.log(current.balance)
 
   function selectText (number) {
     const numbers = [

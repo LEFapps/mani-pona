@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { View, Text, TextInput, StyleSheet, Pressable } from 'react-native'
+import { View, Text, TextInput, StyleSheet, ScrollView } from 'react-native'
 import QRCode from 'react-native-qrcode-svg'
 
 import { globalStyles } from '../styles/global'
@@ -53,7 +53,7 @@ export default function Receive () {
   ]
 
   return (
-    <View style={globalStyles.main}>
+    <ScrollView style={globalStyles.main}>
       {getValue && getConfirm ? (
         <View style={styles.cont}>
           <View style={styles.qr}>
@@ -81,7 +81,7 @@ export default function Receive () {
           <Button text='Aanmaken' onPress={createQr} />
         </View>
       )}
-    </View>
+    </ScrollView>
   )
 }
 

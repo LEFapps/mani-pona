@@ -43,7 +43,6 @@ export default function TransactionHitstory ({ navigation }) {
   ]
 
   const transactionsToShow = transactions.filter(({ amount }) => {
-    console.log(amount)
     switch (filter) {
       case 'payd':
         return amount.negative()

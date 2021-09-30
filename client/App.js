@@ -1,3 +1,4 @@
+import 'react-native-gesture-handler'
 import React, { useState, useEffect } from 'react'
 import { Text, TextInput, View, Dimensions, LogBox } from 'react-native'
 import { Amplify, Analytics } from 'aws-amplify'
@@ -52,8 +53,6 @@ export default function App () {
     await resetClient()
     setIsSplashFinished(!!global.maniClient)
   }
-
-  console.log('isSplashFinished', isSplashFinished)
 
   return isSplashFinished ? <Authenticator /> : <Splash />
 }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { View, Text, StyleSheet } from 'react-native'
+import { View, Text, StyleSheet, ScrollView } from 'react-native'
 import Auth from '@aws-amplify/auth'
 import CustomButton from '../shared/buttons/button'
 import { globalStyles } from '../styles/global.js'
@@ -21,7 +21,7 @@ export default function AccountBalance ({ navigation }) {
   async function loadData () {
     await ManiClient.find(ManiClient.id)
       .then(async found => {
-        console.log('Ledger registered:', !!found)
+        // console.log('Ledger registered:', !!found)
         if (!found) {
           // autoRegister
           return await Auth.currentSession()
@@ -56,7 +56,7 @@ export default function AccountBalance ({ navigation }) {
 
   if (ready) {
     return (
-      <View style={globalStyles.main}>
+      <ScrollView style={globalStyles.main}>
         <View style={globalStyles.amountHeader}>
           <Text style={globalStyles.property}>Huidige rekeningstand:</Text>
           <Text style={globalStyles.price}>
@@ -67,30 +67,19 @@ export default function AccountBalance ({ navigation }) {
         <View style={styles.part}>
           <Text style={styles.title}>Voorspellingen gegarandeerd inkomen</Text>
           <Text style={styles.amount}>+{income.format()}</Text>
-          <CustomButton
-            text='Bekijk voorspelling'
-            onPress={() =>
-              navigation.navigate('Bijdragen', {
-                screen: 'IncomePrediction',
-                params: { income, current }
-              })
-            }
-          />
-        </View>
-        <View style={styles.part}>
           <Text style={styles.title}>Voorspellingen bijdrage</Text>
           <Text style={styles.amount}>{demurrage} %</Text>
           <CustomButton
-            text='Bekijk voorspelling'
+            text='Bekijk voorspellingen'
             onPress={() =>
               navigation.navigate('Bijdragen', {
-                screen: 'ContributionPrediction',
-                params: { demurrage, current }
+                screen: 'Predictions',
+                params: { demurrage, income, current }
               })
             }
           />
         </View>
-      </View>
+      </ScrollView>
     )
   } else {
     return null

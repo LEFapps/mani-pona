@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { View, Text, Alert } from 'react-native'
+import { View, Text, Alert, ScrollView } from 'react-native'
 import { globalStyles } from '../styles/global'
 import Auth from '@aws-amplify/auth'
 import Card from '../shared/card'
@@ -41,7 +41,7 @@ export default function Home () {
   }
 
   return (
-    <View style={globalStyles.main}>
+    <ScrollView style={globalStyles.main}>
       <View style={{ marginBottom: 10 }}>
         <Card>
           <View style={{ flexDirection: 'row' }}>
@@ -63,6 +63,6 @@ export default function Home () {
         text='Afmelden en sleutels wissen'
         onPress={() => signOut(true)}
       />
-    </View>
+    </ScrollView>
   )
 }

@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { View, StyleSheet, Dimensions, Text } from 'react-native'
+import { View, StyleSheet, ScrollView, Text } from 'react-native'
 import { useIsFocused } from '@react-navigation/native'
 import RoundButton from '../shared/buttons/roundIconButton'
 import BigCardWithButtons from '../shared/bigCardWithButtons'
@@ -43,11 +43,11 @@ export default function Home ({ navigation }) {
     maniClient.transactions
       .challenge(destination, MANI(amount))
       .then(challenge => {
-        console.log('CHALLENGE', challenge)
+        // console.log('CHALLENGE', challenge)
         return maniClient.transactions.create(challenge)
       })
       .then(create => {
-        console.log('CREATE', create)
+        // console.log('CREATE', create)
         if (create) navigation.navigate('AccountBalance')
       })
       .catch(err => {
@@ -61,7 +61,7 @@ export default function Home ({ navigation }) {
   }
 
   return (
-    <View>
+    <ScrollView>
       {isFocused && !getData && (
         <Camera
           onInit={reset}
@@ -123,7 +123,7 @@ export default function Home ({ navigation }) {
           onPress={() => navigation.navigate('AccountBalance')}
         />
       </View> */}
-    </View>
+    </ScrollView>
   )
 }
 

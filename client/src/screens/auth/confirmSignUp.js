@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { TextInput, View, Text, Platform } from 'react-native'
+import { TextInput, View, Text, ScrollView } from 'react-native'
 import { globalStyles } from '../../styles/global.js'
 import Button from '../../shared/buttons/button'
 import Auth from '@aws-amplify/auth'
@@ -54,21 +54,21 @@ export default function confirmSignUp (props = {}) {
       try {
         await Auth.confirmSignUp(state.email, state.verificationCode)
       } catch (error) {
-        console.log(error)
+        console.error(error)
         Alert.alert(i18n.t(error.code))
       }
       try {
         await maniClient.register(state.email)
         props.onStateChange('signIn', { username: state.email })
       } catch (error) {
-        console.log(error)
+        console.error(error)
       }
     }
   }
 
   if (props.authState === 'confirmSignUp') {
     return (
-      <View style={globalStyles.container}>
+      <ScrollView style={globalStyles.container}>
         <Text style={globalStyles.authTitle}>Verificatie</Text>
         <View style={globalStyles.main}>
           <View>
@@ -178,7 +178,7 @@ export default function confirmSignUp (props = {}) {
             </Dialog.Container>
           </View>
         </View>
-      </View>
+      </ScrollView>
     )
   } else {
     return null

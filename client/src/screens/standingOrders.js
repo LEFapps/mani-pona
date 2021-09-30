@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { View, Text, FlatList, Alert } from 'react-native'
+import { View, Text, FlatList, ScrollView } from 'react-native'
 import Card from '../shared/bigCardWithButtons'
 import IconButton from '../shared/buttons/iconButton'
 import { globalStyles } from '../styles/global'
@@ -28,7 +28,7 @@ export default function StandingOrder ({ navigation }) {
 
   if (ready) {
     return (
-      <View style={globalStyles.main}>
+      <ScrollView style={globalStyles.main}>
         {/* <IconButton
           iconName='add'
           iconColor='white'
@@ -62,7 +62,7 @@ export default function StandingOrder ({ navigation }) {
                         ManiClient.transactions
                           .confirm(challenge)
                           .then(confirm => {
-                            console.log('confirm', confirm)
+                            // console.log('CONFIRM', confirm)
                             navigation.navigate('LoREco')
                           })
                           .catch(console.error)
@@ -74,7 +74,7 @@ export default function StandingOrder ({ navigation }) {
                         ManiClient.transactions
                           .cancel(challenge)
                           .then(cancel => {
-                            console.log('cancel', cancel)
+                            // console.log('CANCEL', cancel)
                             navigation.navigate('LoREco')
                           })
                           .catch(lorrconsole.error)
@@ -117,7 +117,7 @@ export default function StandingOrder ({ navigation }) {
             )
           }}
         />
-      </View>
+      </ScrollView>
     )
   } else {
     return null

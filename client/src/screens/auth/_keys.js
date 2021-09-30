@@ -5,7 +5,7 @@ import {
   Text,
   View,
   StyleSheet,
-  Dimensions
+  ScrollView
 } from 'react-native'
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs'
 import Modal from 'modal-react-native-web'
@@ -99,7 +99,7 @@ const ExportKeys = () => {
   }
 
   return (
-    <View>
+    <ScrollView>
       <CustomButton
         text={isBusy ? 'Sleutels verzamelen . . .' : 'Exporteer mijn sleutels'}
         onPress={getKeys}
@@ -121,7 +121,7 @@ const ExportKeys = () => {
           </View>
         </Modal>
       )}
-    </View>
+    </ScrollView>
   )
 }
 

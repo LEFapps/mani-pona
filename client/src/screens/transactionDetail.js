@@ -1,5 +1,5 @@
 import React from 'react'
-import { View, Text } from 'react-native'
+import { View, Text, ScrollView } from 'react-native'
 import mani from '../../shared/mani'
 import { globalStyles } from '../styles/global'
 import Card from '../shared/card'
@@ -9,7 +9,7 @@ export default function TransactionHitstory ({ route }) {
   const { transaction } = route.params
 
   return (
-    <View style={globalStyles.main}>
+    <ScrollView style={globalStyles.main}>
       <Card>
         <Text style={globalStyles.property}>Contact:</Text>
         <Contact style={globalStyles.price} ledger={transaction.destination} />
@@ -28,6 +28,6 @@ export default function TransactionHitstory ({ route }) {
           {new Date(transaction.date).toLocaleString()}
         </Text>
       </Card>
-    </View>
+    </ScrollView>
   )
 }
