@@ -10,11 +10,12 @@ export default {
     }
   },
   'Mutation': {
-    'admin': (_, args, { core, admin, ledger }) => {
+    'admin': (_, args, { core, admin, ledger, claims }) => {
       if (!admin) {
         log.error(`Illegal system access attempt by ${ledger}`)
         throw new ForbiddenError('Access denied')
       }
+      // TODO: log claims
       return core.system()
     }
   },
@@ -59,6 +60,10 @@ export default {
       const result = await system.enableAccount(username)
       log.debug('Enabled account %s, result %j', username, result)
       return `Enabled account ${username}`
+    },
+    'forceSystemPayment': async (system, { ledger, amount }) => {
+      const result = await system.forceSystemPayment(ledger, amount)
+      return `Forced system payment of ${amount} on ledger ${ledger}, result: ${result}`
     }
   }
 }
