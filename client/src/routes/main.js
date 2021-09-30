@@ -11,7 +11,7 @@ import Auth from '@aws-amplify/auth'
 
 import { UserContext } from '../authenticator'
 
-import AdminStack from './stacks/AdminStack'
+import AdminStack from './stacks/adminStack'
 import AccountStack from '../routes/stacks/accountStack'
 import QrStack from '../routes/stacks/qrStack'
 import TransactionHistoryStack from '../routes/stacks/transactionHistoryStack'
