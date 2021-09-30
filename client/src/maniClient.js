@@ -171,11 +171,6 @@ const ManiClient = async ({
     }
   }
   const system = {
-    async parameters () {
-      return fromDb(
-        await query(SYSTEM_PARAMETERS, 'system.parameters', {}, false)
-      )
-    },
     async findUser (username) {
       return query(FIND_USER, 'system.finduser', { username })
     },
@@ -195,7 +190,9 @@ const ManiClient = async ({
         income: mani(0)
       }
       async function jubileeBatch (paginationToken) {
-        const { nextToken, ledgers, income, demurrage } = fromDb(await query(JUBILEE, 'admin.jubilee', { paginationToken }))
+        const { nextToken, ledgers, income, demurrage } = fromDb(
+          await query(JUBILEE, 'admin.jubilee', { paginationToken })
+        )
         results.income = results.income.add(income)
         results.demurrage = results.demurrage.add(demurrage)
         results.ledgers += ledgers
@@ -220,10 +217,16 @@ const ManiClient = async ({
       return query(ENABLE_USER, 'admin.enableAccount', { username })
     },
     async changeAccountType (username, type) {
-      return query(CHANGE_ACCOUNT_TYPE, 'admin.changeAccountType', { username, type })
+      return query(CHANGE_ACCOUNT_TYPE, 'admin.changeAccountType', {
+        username,
+        type
+      })
     },
     async forceSystemPayment (ledger, amount) {
-      return query(FORCE_SYSTEM_PAYMENT, 'admin.forceSystemPayment', { ledger, amount: amount.format() })
+      return query(FORCE_SYSTEM_PAYMENT, 'admin.forceSystemPayment', {
+        ledger,
+        amount: amount.format()
+      })
     }
   }
   return {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useContext } from 'react'
 import { View, Text, StyleSheet, ScrollView } from 'react-native'
 import Auth from '@aws-amplify/auth'
 import CustomButton from '../shared/buttons/button'
@@ -6,9 +6,12 @@ import { globalStyles } from '../styles/global.js'
 import Alert from '../shared/alert'
 import Card from '../shared/card'
 import { colors } from '../helpers/helper'
+import { UserContext } from '../authenticator'
 const { DarkerBlue, CurrencyColor } = colors
 
 export default function AccountBalance ({ navigation }) {
+  const user = useContext(UserContext)
+
   const [params, setParams] = useState({})
   const [current, setCurrent] = useState({})
   const [ready, setReady] = useState(false)
@@ -25,38 +28,31 @@ export default function AccountBalance ({ navigation }) {
         // console.log('Ledger registered:', !!found)
         if (!found) {
           // autoRegister
-          return await Auth.currentSession()
-            .then(async data => {
-              const {
-                email,
-                'custom:alias': alias,
-                'custom:ledger': ledger
-              } = data.idToken.payload
-              await maniClient.register(alias || email)
-              loadData()
-            })
+          const { email, alias } = user
+          await maniClient.register(alias || email)
+          loadData()
+        } else {
+          await maniClient.transactions
+            .current()
+            .then(setCurrent)
             .catch(e => {
-              console.error('loadData/auth', e)
+              console.error('loadData/current', e)
               e && Alert.alert(e.message)
             })
+          await maniClient.system
+            .accountTypes()
+            .then(types => {
+              const { demurrage, income, buffer } = types.find(
+                ({ type }) => type === (user.type || 'default')
+              )
+              setParams({ demurrage, income, buffer })
+            })
+            .catch(e => {
+              console.error('loadData/params', e)
+              e && Alert.alert(e.message)
+            })
+          setReady(true)
         }
-        await maniClient.transactions
-          .current()
-          .then(setCurrent)
-          .catch(e => {
-            console.error('loadData/current', e)
-            e && Alert.alert(e.message)
-          })
-        await maniClient.system
-          .parameters()
-          .then(({ demurrage, income, buffer }) => {
-            setParams({ demurrage, income, buffer })
-          })
-          .catch(e => {
-            console.error('loadData/params', e)
-            e && Alert.alert(e.message)
-          })
-        setReady(true)
       })
       .catch(e => {
         console.error('loadData/find', e)
@@ -84,30 +80,18 @@ export default function AccountBalance ({ navigation }) {
             </Text>
           </Card>
         )}
-        {(!!current.income || income) && (
-          <Card>
-            <Text style={globalStyles.property}>Inkomen</Text>
-            <Text style={globalStyles.price}>
-              {(current.income || income).format()}
-            </Text>
-          </Card>
-        )}
-        {(!!current.buffer || buffer) && (
-          <Card>
-            <Text style={globalStyles.property}>Vrije buffer</Text>
-            <Text style={globalStyles.price}>
-              {(current.buffer || buffer).format()}
-            </Text>
-          </Card>
-        )}
-        {(!!current.demurrage || !!demurrage) && (
-          <Card>
-            <Text style={globalStyles.property}>Demurrage</Text>
-            <Text style={globalStyles.price}>
-              {current.demurrage || demurrage} %
-            </Text>
-          </Card>
-        )}
+        <Card>
+          <Text style={globalStyles.property}>Inkomen</Text>
+          <Text style={globalStyles.price}>{income}</Text>
+        </Card>
+        <Card>
+          <Text style={globalStyles.property}>Vrije buffer</Text>
+          <Text style={globalStyles.price}>{buffer}</Text>
+        </Card>
+        <Card>
+          <Text style={globalStyles.property}>Demurrage</Text>
+          <Text style={globalStyles.price}>{demurrage} %</Text>
+        </Card>
 
         <View style={styles.part}>
           <CustomButton
@@ -115,7 +99,13 @@ export default function AccountBalance ({ navigation }) {
             onPress={() =>
               navigation.navigate('Bijdragen', {
                 screen: 'Predictions',
-                params: { demurrage, income, current }
+                params: {
+                  demurrage,
+                  buffer,
+                  income,
+                  date: current.date,
+                  balance: current.balance
+                }
               })
             }
           />
