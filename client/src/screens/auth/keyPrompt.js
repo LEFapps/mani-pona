@@ -1,5 +1,12 @@
 import React, { useState } from 'react'
-import { Text, TextInput, View, StyleSheet, Button } from 'react-native'
+import {
+  Text,
+  TextInput,
+  View,
+  StyleSheet,
+  Button,
+  ScrollView
+} from 'react-native'
 import { NavigationContainer } from '@react-navigation/native'
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs'
 import Modal from 'modal-react-native-web'
@@ -150,7 +157,7 @@ export const KeyPrompt = ({ onResolve, ...props }) => {
   }
 
   return (
-    <View style={globalStyles.container}>
+    <ScrollView style={globalStyles.container}>
       <View style={globalStyles.main}>
         <Text style={globalStyles.bigText}>Welkom bij LoREco!</Text>
         <View style={globalStyles.paragraph}>
@@ -205,7 +212,7 @@ export const KeyPrompt = ({ onResolve, ...props }) => {
           />
         )}
       </View>
-    </View>
+    </ScrollView>
   )
 }
 

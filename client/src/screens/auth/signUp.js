@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { TextInput, View, Text } from 'react-native'
+import { TextInput, View, Text, ScrollView } from 'react-native'
 import Auth from '@aws-amplify/auth'
 
 import { globalStyles } from '../../styles/global.js'
@@ -74,7 +74,7 @@ export default function signUp (props) {
 
   if (props.authState === 'signUp') {
     return (
-      <View style={globalStyles.container}>
+      <ScrollView style={globalStyles.container}>
         <Text style={globalStyles.authTitle}>Registreren</Text>
         <View style={globalStyles.main}>
           <View>
@@ -149,7 +149,7 @@ export default function signUp (props) {
             <GotoConfirmSignUp {...props} />
           </View>
         </View>
-      </View>
+      </ScrollView>
     )
   } else {
     return null

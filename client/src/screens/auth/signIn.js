@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { TextInput, View, Text, Platform } from 'react-native'
+import { TextInput, View, Text, Platform, ScrollView } from 'react-native'
 import { globalStyles } from '../../styles/global.js'
 import Button from '../../shared/buttons/button'
 import Auth from '@aws-amplify/auth'
@@ -140,7 +140,7 @@ export default function SignIn (props = {}) {
 
   if (props.authState === 'signIn') {
     return (
-      <View style={globalStyles.container}>
+      <ScrollView style={globalStyles.container}>
         <Text style={globalStyles.authTitle}>Log In</Text>
         <View style={globalStyles.main}>
           <View>
@@ -249,7 +249,7 @@ export default function SignIn (props = {}) {
             </Dialog.Container>
           </View>
         </View>
-      </View>
+      </ScrollView>
     )
   } else {
     return null

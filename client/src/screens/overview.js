@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { View, Text, StyleSheet } from 'react-native'
+import { View, Text, StyleSheet, ScrollView } from 'react-native'
 import Auth from '@aws-amplify/auth'
 import CustomButton from '../shared/buttons/button'
 import { globalStyles } from '../styles/global.js'
@@ -56,7 +56,7 @@ export default function AccountBalance ({ navigation }) {
 
   if (ready) {
     return (
-      <View style={globalStyles.main}>
+      <ScrollView style={globalStyles.main}>
         <View style={globalStyles.amountHeader}>
           <Text style={globalStyles.property}>Huidige rekeningstand:</Text>
           <Text style={globalStyles.price}>
@@ -79,7 +79,7 @@ export default function AccountBalance ({ navigation }) {
             }
           />
         </View>
-      </View>
+      </ScrollView>
     )
   } else {
     return null

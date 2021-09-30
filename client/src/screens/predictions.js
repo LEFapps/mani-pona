@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { StyleSheet, View, Text, FlatList } from 'react-native'
+import { StyleSheet, View, Text, ScrollView } from 'react-native'
 import { globalStyles } from '../styles/global.js'
 import { Picker } from '@react-native-picker/picker'
 import mani from '../../shared/mani'
@@ -38,7 +38,7 @@ export default function Predictions ({ route }) {
   })
 
   return (
-    <View style={globalStyles.main}>
+    <ScrollView style={globalStyles.main}>
       <Card>
         <View style={{ flexDirection: 'column' }}>
           <Text style={globalStyles.property}>Huidige rekeningstand</Text>
@@ -59,7 +59,7 @@ export default function Predictions ({ route }) {
           <Text style={globalStyles.price}>{value.format()}</Text>
         </Card>
       ))}
-    </View>
+    </ScrollView>
   )
 }
 const styles = StyleSheet.create({

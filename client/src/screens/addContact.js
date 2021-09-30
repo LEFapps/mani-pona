@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { TextInput, View, Text, Alert } from 'react-native'
+import { TextInput, View, Text, Alert, ScrollView } from 'react-native'
 import { globalStyles } from '../styles/global.js'
 import Button from '../shared/buttons/button'
 import { validateNotEmpty } from '../helpers/validation'
@@ -36,7 +36,7 @@ export default function AddContact ({ route, navigation }) {
   }
 
   return (
-    <View style={globalStyles.main}>
+    <ScrollView style={globalStyles.main}>
       <View>
         <Text style={globalStyles.label}>Contact Naam</Text>
         <TextInput
@@ -67,6 +67,6 @@ export default function AddContact ({ route, navigation }) {
           voor eventueel later gebruik. Voeg niet toe om deze anoniem te laten.
         </Text>
       </View>
-    </View>
+    </ScrollView>
   )
 }
