@@ -27,6 +27,13 @@ export default function StandingOrder ({ navigation }) {
   }
 
   if (ready) {
+    if (standingOrders && !standingOrders.length) {
+      return (
+        <ScrollView style={globalStyles.main}>
+          <Text style={globalStyles.text}>Geen transacties om te tekenen.</Text>
+        </ScrollView>
+      )
+    }
     return (
       <ScrollView style={globalStyles.main}>
         {/* <IconButton

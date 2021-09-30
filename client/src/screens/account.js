@@ -44,16 +44,12 @@ export default function Home () {
     <ScrollView style={globalStyles.main}>
       <View style={{ marginBottom: 10 }}>
         <Card>
-          <View style={{ flexDirection: 'row' }}>
-            <View style={globalStyles.cardPropertys}>
-              <Text style={globalStyles.cardPropertyText}>Ingelogd als:</Text>
-              <Text style={globalStyles.cardPropertyText}>E-mailadres:</Text>
-            </View>
-            <View style={globalStyles.cardValues}>
-              <Text style={globalStyles.cardValueText}>{alias || '-'}</Text>
-              <Text style={globalStyles.cardValueText}>{email || '-'}</Text>
-            </View>
-          </View>
+          <Text style={globalStyles.cardPropertyText}>Ingelogd als:</Text>
+          <Text style={globalStyles.cardValueText}>{alias || '-'}</Text>
+        </Card>
+        <Card>
+          <Text style={globalStyles.cardPropertyText}>E-mailadres:</Text>
+          <Text style={globalStyles.cardValueText}>{email || '-'}</Text>
         </Card>
       </View>
 

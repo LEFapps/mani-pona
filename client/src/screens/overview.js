@@ -4,12 +4,12 @@ import Auth from '@aws-amplify/auth'
 import CustomButton from '../shared/buttons/button'
 import { globalStyles } from '../styles/global.js'
 import Alert from '../shared/alert'
+import Card from '../shared/card'
 import { colors } from '../helpers/helper'
 const { DarkerBlue, CurrencyColor } = colors
 
 export default function AccountBalance ({ navigation }) {
-  const [demurrage, setDemurrage] = useState({})
-  const [income, setIncome] = useState({})
+  const [params, setParams] = useState({})
   const [current, setCurrent] = useState({})
   const [ready, setReady] = useState(false)
   const { maniClient } = global
@@ -49,9 +49,8 @@ export default function AccountBalance ({ navigation }) {
           })
         await maniClient.system
           .parameters()
-          .then(({ demurrage, income }) => {
-            setDemurrage(demurrage) // int %
-            setIncome(income) // mani
+          .then(({ demurrage, income, buffer }) => {
+            setParams({ demurrage, income, buffer })
           })
           .catch(e => {
             console.error('loadData/params', e)
@@ -65,21 +64,52 @@ export default function AccountBalance ({ navigation }) {
       })
   }
 
+  const { income, buffer, demurrage } = params || {}
+
   if (ready) {
     return (
       <ScrollView style={globalStyles.main}>
-        <View style={globalStyles.amountHeader}>
-          <Text style={globalStyles.property}>Huidige rekeningstand:</Text>
-          <Text style={globalStyles.price}>
+        <View style={styles.part}>
+          <Text style={styles.title}>Huidige rekeningstand</Text>
+          <Text style={styles.amount}>
             {!!current.balance && current.balance.format()}
           </Text>
         </View>
 
+        {!!current.date && (
+          <Card>
+            <Text style={globalStyles.property}>Laatste wijziging</Text>
+            <Text style={globalStyles.price}>
+              {new Date(current.date).toLocaleString()}
+            </Text>
+          </Card>
+        )}
+        {(!!current.income || income) && (
+          <Card>
+            <Text style={globalStyles.property}>Inkomen</Text>
+            <Text style={globalStyles.price}>
+              {(current.income || income).format()}
+            </Text>
+          </Card>
+        )}
+        {(!!current.buffer || buffer) && (
+          <Card>
+            <Text style={globalStyles.property}>Vrije buffer</Text>
+            <Text style={globalStyles.price}>
+              {(current.buffer || buffer).format()}
+            </Text>
+          </Card>
+        )}
+        {(!!current.demurrage || !!demurrage) && (
+          <Card>
+            <Text style={globalStyles.property}>Demurrage</Text>
+            <Text style={globalStyles.price}>
+              {current.demurrage || demurrage} %
+            </Text>
+          </Card>
+        )}
+
         <View style={styles.part}>
-          <Text style={styles.title}>Voorspellingen gegarandeerd inkomen</Text>
-          <Text style={styles.amount}>+{income.format()}</Text>
-          <Text style={styles.title}>Voorspellingen bijdrage</Text>
-          <Text style={styles.amount}>{demurrage} %</Text>
           <CustomButton
             text='Bekijk voorspellingen'
             onPress={() =>
