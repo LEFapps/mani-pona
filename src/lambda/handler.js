@@ -14,6 +14,7 @@ const log = getLogger('lambda:handler')
 const debug = process.env.DEBUG === 'true'
 const offline = process.env.IS_OFFLINE === 'true'
 const userpool = process.env.USER_POOL
+const systemInit = process.env.AUTO_SYSTEM_INIT === 'true'
 
 function contextProcessor (event) {
   const { headers } = event
@@ -42,6 +43,11 @@ const core = Core(
     ? CognitoUserPool(userpool)
     : OfflineUserPool()
 )
+
+if (systemInit) {
+  log.info('Automatically initializing system')
+  core.system().init()
+}
 
 log.info('Starting ApolloServer (debug: %s, offline: %s)', debug, offline)
 log.debug('ENV variables: %j', process.env)
