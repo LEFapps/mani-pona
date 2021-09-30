@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { View, Text, FlatList, Button } from 'react-native'
+import { ScrollView } from 'react-native-web'
 
 import Card from '../../shared/card'
 import { globalStyles } from '../../styles/global'
@@ -17,13 +18,13 @@ const Screen = ({ navigation, route }) => {
   const getParameters = () => {
     setError('')
     maniClient.system
-      .parameters()
-      .then(data => setParameters(data))
+      .accountTypes()
+      .then(setParameters)
       .catch(e => setError(e.message || e))
   }
 
   return (
-    <View style={globalStyles.main}>
+    <ScrollView style={globalStyles.main}>
       {!!errorText && (
         <View style={globalStyles.paragraph}>
           <Text style={globalStyles.errorText}>{errorText}</Text>
@@ -31,25 +32,31 @@ const Screen = ({ navigation, route }) => {
       )}
       {parameters && (
         <FlatList
-          data={['income', 'demurrage']}
-          keyExtractor={item => item}
+          data={parameters}
+          keyExtractor={({ type }) => type}
           renderItem={({ item }) => {
-            const data = parameters[item]
+            const { type, income, buffer, demurrage } = item || {}
             return (
-              <View>
+              <View style={{ marginVertical: 16 }}>
+                <Text style={globalStyles.bigText}>{type}</Text>
                 <Card>
-                  <Text style={globalStyles.property}>{item}</Text>
-                  <Text style={globalStyles.price}>
-                    {item === 'income' && data.format()}
-                    {item === 'demurrage' && `${data} %`}
-                  </Text>
+                  <Text style={globalStyles.property}>Inkomen</Text>
+                  <Text style={globalStyles.price}>{income}</Text>
+                </Card>
+                <Card>
+                  <Text style={globalStyles.property}>Vrije buffer</Text>
+                  <Text style={globalStyles.price}>{buffer}</Text>
+                </Card>
+                <Card>
+                  <Text style={globalStyles.property}>Demurrage</Text>
+                  <Text style={globalStyles.price}>{demurrage} %</Text>
                 </Card>
               </View>
             )
           }}
         />
       )}
-    </View>
+    </ScrollView>
   )
 }
 

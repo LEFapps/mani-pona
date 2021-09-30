@@ -53,15 +53,10 @@ export default function confirmSignUp (props = {}) {
       })
       try {
         await Auth.confirmSignUp(state.email, state.verificationCode)
-      } catch (error) {
-        console.error(error)
-        Alert.alert(i18n.t(error.code))
-      }
-      try {
-        await maniClient.register(state.email)
         props.onStateChange('signIn', { username: state.email })
       } catch (error) {
-        console.error(error)
+        console.error('confirmSignup', error)
+        Alert.alert(i18n.t(error.code))
       }
     }
   }

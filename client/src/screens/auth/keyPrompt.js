@@ -145,7 +145,7 @@ export const KeyPrompt = ({ onResolve, ...props }) => {
       .importKeys(getValue)
       .then(async keys => {
         if (keys) {
-          // re-init maniCLient with new keys
+          // re-init maniClient with new keys
           await resetClient()
           onResolve(getValue ? 'pasted' : global.maniClient.id)
         }

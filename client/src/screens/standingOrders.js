@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import { View, Text, FlatList, ScrollView } from 'react-native'
 import Card from '../shared/bigCardWithButtons'
-import IconButton from '../shared/buttons/iconButton'
-import { globalStyles } from '../styles/global'
-import mani from '../../shared/mani'
+import Alert from '../shared/alert'
 import { Contact } from '../shared/contact'
+
+import { globalStyles } from '../styles/global'
 
 export default function StandingOrder ({ navigation }) {
   const [standingOrders, setOrders] = useState([])
@@ -65,7 +65,10 @@ export default function StandingOrder ({ navigation }) {
                             // console.log('CONFIRM', confirm)
                             navigation.navigate('LoREco')
                           })
-                          .catch(console.error)
+                          .catch(e => {
+                            console.error('transaction/confirm', e)
+                            e && Alert.alert(e.message)
+                          })
                 }
                 onPressCancel={
                   destination === 'system' || !toSign
@@ -77,7 +80,10 @@ export default function StandingOrder ({ navigation }) {
                             // console.log('CANCEL', cancel)
                             navigation.navigate('LoREco')
                           })
-                          .catch(lorrconsole.error)
+                          .catch(e => {
+                            console.error('transaction/cancel', e)
+                            a && Alert.alert(e.message)
+                          })
                 }
               >
                 <View style={{ flexDirection: 'row' }}>

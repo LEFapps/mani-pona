@@ -2,23 +2,29 @@ import React, { useState, useEffect } from 'react'
 import { View, Text, FlatList } from 'react-native'
 
 import Card from '../shared/card'
+import Alert from '../shared/alert'
 import { globalStyles } from '../styles/global'
-import mani from '../../shared/mani'
 
 export default function Home () {
   const [contributions, setContributions] = useState([])
   const [ready, setReady] = useState(false)
-  const ManiClient = global.maniClient
+  const { maniClient } = global
 
   useEffect(() => {
     loadData()
   }, [])
 
   async function loadData () {
-    await ManiClient.transactions.recent().then(demurageHistory => {
-      setContributions(demurageHistory)
-    })
-    setReady(true)
+    maniClient.transactions
+      .recent()
+      .then(demurageHistory => {
+        setContributions(demurageHistory)
+        setReady(true)
+      })
+      .catch(e => {
+        console.error('transactions/recent', e)
+        e && Alert.alert(e.message)
+      })
   }
 
   if (ready === false) {

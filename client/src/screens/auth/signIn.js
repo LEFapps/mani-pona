@@ -132,7 +132,7 @@ export default function SignIn (props = {}) {
           }
         }
       } catch (error) {
-        console.error(error)
+        console.error('signIn', error)
         Alert.alert(i18n.t(error.code))
       }
     }

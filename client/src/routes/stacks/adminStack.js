@@ -32,14 +32,6 @@ export const adminScreens = [
     component: Users,
     options: { title: 'Rekeningen' },
     icon: 'account-group'
-    // },
-    // {
-    //   name: 'users/user',
-    //   component: User,
-    //   options: ({ route }) => ({
-    //     title: 'Rekening van ' + route.params.user.alias
-    //   }),
-    //   icon: 'account'
   }
 ]
 

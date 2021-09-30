@@ -55,11 +55,6 @@ export default function Home ({ navigation }) {
       })
   }
 
-  const editAmount = () => {
-    const amount = prompt('Wijzig het bedrag')
-    setData({ ...getData, amount: Number(amount) })
-  }
-
   return (
     <ScrollView>
       {isFocused && !getData && (
@@ -70,7 +65,13 @@ export default function Home ({ navigation }) {
         />
       )}
 
-      {getData && (
+      {!!getError && (
+        <View style={globalStyles.main}>
+          <Text style={globalStyles.errorText}>{getError}</Text>
+        </View>
+      )}
+
+      {!!getData && (
         <View style={globalStyles.main}>
           <BigCardWithButtons
             onPressCancel={reset}
@@ -110,19 +111,6 @@ export default function Home ({ navigation }) {
           </BigCardWithButtons>
         </View>
       )}
-
-      {/* <View style={styles.buttonContainer}>
-        <RoundButton
-          text='QR-Code'
-          logoName='credit-card'
-          onPress={() => navigation.navigate('QRCode')}
-        />
-        <RoundButton
-          text='Overzicht'
-          logoName='dashboard'
-          onPress={() => navigation.navigate('AccountBalance')}
-        />
-      </View> */}
     </ScrollView>
   )
 }
