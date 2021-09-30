@@ -52,6 +52,8 @@ const SystemSchema = gql`
     created: DateTime
     lastModified: DateTime
     ledger: String
+    type: String
+    requestedType: String 
   }
 
   type AccountType {
