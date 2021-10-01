@@ -55,7 +55,7 @@ export default function Receive () {
       {getValue && getConfirm ? (
         <View style={styles.cont}>
           <View style={styles.qr}>
-            <QRCode value={getValue} size={320} />
+            <QRCode value={getValue} size={320} quietZone={8} />
           </View>
           <Text style={globalStyles.bigText}>
             Toon deze QR-Code om een transactie te starten.

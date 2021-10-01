@@ -39,6 +39,7 @@ const ModalContent = ({ data }) => {
             'loreco://import/' + (index < 0 ? data.join('/') : data[index])
           }
           size={320}
+          quietZone={8}
           style={{ maxWidth: '80vw' }}
         />
       </View>
