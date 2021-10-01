@@ -29,7 +29,7 @@ export default function AccountBalance ({ navigation }) {
         // console.log('Ledger registered:', !!found)
         if (!found) {
           // autoRegister
-          const { email, alias } = user
+          const { email, 'custom:alias': alias } = user.attributes
           await maniClient.register(alias || email)
           loadData()
         } else {
