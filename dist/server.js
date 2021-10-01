@@ -328,7 +328,10 @@ function fromDb (entry) {
       return new Date(value)
     }
     if (
-      (key === 'amount' || key === 'balance' || key === 'income') &&
+      (key === 'amount' ||
+        key === 'balance' ||
+        key === 'income' ||
+        key === 'buffer') &&
       _.isString(value)
     ) {
       return new Mani(value)
@@ -900,7 +903,7 @@ function System (ledgers, userpool) {
       // convert to a key-value(s) object for easy lookup
       const types = userpool
         .getAccountTypes()
-        .reduce(({ type, ...attr }, acc) => {
+        .reduce((acc, { type, ...attr }) => {
           acc[type] = attr;
           return acc
         }, {});
@@ -927,8 +930,11 @@ function System (ledgers, userpool) {
         users,
         paginationToken: nextToken
       } = await userpool.listJubileeUsers(paginationToken);
+      log$8.debug('JUBILEE USERS %j', users);
+      log$8.debug('ACCOUNT TYPES %j', types);
       for (let { ledger, type } of users) {
         const DI = type ? types[type] : types['default'];
+
         if (!DI) {
           log$8.error(
             'SKIPPING JUBILEE: Unable to determine jubilee type %s for ledger %s',
@@ -1669,7 +1675,11 @@ const CognitoUserPool = UserPoolId => {
         log$2.error('Missing ACCOUNT_TYPES ENV variable');
         return []
       }
-      return JSON.parse(config)
+      return JSON.parse(config).map(({ income, buffer, ...type }) => ({
+        ...type,
+        buffer: mani$1(buffer),
+        income: mani$1(income)
+      }))
     },
     async disableUser (Username) {
       provider.adminDisableUser = util.promisify(provider.adminDisableUser);
@@ -1703,24 +1713,24 @@ const CognitoUserPool = UserPoolId => {
       const params = {
         UserPoolId,
         PaginationToken,
-        Limit: USER_LIST_LIMIT,
-        AttributesToGet: [
-          'sub',
-          'username',
-          'cognito:user_status',
-          'status',
-          'ledger',
-          'type'
-        ] // TODO: add extra verification/filters?
+        Limit: USER_LIST_LIMIT
+        // AttributesToGet: [
+        // 'sub',
+        // 'username',
+        // 'cognito:user_status',
+        // 'status',
+        // 'custom:ledger',
+        // 'custom:type'
+        // ] // TODO: add extra verification/filters?
       };
       const res = await provider.listUsersPromise(params);
       if (res.err) {
         throw res.err
       }
-      log$2.debug('Found %n users', res.data.Users.length);
+      log$2.debug('Found %n users', res.Users.length);
       return {
-        users: res.data.Users.map(convertUser),
-        paginationToken: res.data.PaginationToken
+        users: res.Users.map(convertUser),
+        paginationToken: res.PaginationToken
       }
     },
     async findUser (Username) {

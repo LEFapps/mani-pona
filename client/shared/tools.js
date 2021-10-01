@@ -124,7 +124,10 @@ function fromDb (entry) {
       return new Date(value)
     }
     if (
-      (key === 'amount' || key === 'balance' || key === 'income') &&
+      (key === 'amount' ||
+        key === 'balance' ||
+        key === 'income' ||
+        key === 'buffer') &&
       isString(value)
     ) {
       return new Mani(value)

@@ -134,7 +134,7 @@ export default function (ledgers, userpool) {
       // convert to a key-value(s) object for easy lookup
       const types = userpool
         .getAccountTypes()
-        .reduce(({ type, ...attr }, acc) => {
+        .reduce((acc, { type, ...attr }) => {
           acc[type] = attr
           return acc
         }, {})

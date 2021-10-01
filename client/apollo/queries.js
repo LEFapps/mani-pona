@@ -122,12 +122,13 @@ const FIND_KEY = gql`
   }
 `
 const JUBILEE = gql`
-  mutation jubilee($ledger: String) {
+  mutation jubilee($paginationToken: String) {
     admin {
-      jubilee(ledger: $ledger) {
+      jubilee(paginationToken: $paginationToken) {
         ledgers
         demurrage
         income
+        nextToken
       }
     }
   }
