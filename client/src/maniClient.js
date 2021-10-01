@@ -171,6 +171,11 @@ const ManiClient = async ({
     }
   }
   const system = {
+    async parameters () {
+      return fromDb(
+        await query(SYSTEM_PARAMETERS, 'system.parameters', {}, false)
+      )
+    },
     async findUser (username) {
       return query(FIND_USER, 'system.finduser', { username })
     },
