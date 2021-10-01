@@ -44,7 +44,8 @@ export default function AccountBalance ({ navigation }) {
             .accountTypes()
             .then(types => {
               const { demurrage, income, buffer } = types.find(
-                ({ type }) => type === (user.type || 'default')
+                ({ type }) =>
+                  type === (user.attributes['custom:type'] || 'default')
               )
               setParams({ demurrage, income, buffer })
             })
