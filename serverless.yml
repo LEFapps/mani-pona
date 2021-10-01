@@ -11,6 +11,16 @@ provider:
     apiGateway: ${env:XRAY, self:custom.debug}
   logs:
     restApi: ${env:LOG_REST_API, self:custom.debug} # Adds a log stream (we could turn this off).
+  httpApi:
+    cors: true
+    authorizers:
+      cognitoAuthorizer:
+        type: jwt
+        identitySource: $request.header.Authorization
+        audience:
+          - Ref: CognitoUserPoolClient
+        issuerUrl:
+          Fn::Sub: https://cognito-idp.${AWS::Region}.amazonaws.com/${CognitoUserPool} 
   iamRoleStatements:
     - Effect: Allow
       Action:
@@ -25,10 +35,8 @@ provider:
 # Warning: the dynamodb shell does NOT work in Firefox, only in Chrome
 custom:
   debug: ${env:DEBUG, true} # debug mode (string values or 0|1 are converted)
-  dotenv:
-    basePath: env/
   output:
-    file: client/sls-output.json
+    file: client/sls-output.${self:provider.stage}.json
   dynamodb:
     stages:
       - test
@@ -38,7 +46,7 @@ custom:
       inMemory: true
       migrate: true
   prefix: ${self:service}-${self:provider.stage}
-  tableName: ${self:service}-ledgers
+  tableName: ${self:service}-${self:provider.stage}-ledgers
   serverless-offline:
     allowCache: true
 
@@ -52,8 +60,6 @@ package:
     - '!.dynamodb'
 
 plugins:
-  # - serverless-webpack
-  # - serverless-dotenv-plugin
   # WARNING! This is serverless-dynamodb-local from https://github.com/99x/serverless-dynamodb-local
   # it is different from the official serverless docs!
   - serverless-dynamodb-local
@@ -64,22 +70,11 @@ functions:
   graphql:
     handler: dist/server.graphqlHandler
     events:
-      - http:
-          path: graphql
-          method: post
-          cors: true
+      - httpApi:
+          path: /${self:provider.stage}/graphql
+          method: '*'
           authorizer:
-            type: COGNITO_USER_POOLS
-            authorizerId:
-              Ref: ApiGatewayAuthorizer
-      - http:
-          path: graphql
-          method: get
-          cors: true
-          authorizer:
-            type: COGNITO_USER_POOLS
-            authorizerId:
-              Ref: ApiGatewayAuthorizer
+            name: cognitoAuthorizer
     environment:
       DYN_TABLE: ${self:custom.tableName}
       DEBUG: ${self:custom.debug}

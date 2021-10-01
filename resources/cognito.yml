@@ -120,7 +120,7 @@ Resources:
                       - ':'
                       - Ref: AWS::AccountId
                       - ':'
-                      - Ref: ApiGatewayRestApi
+                      - Ref: HttpApi
                       - '/*'
               # Allow signed-in user to upload files to assets
               - Effect: 'Allow'
@@ -144,17 +144,3 @@ Resources:
                             - ClientBucket
                             - Arn
                         - '/files/*'
-  # Api Gateway Authorizer for use on endpoints
-  # Note: it would be nice to have this in another resource yml file, need to figure out how to get the Cognito User Pool ARN to do that.
-  ApiGatewayAuthorizer:
-    DependsOn:
-      - ApiGatewayRestApi
-    Type: AWS::ApiGateway::Authorizer
-    Properties:
-      Name: cognito-authorizer
-      AuthorizerResultTtlInSeconds: 300 # time-to-live
-      IdentitySource: method.request.header.Authorization # this is the header parameter that needs to contain the IdToken
-      Type: COGNITO_USER_POOLS
-      RestApiId: { 'Ref': 'ApiGatewayRestApi' }
-      ProviderARNs:
-        - Fn::GetAtt: [CognitoUserPool, Arn]
