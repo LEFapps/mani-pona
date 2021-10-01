@@ -239,6 +239,15 @@ const ManiClient = async ({
       })
       // log(JSON.stringify(current, null, 2))
       return fromDb(current)
+    },
+    async pending (ledger) {
+      const pending = await query(
+        PENDING,
+        'ledger.transactions.pending',
+        { id: ledger },
+        false
+      )
+      return fromDb(pending)
     }
   }
   return {

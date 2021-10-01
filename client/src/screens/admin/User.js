@@ -104,15 +104,20 @@ const balance = ({ visible, user, onClose }) => {
   const signs = [
     {
       title: '… verminderen met …',
-      active: () => sign > 0,
-      onPress: () => setSign(1)
+      active: () => sign < 0,
+      onPress: () => setSign(-1)
     },
     {
       title: '… verhogen met …',
-      active: () => sign < 0,
-      onPress: () => setSign(-1)
+      active: () => sign > 0,
+      onPress: () => setSign(1)
     }
   ]
+
+  if (user.pending) {
+    onClose('Deze gebruiker heeft al een openstaande transactie.')
+    return null
+  }
 
   // submit action
   const action = () =>
