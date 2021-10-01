@@ -1,13 +1,8 @@
 var s3_sync = require('s3-sync')
 var {
-  IdentityPoolId,
-  UserPoolClientId,
-  UserPoolId,
-  AuthorizerId,
-  ServiceEndpoint,
   ClientBucket,
   Region,
-  GraphqlLambdaFunctionQualifiedArn
+  CloudFrontDistribution
 } = require('./sls-output.json')
 
 var s3SyncOptions = {
@@ -15,9 +10,10 @@ var s3SyncOptions = {
     region: Region
   },
   limit: 16,
-  cleanup: true
+  cleanup: true,
+  cloudFrontId: CloudFrontDistribution
 }
 
-console.log('Deploying client code to bucket: ' + ClientBucket)
+console.log('Deploying client code to bucket: ' + ClientBucket + ' with CloudFrontId: ' + CloudFrontDistribution)
 
 s3_sync.syncCleanInvalidate('./web-build', ClientBucket, s3SyncOptions).then(console.log).catch(console.error)
