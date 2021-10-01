@@ -23,20 +23,17 @@ Resources:
           Compress: true
           ForwardedValues:
             QueryString: false
-          TargetOriginId: Client
+          TargetOriginId: Client # make sure this matches with the Id below!
           ViewerProtocolPolicy: "redirect-to-https"
         DefaultRootObject: "index.html"
         Enabled: true
         IPV6Enabled: true
         Origins:
-          - Id: ${self:custom.prefix}-client-origin
-            S3OriginConfig:
-              OriginAccessIdentity: ''
-            DomainName:
-              Fn::Join:
-                - ""
-                - - Ref: ClientBucket
-                  - ".s3."
-                  - ${self:provider.region}
-                  - ".amazonaws.com"
+          - Id: Client
+            CustomOriginConfig:
+              HTTPPort: '80'
+              HTTPSPort: '443'
+              OriginProtocolPolicy: http-only
+            DomainName: 
+              Fn::Sub: ${ClientBucket}.s3-website-${AWS::Region}.amazonaws.com
         PriceClass: PriceClass_100
