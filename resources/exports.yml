@@ -19,3 +19,6 @@ Outputs:
   CloudFrontDistribution:
     Value:
       Ref: CloudFrontDistribution
+  ServiceEndpoint:
+    Value:
+      Fn::Sub: ${HttpApiUrl}/${self:provider.stage}/graphql
