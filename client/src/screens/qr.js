@@ -15,6 +15,7 @@ import { TextInput } from 'react-native-paper'
 export default function Home ({ navigation }) {
   const isFocused = useIsFocused()
   const [getData, setData] = useState()
+  const [getSign, setSign] = useState()
   const [getError, setError] = useState([])
   const reset = () => {
     setData()
@@ -32,8 +33,9 @@ export default function Home ({ navigation }) {
     if (action === 'scan') {
       const [destination, incomingAmount] = params || []
       log.debug('Scanned', destination, incomingAmount)
-      const amount = Number(incomingAmount) / 100
-      setData({ destination, amount })
+      const amount = parseInt(incomingAmount) / 100
+      setData({ destination, amount: Math.abs(amount) })
+      setSign(amount > 0 ? 1 : -1)
     } else setData()
   }
 
@@ -41,7 +43,10 @@ export default function Home ({ navigation }) {
     setError([])
     const { destination, amount } = getData
     maniClient.transactions
-      .challenge(destination, MANI(amount))
+      .challenge(
+        destination,
+        MANI(Math.abs(parseFloat(amount.replace(',', '.'))) * getSign)
+      )
       .then(challenge => {
         // console.log('CHALLENGE', challenge)
         return maniClient.transactions.create(challenge)
@@ -92,9 +97,9 @@ export default function Home ({ navigation }) {
             <Card>
               <Text style={globalStyles.property}>Transactie:</Text>
               <Text style={globalStyles.price}>
-                {getData.amount > 0 && '… betaalt aan jou …'}
-                {!getData.amount && '–'}
-                {getData.amount < 0 && '… ontvangt van jou …'}
+                {getSign > 0 && '… betaalt aan jou …'}
+                {!getSign && '–'}
+                {getSign < 0 && '… ontvangt van jou …'}
               </Text>
             </Card>
             <Card>
@@ -102,9 +107,7 @@ export default function Home ({ navigation }) {
               <Text style={globalStyles.price}>
                 <TextInput
                   value={getData.amount || 0}
-                  onChangeText={amount =>
-                    setData({ ...getData, amount: Number(amount) })
-                  }
+                  onChangeText={amount => setData({ ...getData, amount })}
                 />
               </Text>
             </Card>

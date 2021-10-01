@@ -7,7 +7,7 @@ import FlatButton from '../shared/buttons/historyButton'
 import Button from '../shared/buttons/button'
 
 export default function Receive () {
-  const [getAmount, setAmount] = useState(0)
+  const [getAmount, setAmount] = useState('0')
   const [getSign, setSign] = useState(100)
   const [getConfirm, setConfirm] = useState(false)
   const [getValue, setValue] = useState('')
@@ -27,12 +27,16 @@ export default function Receive () {
 
   const createQr = () => {
     // barcode in the format: "loreco://scan/<fingerprint:destination>/<amount * 100>?"
-    setValue(`loreco://scan/${maniClient.id}/${Number(getAmount) * getSign}`)
+    setValue(
+      `loreco://scan/${maniClient.id}/${parseFloat(
+        getAmount.replace(',', '.')
+      ) * getSign}`
+    )
     setConfirm(true)
   }
 
   const reset = () => {
-    setAmount(0)
+    setAmount('0')
     setValue('')
     setConfirm(false)
   }
@@ -69,7 +73,7 @@ export default function Receive () {
             <TextInput
               style={globalStyles.input}
               placeholder='0,00'
-              onChangeText={amount => setAmount(Number(amount))}
+              onChangeText={setAmount}
               value={getAmount}
             />
           </View>
