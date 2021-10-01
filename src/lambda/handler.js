@@ -18,10 +18,11 @@ const systemInit = process.env.AUTO_SYSTEM_INIT === 'true'
 
 function contextProcessor (event) {
   const { headers } = event
+  log.debug('Context Event: %j', event)
   // fake the cognito interface if offline
   let claims = offline
     ? JSON.parse(headers['x-claims'] || process.env.CLAIMS)
-    : event.requestContext.authorizer.claims
+    : event.requestContext.authorizer.jwt.claims
   log.debug('User claims: %j', claims)
   return {
     ledger: claims['custom:ledger'],
@@ -31,7 +32,12 @@ function contextProcessor (event) {
   }
 }
 
-const offlineOptions = offline ? { endpoint: 'http://localhost:8000', httpOptions: { agent: new http.Agent({ keepAlive: true }) } } : {}
+const offlineOptions = offline
+  ? {
+      endpoint: 'http://localhost:8000',
+      httpOptions: { agent: new http.Agent({ keepAlive: true }) }
+    }
+  : {}
 
 const core = Core(
   DynamoPlus({
@@ -39,9 +45,7 @@ const core = Core(
     ...offlineOptions,
     maxRetries: 3
   }),
-  userpool
-    ? CognitoUserPool(userpool)
-    : OfflineUserPool()
+  userpool ? CognitoUserPool(userpool) : OfflineUserPool()
 )
 
 if (systemInit) {

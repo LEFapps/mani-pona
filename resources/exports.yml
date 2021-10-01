@@ -21,4 +21,4 @@ Outputs:
       Ref: CloudFrontDistribution
   ServiceEndpoint:
     Value:
-      Fn::Sub: ${HttpApiUrl}/${self:provider.stage}/graphql
+      Fn::Sub: https://${HttpApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/${self:provider.stage}/graphql

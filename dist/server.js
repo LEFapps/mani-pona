@@ -787,9 +787,13 @@ function System (ledgers, userpool) {
       return userpool.getAccountTypes()
     },
     async changeAccountType (Username, type) {
-      const allowedTypes = userpool.getAccountTypes().map((t) => t.type);
+      const allowedTypes = userpool.getAccountTypes().map(t => t.type);
       if (!allowedTypes.includes(type)) {
-        throw new Error(`Unknown account type ${type}, allowed values ${allowedTypes.join(',')}`)
+        throw new Error(
+          `Unknown account type ${type}, allowed values ${allowedTypes.join(
+            ','
+          )}`
+        )
       }
       log$8.debug('Setting account type to %s for user %s', type, Username);
       userpool.changeAttributes(Username, { 'custom:type': type });
@@ -868,20 +872,22 @@ function System (ledgers, userpool) {
       const pending = await ledgers.pending(ledger);
       if (pending) {
         if (pending.destination === 'system') {
-        // idempotency, we assume the client re-submitted
+          // idempotency, we assume the client re-submitted
           return 'succes'
         } else {
-          throw new Error(`There is still a pending transaction on ledger ${ledger}`)
+          throw new Error(
+            `There is still a pending transaction on ledger ${ledger}`
+          )
         }
       }
-      const keys = ledgers.keys('system', true);
+      ledgers.keys('system', true);
       const transaction = ledgers.transaction();
       await StateMachine(transaction)
         .getSources({ ledger, destination: 'system' })
         .then(t => t.addAmount(amount))
-        .then(t => t.addSystemSignatures(keys))
+        .then(t => t.addSystemSignatures())
         .then(t => t.save())
-        .catch(err => log$8.error('Forced system payment failed\n%j', err));
+        .catch(err => log$8.error('Forced system payment failed\n%s', err));
       await transaction.execute();
       return `Success`
     },
@@ -892,10 +898,12 @@ function System (ledgers, userpool) {
         income: mani$1(0)
       };
       // convert to a key-value(s) object for easy lookup
-      const types = userpool.getAccountTypes().reduce(({ type, ...attr }, acc) => {
-        acc[type] = attr;
-        return acc
-      }, {});
+      const types = userpool
+        .getAccountTypes()
+        .reduce(({ type, ...attr }, acc) => {
+          acc[type] = attr;
+          return acc
+        }, {});
       async function applyJubilee (ledger, DI) {
         log$8.debug('Applying jubilee to ledger %s', ledger);
         const transaction = ledgers.transaction();
@@ -915,11 +923,18 @@ function System (ledgers, userpool) {
         await transaction.execute();
         log$8.debug('Jubilee succesfully applied to ledger %s', ledger);
       }
-      const { users, paginationToken: nextToken } = await userpool.listJubileeUsers(paginationToken);
+      const {
+        users,
+        paginationToken: nextToken
+      } = await userpool.listJubileeUsers(paginationToken);
       for (let { ledger, type } of users) {
         const DI = type ? types[type] : types['default'];
         if (!DI) {
-          log$8.error('SKIPPING JUBILEE: Unable to determine jubilee type %s for ledger %s', type, ledger);
+          log$8.error(
+            'SKIPPING JUBILEE: Unable to determine jubilee type %s for ledger %s',
+            type,
+            ledger
+          );
         } else {
           log$8.debug('Applying jubilee of type %s to ledger %s', type, ledger);
           // these for loops allow await!
@@ -1305,6 +1320,8 @@ const SystemSchema = apolloServerLambda.gql`
     created: DateTime
     lastModified: DateTime
     ledger: String
+    type: String
+    requestedType: String 
   }
 
   type AccountType {
@@ -1485,11 +1502,12 @@ var system = {
     }
   },
   'Mutation': {
-    'admin': (_, args, { core, admin, ledger }) => {
+    'admin': (_, args, { core, admin, ledger, claims }) => {
       if (!admin) {
         log$4.error(`Illegal system access attempt by ${ledger}`);
         throw new apolloServer.ForbiddenError('Access denied')
       }
+      // TODO: log claims
       return core.system()
     }
   },
@@ -1534,6 +1552,10 @@ var system = {
       const result = await system.enableAccount(username);
       log$4.debug('Enabled account %s, result %j', username, result);
       return `Enabled account ${username}`
+    },
+    'forceSystemPayment': async (system, { ledger, amount }) => {
+      const result = await system.forceSystemPayment(ledger, amount);
+      return `Forced system payment of ${amount} on ledger ${ledger}, result: ${result}`
     }
   }
 };
@@ -1547,8 +1569,8 @@ var transactions = {
     }
   },
   LedgerQuery: {
-    transactions: (id, arg, { core, ledger }) => {
-      if (id !== ledger) {
+    transactions: (id, arg, { core, ledger, admin }) => {
+      if (id !== ledger && !admin) {
         const err = `Illegal access attempt detected from ${ledger} on ${id}`;
         log$3.error(err);
         throw new apolloServer.ForbiddenError(err)
@@ -1741,22 +1763,30 @@ const log = serverLog.getLogger('lambda:handler');
 const debug = process.env.DEBUG === 'true';
 const offline = process.env.IS_OFFLINE === 'true';
 const userpool = process.env.USER_POOL;
+const systemInit = process.env.AUTO_SYSTEM_INIT === 'true';
 
 function contextProcessor (event) {
   const { headers } = event;
+  log.debug('Context Event: %j', event);
   // fake the cognito interface if offline
   let claims = offline
     ? JSON.parse(headers['x-claims'] || process.env.CLAIMS)
-    : event.requestContext.authorizer.claims;
+    : event.requestContext.authorizer.jwt.claims;
   log.debug('User claims: %j', claims);
   return {
     ledger: claims['custom:ledger'],
     verified: claims.email_verified,
-    admin: claims['custom:administrator']
+    admin: claims['custom:administrator'],
+    claims
   }
 }
 
-const offlineOptions = offline ? { endpoint: 'http://localhost:8000', httpOptions: { agent: new http__default['default'].Agent({ keepAlive: true }) } } : {};
+const offlineOptions = offline
+  ? {
+      endpoint: 'http://localhost:8000',
+      httpOptions: { agent: new http__default['default'].Agent({ keepAlive: true }) }
+    }
+  : {};
 
 const core = Core(
   dynamoPlus.DynamoPlus({
@@ -1764,10 +1794,13 @@ const core = Core(
     ...offlineOptions,
     maxRetries: 3
   }),
-  userpool
-    ? CognitoUserPool(userpool)
-    : OfflineUserPool()
+  userpool ? CognitoUserPool(userpool) : OfflineUserPool()
 );
+
+if (systemInit) {
+  log.info('Automatically initializing system');
+  core.system().init();
+}
 
 log.info('Starting ApolloServer (debug: %s, offline: %s)', debug, offline);
 log.debug('ENV variables: %j', process.env);
