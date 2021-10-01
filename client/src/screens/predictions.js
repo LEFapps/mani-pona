@@ -23,11 +23,12 @@ const monthStrings = [
 ]
 
 export default function Predictions ({ route }) {
-  const { income, demurrage, current } = route.params
+  const { demurrage, date, balance } = route.params
+  const buffer = mani(route.params.buffer)
+  const income = mani(route.params.income)
 
-  const buffer = 5 // TODO: get from user or type
   const start = new Date().getMonth() + 1
-  let prev = current.balance
+  let prev = balance
   const predictions = monthStrings.map((m, i) => {
     const base = prev.subtract(buffer)
     const demued = base.multiply(1 - demurrage / 100)
@@ -42,10 +43,10 @@ export default function Predictions ({ route }) {
         <View style={{ flexDirection: 'column' }}>
           <Text style={globalStyles.property}>Huidige rekeningstand</Text>
           <Text style={globalStyles.date}>
-            {new Date(current.date).toLocaleString()}
+            {new Date(date).toLocaleString()}
           </Text>
         </View>
-        <Text style={globalStyles.price}>{current.balance.format()}</Text>
+        <Text style={globalStyles.price}>{balance.format()}</Text>
       </Card>
       {predictions.map(({ month, value }) => (
         <Card key={month}>

@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react'
 import { View, Text, StyleSheet, TextInput } from 'react-native'
 import Modal from 'modal-react-native-web'
 
+import mani from '../../../shared/mani'
+
 import FlatButton from '../../shared/buttons/historyButton'
 import CustomButton from '../../shared/buttons/button'
 import Alert from '../../shared/alert'
@@ -115,7 +117,7 @@ const balance = ({ visible, user, onClose }) => {
   // submit action
   const action = () =>
     maniClient.admin
-      .forceSystemPayment(user.ledger, amount * sign)
+      .forceSystemPayment(user.ledger, mani(amount * sign))
       .then(() => onClose(true))
       .catch(e => onClose(e && e.message))
 

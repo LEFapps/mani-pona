@@ -198,8 +198,8 @@ export default function drawerNavigator (props) {
 
   const pollPending = async () => {
     if (!isPolling) {
-      await getPending()
       setPolling(true)
+      getPending()
     }
   }
 
@@ -214,7 +214,7 @@ export default function drawerNavigator (props) {
       )
       await Auth.signOut({ global: true })
     } else {
-      maniClient.transactions
+      await maniClient.transactions
         .pending()
         .then(setPending)
         .catch(e => {

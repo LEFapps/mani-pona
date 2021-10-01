@@ -9,13 +9,15 @@ import {
 } from 'react-native'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 
+import mani from '../../../shared/mani'
+
 import editable from './User'
 
 import Button from '../../shared/buttons/button'
 import Card from '../../shared/card'
+import universalAlert from '../../shared/alert'
 
 import { globalStyles } from '../../styles/global'
-import universalAlert from '../../shared/alert'
 
 const EditIcon = props => (
   <MaterialCommunityIcons
@@ -33,6 +35,7 @@ export const Dashboard = ({ navigation, route }) => {
   const [errorText, setError] = useState('')
   const [result, setResult] = useState()
   const [details, setDetails] = useState({})
+  const [current, setCurrent] = useState({})
   const [openEditor, setEditor] = useState()
 
   const doSearch = () => {
@@ -44,11 +47,24 @@ export const Dashboard = ({ navigation, route }) => {
         setBusy(false)
         if (user) {
           setResult(user)
+          maniClient.system
+            .accountTypes()
+            .then(types => {
+              const { demurrage, income, buffer } = types.find(
+                ({ type }) => type === (user.type || 'default')
+              )
+              setDetails({
+                demurrage,
+                income: mani(income),
+                buffer: mani(buffer)
+              })
+            })
+            .catch(e => {
+              console.error('system/accountTypes', e)
+            })
           maniClient.transactions
             .current(user.ledger)
-            .then(({ balance, income, demurrage }) =>
-              setDetails({ balance, income, demurrage })
-            )
+            .then(({ balance }) => setCurrent({ balance }))
             .catch(e => {
               console.error('findUser/current', e)
             })
@@ -99,7 +115,7 @@ export const Dashboard = ({ navigation, route }) => {
           keyExtractor={item => item}
           data={fields}
           renderItem={({ item }) => {
-            const value = result[item] || details[item]
+            const value = result[item] || details[item] || current[item]
             const Editor = editable[item]
             return (
               <TouchableOpacity onPress={() => setEditor(item)}>
@@ -109,13 +125,11 @@ export const Dashboard = ({ navigation, route }) => {
                     {!!Editor && (
                       <Editor
                         visible={openEditor === item}
-                        user={{ ...result, ...details }}
+                        user={{ ...result, ...details, ...current }}
                         onClose={refetch => {
-                          if (refetch === true) {
-                            refetch && doSearch()
-                            setEditor()
-                          }
+                          if (refetch === true) refetch && doSearch()
                           if (refetch) universalAlert.alert(refetch)
+                          setEditor()
                         }}
                       />
                     )}
