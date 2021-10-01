@@ -36,6 +36,7 @@ export const Dashboard = ({ navigation, route }) => {
   const [result, setResult] = useState()
   const [details, setDetails] = useState({})
   const [current, setCurrent] = useState({})
+  const [pending, setPending] = useState({})
   const [openEditor, setEditor] = useState()
 
   const doSearch = () => {
@@ -62,11 +63,17 @@ export const Dashboard = ({ navigation, route }) => {
             .catch(e => {
               console.error('system/accountTypes', e)
             })
-          maniClient.transactions
+          maniClient.admin
             .current(user.ledger)
             .then(({ balance }) => setCurrent({ balance }))
             .catch(e => {
               console.error('findUser/current', e)
+            })
+          maniClient.admin
+            .pending(user.ledger)
+            .then(p => p && setPending({ pending: p.amount }))
+            .catch(e => {
+              console.error('findUser/pending', e)
             })
         }
       })
@@ -90,6 +97,7 @@ export const Dashboard = ({ navigation, route }) => {
     'ledger',
     'requestedType',
     'type',
+    'pending',
     'balance',
     'income',
     'demurrage',
@@ -115,7 +123,8 @@ export const Dashboard = ({ navigation, route }) => {
           keyExtractor={item => item}
           data={fields}
           renderItem={({ item }) => {
-            const value = result[item] || details[item] || current[item]
+            const value =
+              result[item] || details[item] || current[item] || pending[item]
             const Editor = editable[item]
             return (
               <TouchableOpacity onPress={() => setEditor(item)}>
@@ -125,10 +134,10 @@ export const Dashboard = ({ navigation, route }) => {
                     {!!Editor && (
                       <Editor
                         visible={openEditor === item}
-                        user={{ ...result, ...details, ...current }}
+                        user={{ ...result, ...details, ...current, ...pending }}
                         onClose={refetch => {
                           if (refetch === true) refetch && doSearch()
-                          if (refetch) universalAlert.alert(refetch)
+                          else if (refetch) universalAlert.alert(refetch)
                           setEditor()
                         }}
                       />

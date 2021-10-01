@@ -21,6 +21,7 @@ export default function AccountBalance ({ navigation }) {
     loadData()
   }, [])
 
+  // TODO: cleanup
   async function loadData () {
     await maniClient
       .find(maniClient.id)
