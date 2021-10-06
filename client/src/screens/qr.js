@@ -33,8 +33,8 @@ export default function Home ({ navigation }) {
     if (action === 'scan') {
       const [destination, incomingAmount] = params || []
       log.debug('Scanned', destination, incomingAmount)
-      const amount = parseInt(incomingAmount) / 100
-      setData({ destination, amount: Math.abs(amount) })
+      const amount = Number(incomingAmount) / 100
+      setData({ destination, amount: Math.abs(amount).toString() })
       setSign(amount > 0 ? 1 : -1)
     } else setData()
   }
