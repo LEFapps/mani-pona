@@ -46,7 +46,10 @@ const Signer = (armoredPrivateKey, privateKey) => {
     sign: async input => {
       // assert(!_.isEmpty(input), 'Missing input')
       const text = typeof input === 'string' ? input : sortedObjectString(input);
-      privateKey = privateKey === undefined ? await openpgp.readPrivateKey({ armoredKey: armoredPrivateKey }) : privateKey; // lazy loaded
+      privateKey =
+        privateKey === undefined
+          ? await openpgp.readPrivateKey({ armoredKey: armoredPrivateKey })
+          : privateKey; // lazy loaded
       return openpgp.sign({
         message: await openpgp.createMessage({ text }),
         signingKeys: privateKey,
@@ -76,18 +79,25 @@ const Verifier = (armoredPublicKey, publicKey) => {
      */
     verify: async (input, armoredSignature) => {
       const text = typeof input === 'string' ? input : sortedObjectString(input);
-      publicKey = publicKey === undefined ? await openpgp.readKey({ armoredKey: armoredPublicKey }) : publicKey; // lazy loaded
+      publicKey =
+        publicKey === undefined
+          ? await openpgp.readKey({ armoredKey: armoredPublicKey })
+          : publicKey; // lazy loaded
       await openpgp.verify({
         message: await openpgp.createMessage({ text }),
         signature: await openpgp.readSignature({ armoredSignature }),
         verificationKeys: publicKey,
-        expectSigned: true // automatically throws an error
+        expectSigned: true, // automatically throws an error
+        date: new Date(Date.now() - 1000 * 60 * 10)
       });
       return true
     },
     fingerprint: async () => {
       if (!fingerprint) {
-        publicKey = publicKey === undefined ? await openpgp.readKey({ armoredKey: armoredPublicKey }) : publicKey; // lazy loaded
+        publicKey =
+          publicKey === undefined
+            ? await openpgp.readKey({ armoredKey: armoredPublicKey })
+            : publicKey; // lazy loaded
         fingerprint = publicKey.getFingerprint();
       }
       return fingerprint
@@ -95,7 +105,7 @@ const Verifier = (armoredPublicKey, publicKey) => {
   }
 };
 
-const KeyWrapper = (key) => {
+const KeyWrapper = key => {
   return {
     publicKey: Verifier(key.publicKeyArmored),
     publicKeyArmored: key.publicKeyArmored,
@@ -930,11 +940,8 @@ function System (ledgers, userpool) {
         users,
         paginationToken: nextToken
       } = await userpool.listJubileeUsers(paginationToken);
-      log$8.debug('JUBILEE USERS %j', users);
-      log$8.debug('ACCOUNT TYPES %j', types);
       for (let { ledger, type } of users) {
         const DI = type ? types[type] : types['default'];
-
         if (!DI) {
           log$8.error(
             'SKIPPING JUBILEE: Unable to determine jubilee type %s for ledger %s',
