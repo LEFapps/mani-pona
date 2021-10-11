@@ -88,7 +88,7 @@ const Verifier = (armoredPublicKey, publicKey) => {
         signature: await openpgp.readSignature({ armoredSignature }),
         verificationKeys: publicKey,
         expectSigned: true, // automatically throws an error
-        date: new Date(Date.now() - 1000 * 60 * 10)
+        date: new Date(Date.now() + 1000 * 60 * 10)
       });
       return true
     },
