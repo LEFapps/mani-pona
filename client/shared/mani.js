@@ -61,6 +61,10 @@ class Mani {
     return this.m.value < 0
   }
 
+  zero () {
+    return this.m.value === 0
+  }
+
   format () {
     return this.m.format()
   }
