@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useContext } from 'react'
 import { View, Text, StyleSheet, ScrollView } from 'react-native'
-import Auth from '@aws-amplify/auth'
 import CustomButton from '../shared/buttons/button'
 import { globalStyles } from '../styles/global.js'
 import Alert from '../shared/alert'
 import Card from '../shared/card'
 import { colors } from '../helpers/helper'
+import mani from '../../shared/mani'
 import { UserContext } from '../authenticator'
 const { DarkerBlue, CurrencyColor } = colors
 
@@ -26,10 +26,9 @@ export default function AccountBalance ({ navigation }) {
     await maniClient
       .find(maniClient.id)
       .then(async found => {
-        // console.log('Ledger registered:', !!found)
         if (!found) {
           // autoRegister
-          const { email, alias } = user
+          const { email, 'custom:alias': alias } = user.attributes
           await maniClient.register(alias || email)
           loadData()
         } else {
@@ -44,7 +43,8 @@ export default function AccountBalance ({ navigation }) {
             .accountTypes()
             .then(types => {
               const { demurrage, income, buffer } = types.find(
-                ({ type }) => type === (user.type || 'default')
+                ({ type }) =>
+                  type === (user.attributes['custom:type'] || 'default')
               )
               setParams({ demurrage, income, buffer })
             })
@@ -81,18 +81,24 @@ export default function AccountBalance ({ navigation }) {
             </Text>
           </Card>
         )}
-        <Card>
-          <Text style={globalStyles.property}>Inkomen</Text>
-          <Text style={globalStyles.price}>{income}</Text>
-        </Card>
-        <Card>
-          <Text style={globalStyles.property}>Vrije buffer</Text>
-          <Text style={globalStyles.price}>{buffer}</Text>
-        </Card>
-        <Card>
-          <Text style={globalStyles.property}>Demurrage</Text>
-          <Text style={globalStyles.price}>{demurrage} %</Text>
-        </Card>
+        {!mani(income).zero() && (
+          <Card>
+            <Text style={globalStyles.property}>Inkomen</Text>
+            <Text style={globalStyles.price}>{income}</Text>
+          </Card>
+        )}
+        {!mani(buffer).zero() && (
+          <Card>
+            <Text style={globalStyles.property}>Vrije buffer</Text>
+            <Text style={globalStyles.price}>{buffer}</Text>
+          </Card>
+        )}
+        {!!demurrage && (
+          <Card>
+            <Text style={globalStyles.property}>Demurrage</Text>
+            <Text style={globalStyles.price}>{demurrage} %</Text>
+          </Card>
+        )}
 
         <View style={styles.part}>
           <CustomButton

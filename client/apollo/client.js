@@ -31,11 +31,11 @@ const enchancedFetch = async (url, init) => {
 
 const apolloClient = new ApolloClient({
   link: createHttpLink({
-    uri: ServiceEndpoint + '/graphql',
+    uri: ServiceEndpoint,
     fetch: enchancedFetch
   }),
   // link: createHttpLink({
-  //   uri: ServiceEndpoint + '/graphql',
+  //   uri: ServiceEndpoint,
   //   credentials: 'include',
   //   fetchOptions: {
   //     mode: 'cors'

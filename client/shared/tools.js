@@ -1,4 +1,4 @@
-import { isString, isArray, mapValues, map } from 'lodash'
+import { isString, isArray, isDate, mapValues, map, get } from 'lodash'
 import assert from 'assert'
 import sha1 from 'sha1'
 import { Mani } from './mani'
@@ -124,7 +124,10 @@ function fromDb (entry) {
       return new Date(value)
     }
     if (
-      (key === 'amount' || key === 'balance' || key === 'income') &&
+      (key === 'amount' ||
+        key === 'balance' ||
+        key === 'income' ||
+        key === 'buffer') &&
       isString(value)
     ) {
       return new Mani(value)
@@ -152,6 +155,17 @@ function next ({ ledger, sequence, next }) {
 function challenge ({ date, source, target, amount }) {
   return payload({ date, from: next(source), to: next(target), amount })
 }
+const sortBy = (property, direction = 'ASC') => {
+  return (a, b) => {
+    let aa = get(a, property, 0)
+    let bb = get(b, property, 0)
+    if (isDate(aa)) aa = aa.valueOf()
+    if (isDate(bb)) bb = bb.valueOf()
+    if (direction === 'ASC') return aa - bb
+    return bb - aa
+  }
+}
+
 /* DEPRECATED
 function nextEntry (from, to, date, amount) {
   const entry = {
@@ -202,6 +216,7 @@ export {
   challenge,
   toEntry,
   sortKey,
+  sortBy,
   flip
 }
 
@@ -220,6 +235,7 @@ const tools = {
   challenge,
   toEntry,
   sortKey,
+  sortBy,
   flip
 }
 

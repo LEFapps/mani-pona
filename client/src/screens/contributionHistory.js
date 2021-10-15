@@ -3,6 +3,7 @@ import { View, Text, FlatList } from 'react-native'
 
 import Card from '../shared/card'
 import Alert from '../shared/alert'
+import { sortBy } from '../../shared/tools'
 import { globalStyles } from '../styles/global'
 
 export default function Home () {
@@ -17,8 +18,12 @@ export default function Home () {
   async function loadData () {
     maniClient.transactions
       .recent()
-      .then(demurageHistory => {
-        setContributions(demurageHistory)
+      .then((transactions = []) => {
+        setContributions(
+          transactions
+            .sort(sortBy('date', 'DESC'))
+            .filter(({ destination }) => destination === 'system')
+        )
         setReady(true)
       })
       .catch(e => {

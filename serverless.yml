@@ -12,7 +12,7 @@ provider:
   logs:
     restApi: ${env:LOG_REST_API, self:custom.debug} # Adds a log stream (we could turn this off).
   httpApi:
-    cors: true
+    cors: false
     authorizers:
       cognitoAuthorizer:
         type: jwt
@@ -20,12 +20,16 @@ provider:
         audience:
           - Ref: CognitoUserPoolClient
         issuerUrl:
-          Fn::Sub: https://cognito-idp.${AWS::Region}.amazonaws.com/${CognitoUserPool} 
+          Fn::Sub: https://cognito-idp.${AWS::Region}.amazonaws.com/${CognitoUserPool}
   iamRoleStatements:
     - Effect: Allow
       Action:
         - lambda:InvokeAsync
         - lambda:InvokeFunction
+      Resource: '*'
+    - Effect: Allow
+      Action:
+        - cognito-idp:*
       Resource: '*'
     - Effect: Allow
       Action:
@@ -72,7 +76,15 @@ functions:
     events:
       - httpApi:
           path: /${self:provider.stage}/graphql
-          method: '*'
+          method: 'OPTIONS'
+      - httpApi:
+          path: /${self:provider.stage}/graphql
+          method: 'GET'
+          authorizer:
+            name: cognitoAuthorizer
+      - httpApi:
+          path: /${self:provider.stage}/graphql
+          method: 'POST'
           authorizer:
             name: cognitoAuthorizer
     environment:
@@ -81,6 +93,8 @@ functions:
       NODE_DEBUG: ${env:NODE_DEBUG, 'sumsy*'}
       LOG_LEVEL: ${env:LOG_LEVEL, 'error'}
       LOG_PREFIX: sumsy
+      USER_POOL:
+        Ref: CognitoUserPool
       ACCOUNT_TYPES: ${env:ACCOUNT_TYPES, '[{"type":"default","income":0,"buffer":0,"demurrage":2.5},{"type":"verified","income":0,"buffer":5,"demurrage":2.5},{"type":"guaranteed_income","income":16,"buffer":5,"demurrage":2.5},{"type":"professional","income":0,"buffer":5,"demurrage":0.5}]'}
 
 resources:
@@ -89,4 +103,3 @@ resources:
   - ${file(resources/cognito.yml)}
   - ${file(resources/exports.yml)}
   - ${file(resources/cloudfront.yml)}
-

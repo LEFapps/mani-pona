@@ -122,12 +122,13 @@ const FIND_KEY = gql`
   }
 `
 const JUBILEE = gql`
-  mutation jubilee($ledger: String) {
+  mutation jubilee($paginationToken: String) {
     admin {
-      jubilee(ledger: $ledger) {
+      jubilee(paginationToken: $paginationToken) {
         ledgers
         demurrage
         income
+        nextToken
       }
     }
   }
@@ -156,6 +157,7 @@ const FIND_USER = gql`
         created
         lastModified
         ledger
+        type
       }
     }
   }
@@ -190,7 +192,7 @@ const ACCOUNT_TYPES = gql`
 `
 
 const CHANGE_ACCOUNT_TYPE = gql`
-  mutation changetype($username: String!,$type: String!) {
+  mutation changetype($username: String!, $type: String!) {
     admin {
       changeAccountType(username: $username, type: $type)
     }
@@ -198,11 +200,11 @@ const CHANGE_ACCOUNT_TYPE = gql`
 `
 
 const FORCE_SYSTEM_PAYMENT = gql`
-    mutation force($ledger: String!, $amount: Currency!) {
-      admin {
-        forceSystemPayment(ledger: $ledger, amount: $amount)
-      }
+  mutation force($ledger: String!, $amount: Currency!) {
+    admin {
+      forceSystemPayment(ledger: $ledger, amount: $amount)
     }
+  }
 `
 
 const INIT = gql`

@@ -1,6 +1,7 @@
 import AWS from 'aws-sdk'
 import { promisify } from 'util'
 import { getLogger } from 'server-log'
+import { mani } from '../../client/shared/mani'
 
 const log = getLogger('cognito')
 
@@ -42,7 +43,11 @@ const CognitoUserPool = UserPoolId => {
         log.error('Missing ACCOUNT_TYPES ENV variable')
         return []
       }
-      return JSON.parse(config)
+      return JSON.parse(config).map(({ income, buffer, ...type }) => ({
+        ...type,
+        buffer: mani(buffer),
+        income: mani(income)
+      }))
     },
     async disableUser (Username) {
       provider.adminDisableUser = promisify(provider.adminDisableUser)
@@ -76,24 +81,24 @@ const CognitoUserPool = UserPoolId => {
       const params = {
         UserPoolId,
         PaginationToken,
-        Limit: USER_LIST_LIMIT,
-        AttributesToGet: [
-          'sub',
-          'username',
-          'cognito:user_status',
-          'status',
-          'ledger',
-          'type'
-        ] // TODO: add extra verification/filters?
+        Limit: USER_LIST_LIMIT
+        // AttributesToGet: [
+        // 'sub',
+        // 'username',
+        // 'cognito:user_status',
+        // 'status',
+        // 'custom:ledger',
+        // 'custom:type'
+        // ] // TODO: add extra verification/filters?
       }
       const res = await provider.listUsersPromise(params)
       if (res.err) {
         throw res.err
       }
-      log.debug('Found %n users', res.data.Users.length)
+      log.debug('Found %n users', res.Users.length)
       return {
-        users: res.data.Users.map(convertUser),
-        paginationToken: res.data.PaginationToken
+        users: res.Users.map(convertUser),
+        paginationToken: res.PaginationToken
       }
     },
     async findUser (Username) {

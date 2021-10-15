@@ -36,9 +36,9 @@ export default () => {
         }}
         hideDefault
         authState={isNew ? 'signUp' : 'signIn'}
-        onStateChange={authState => {
+        onStateChange={async authState => {
           if (authState === 'signedIn')
-            Auth.currentAuthenticatedUser().then(setUser)
+            setUser(await Auth.currentAuthenticatedUser())
           if (['signIn', 'signUp'].includes(authState))
             setKeys(global.maniClient.id)
           if (authState === 'verifyContact') return 'signedIn'

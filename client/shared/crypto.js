@@ -1,4 +1,12 @@
-import { readKey, readPrivateKey, sign, verify, createMessage, readSignature, generateKey } from 'openpgp'
+import {
+  readKey,
+  readPrivateKey,
+  sign,
+  verify,
+  createMessage,
+  readSignature,
+  generateKey
+} from 'openpgp'
 
 // reliably sort an objects keys and merge everything into one String
 const sortedObjectString = obj => {
@@ -18,7 +26,10 @@ const Signer = (armoredPrivateKey, privateKey) => {
     sign: async input => {
       // assert(!_.isEmpty(input), 'Missing input')
       const text = typeof input === 'string' ? input : sortedObjectString(input)
-      privateKey = privateKey === undefined ? await readPrivateKey({ armoredKey: armoredPrivateKey }) : privateKey // lazy loaded
+      privateKey =
+        privateKey === undefined
+          ? await readPrivateKey({ armoredKey: armoredPrivateKey })
+          : privateKey // lazy loaded
       return sign({
         message: await createMessage({ text }),
         signingKeys: privateKey,
@@ -48,18 +59,25 @@ const Verifier = (armoredPublicKey, publicKey) => {
      */
     verify: async (input, armoredSignature) => {
       const text = typeof input === 'string' ? input : sortedObjectString(input)
-      publicKey = publicKey === undefined ? await readKey({ armoredKey: armoredPublicKey }) : publicKey // lazy loaded
+      publicKey =
+        publicKey === undefined
+          ? await readKey({ armoredKey: armoredPublicKey })
+          : publicKey // lazy loaded
       await verify({
         message: await createMessage({ text }),
         signature: await readSignature({ armoredSignature }),
         verificationKeys: publicKey,
-        expectSigned: true // automatically throws an error
+        expectSigned: true, // automatically throws an error
+        date: new Date(Date.now() + 1000 * 60 * 10)
       })
       return true
     },
     fingerprint: async () => {
       if (!fingerprint) {
-        publicKey = publicKey === undefined ? await readKey({ armoredKey: armoredPublicKey }) : publicKey // lazy loaded
+        publicKey =
+          publicKey === undefined
+            ? await readKey({ armoredKey: armoredPublicKey })
+            : publicKey // lazy loaded
         fingerprint = publicKey.getFingerprint()
       }
       return fingerprint
@@ -67,7 +85,7 @@ const Verifier = (armoredPublicKey, publicKey) => {
   }
 }
 
-const KeyWrapper = (key) => {
+const KeyWrapper = key => {
   return {
     publicKey: Verifier(key.publicKeyArmored),
     publicKeyArmored: key.publicKeyArmored,

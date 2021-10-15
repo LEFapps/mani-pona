@@ -6,6 +6,7 @@ import Alert from '../shared/alert'
 import Card from '../shared/card'
 import FlatButton from '../shared/buttons/historyButton'
 
+import { sortBy } from '../../shared/tools'
 import { globalStyles } from '../styles/global'
 
 export default function TransactionHitstory ({ navigation }) {
@@ -22,6 +23,7 @@ export default function TransactionHitstory ({ navigation }) {
     ManiClient.transactions
       .recent()
       .then(transactions => {
+        transactions.sort(sortBy('date', 'DESC'))
         setTransactions(transactions)
         setReady(true)
       })
