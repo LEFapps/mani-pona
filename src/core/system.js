@@ -74,31 +74,44 @@ export default function (ledgers, userpool) {
         .then(t => t.addAmount(mani(0)))
         .then(t => t.getPrimaryEntry().challenge)
     },
-    async register (registration) {
+    async register (registration, username) {
       const { publicKeyArmored, payload, alias } = registration
       const ledger = await Verifier(publicKeyArmored).fingerprint()
       const existing = await ledgers.current(ledger)
       if (existing) {
         log.info('Ledger was already registered: %s', ledger)
-        return ledger // idempotency!
+      } else {
+        const transaction = ledgers.transaction()
+        // TODO: assert amount = 0
+        await StateMachine(transaction)
+          .getPayloads(payload)
+          .getSources({ ledger, destination: 'system' })
+          .then(t => t.continuePayload())
+          .then(t => t.addSystemSignatures())
+          .then(t => t.addSignatures({ ledger, ...registration }))
+          .then(t => t.save())
+        transaction.putKey({
+          ledger,
+          publicKeyArmored,
+          alias,
+          challenge: payload
+        })
+        await transaction.execute()
+        log.info('Registered ledger %s in database', ledger)
       }
-      const transaction = ledgers.transaction()
-      // TODO: assert amount = 0
-      await StateMachine(transaction)
-        .getPayloads(payload)
-        .getSources({ ledger, destination: 'system' })
-        .then(t => t.continuePayload())
-        .then(t => t.addSystemSignatures())
-        .then(t => t.addSignatures({ ledger, ...registration }))
-        .then(t => t.save())
-      transaction.putKey({
-        ledger,
-        publicKeyArmored,
-        alias,
-        challenge: payload
-      })
-      await transaction.execute()
-      log.info('Registered ledger %s', ledger)
+      const user = await userpool.findUser(username)
+      if (!user) {
+        throw new Error(`User ${username} not found in userpool.`)
+      }
+      if (user.ledger) {
+        if (user.ledger === ledger) {
+          log.info('User account %s already attached to ledger %s', username, ledger)
+        } else {
+          throw new Error(`Username ${username} is already linked to ledger ${user.ledger}, unable to re-link to ${ledger}`)
+        }
+      } else {
+        userpool.changeAttributes(username, { 'custom:ledger': ledger })
+      }
       return ledger
     },
     async forceSystemPayment (ledger, amount) {

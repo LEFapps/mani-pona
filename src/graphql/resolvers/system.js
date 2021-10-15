@@ -20,8 +20,8 @@ export default {
     }
   },
   'System': {
-    'register': async (system, { registration }) => {
-      return system.register(registration)
+    'register': async (system, { registration }, { username }) => {
+      return system.register(registration, username)
     },
     'parameters': async (system) => {
       return system.parameters()

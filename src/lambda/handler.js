@@ -27,6 +27,7 @@ function contextProcessor (event) {
     ledger: claims['custom:ledger'],
     verified: claims.email_verified,
     admin: claims['custom:administrator'],
+    username: claims.username,
     claims
   }
 }
