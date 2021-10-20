@@ -23,7 +23,7 @@ export default (ledgers, fingerprint) => {
         .then(t => t.addAmount(amount))
         .then(t => t.getPrimaryEntry().challenge)
     },
-    async create (proof) {
+    async create (proof, message = '-') {
       const existing = await ledger.pending()
       if (existing && existing.challenge === proof.payload) {
         log.info(`Transaction ${proof.payload} was already created`)
@@ -36,6 +36,7 @@ export default (ledgers, fingerprint) => {
         .getPayloadSources()
         .then(t => t.continuePayload())
         .then(t => t.addSignatures({ ledger: fingerprint, ...proof }))
+        .then(t => t.addMessage(message))
         .then(t => {
           next = t.getPrimaryEntry().next
           return t

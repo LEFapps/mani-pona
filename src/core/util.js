@@ -296,7 +296,7 @@ async function addSignatures (
 /**
  * Transition entries, adding/updating/deleting DB entries where necessarywhere necessary
  */
-function transition (table, { source, target }) {
+function transition (table, { source, target, message }) {
   if (target.entry === 'pending' && isSigned(target)) {
     target.entry = '/current'
     table.putEntry(target)
@@ -310,16 +310,17 @@ function transition (table, { source, target }) {
     }
   } else {
     // no state transition, we just save the target
+    target.message = message
     table.putEntry(target)
   }
 }
 /**
  * Save the targets, transitioning entry states where relevant.
  */
-function saveResults (table, { sources, targets }) {
+function saveResults (table, { sources, targets, message }) {
   if (sources.ledger.ledger !== 'system') {
     // only happens during system init
-    transition(table, { source: sources.ledger, target: targets.ledger })
+    transition(table, { source: sources.ledger, target: targets.ledger, message })
   } else {
     assert(
       targets.destination.challenge === targets.ledger.challenge,
@@ -328,7 +329,8 @@ function saveResults (table, { sources, targets }) {
   }
   transition(table, {
     source: sources.destination,
-    target: targets.destination
+    target: targets.destination,
+    message
   })
 }
 

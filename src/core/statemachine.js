@@ -71,6 +71,10 @@ const StateMachine = (table) => {
         context.targets = await addSignatures(table, context, signatures)
         return Continue(context)
       },
+      async addMessage (message) {
+        context.message = message
+        return Continue(context)
+      },
       async save () {
         saveResults(table, context)
       }

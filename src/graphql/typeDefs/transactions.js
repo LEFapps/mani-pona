@@ -47,7 +47,7 @@ export default gql`
     "Provide transaction challenge with supplied destination and amount"
     challenge(destination: String, amount: Currency): String
     "Create (pending) transaction"
-    create(proof: Proof!): String
+    create(proof: Proof!, message: String): String
     "Confirm pending transaction"
     confirm(proof: Proof!): String
     "Cancel the currently pending transaction, matching this challenge."
