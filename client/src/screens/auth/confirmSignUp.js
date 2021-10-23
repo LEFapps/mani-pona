@@ -14,9 +14,12 @@ import { GotoSignUp, GotoSignIn } from './StateManagers.js'
 import i18n from 'i18n-js'
 import Dialog from 'react-native-dialog'
 import { AppIntegrations } from 'aws-sdk'
+import AccountsList from './_accounts.js'
+import { keyWarehouse } from '../../maniClient.js'
+import { hash } from '../../../shared/crypto.js'
+import { KeyManager } from '../../helpers/keymanager.js'
 
 export default function confirmSignUp (props = {}) {
-  const { maniClient } = global
   const { authData } = props
   const { username } = authData || {}
   const [state, setState] = useState({
@@ -38,6 +41,15 @@ export default function confirmSignUp (props = {}) {
     setState({ ...state, email: username || '' })
   }, [username])
 
+  const selectAccount = (username, key) => {
+    if (key) props.onStateChange('signIn', { username, key })
+    else {
+      if (username === 'new') props.onStateChange('signUp')
+      if (username === 'import') props.onStateChange('signIn', { prompt: true })
+      if (username === 'verify') props.onStateChange('confirmSignUp')
+    }
+  }
+
   async function onSubmit () {
     const emailError = validateEmail(state.email)
     const verificationCodeError = validateVerificationCode(
@@ -47,13 +59,19 @@ export default function confirmSignUp (props = {}) {
     if (emailError || verificationCodeError) {
       setErrors({ email: emailError, verificationCode: verificationCodeError })
     } else {
-      setState({
-        email: '',
-        verificationCode: ''
-      })
       try {
         await Auth.confirmSignUp(state.email, state.verificationCode)
-        props.onStateChange('signIn', { username: state.email })
+
+        const storageKey = 'mani_client_key_' + hash()
+        const keyManager = await KeyManager(
+          keyWarehouse.getKeyStore(storageKey)
+        )
+        const keyValue = keyManager.setKeys(false, state.email)
+        props.onStateChange('signIn', {
+          username: state.email,
+          storageKey,
+          keyValue
+        })
       } catch (error) {
         console.error('confirmSignup', error)
         Alert.alert(i18n.t(error.code))
@@ -101,8 +119,7 @@ export default function confirmSignUp (props = {}) {
 
             <Button text='Verifiëren' onPress={() => onSubmit()} />
 
-            <GotoSignIn {...props} />
-            <GotoSignUp {...props} />
+            <AccountsList onSelect={selectAccount} />
 
             <Dialog.Container visible={requirePass}>
               <Dialog.Title>Nieuw wachtwoord vereist</Dialog.Title>

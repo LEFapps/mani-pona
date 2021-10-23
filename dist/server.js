@@ -8,6 +8,7 @@ var assert = require('assert');
 var sha1 = require('sha1');
 var _ = require('lodash');
 var openpgp = require('openpgp');
+require('lodash/random');
 var currency$1 = require('currency.js');
 var serverLog = require('server-log');
 var merge = require('@graphql-tools/merge');
@@ -197,6 +198,10 @@ class Mani {
     return this.m.value < 0
   }
 
+  zero () {
+    return this.m.value === 0
+  }
+
   format () {
     return this.m.format()
   }
@@ -369,6 +374,16 @@ function next ({ ledger, sequence, next }) {
 function challenge ({ date, source, target, amount }) {
   return payload({ date, from: next(source), to: next(target), amount })
 }
+const sortBy = (property, direction = 'ASC') => {
+  return (a, b) => {
+    let aa = _.get(a, property, 0);
+    let bb = _.get(b, property, 0);
+    if (_.isDate(aa)) aa = aa.valueOf();
+    if (_.isDate(bb)) bb = bb.valueOf();
+    if (direction === 'ASC') return aa - bb
+    return bb - aa
+  }
+};
 
 const tools = {
   pad,
@@ -385,6 +400,7 @@ const tools = {
   challenge,
   toEntry,
   sortKey,
+  sortBy,
   flip
 };
 
@@ -853,31 +869,51 @@ function System (ledgers, userpool) {
         .then(t => t.addAmount(mani$1(0)))
         .then(t => t.getPrimaryEntry().challenge)
     },
-    async register (registration) {
+    async register (registration, username) {
+      log$8.debug('REGISTERING %s', username);
       const { publicKeyArmored, payload, alias } = registration;
       const ledger = await Verifier(publicKeyArmored).fingerprint();
       const existing = await ledgers.current(ledger);
       if (existing) {
         log$8.info('Ledger was already registered: %s', ledger);
-        return ledger // idempotency!
+      } else {
+        const transaction = ledgers.transaction();
+        // TODO: assert amount = 0
+        await StateMachine(transaction)
+          .getPayloads(payload)
+          .getSources({ ledger, destination: 'system' })
+          .then(t => t.continuePayload())
+          .then(t => t.addSystemSignatures())
+          .then(t => t.addSignatures({ ledger, ...registration }))
+          .then(t => t.save());
+        transaction.putKey({
+          ledger,
+          publicKeyArmored,
+          alias,
+          challenge: payload
+        });
+        await transaction.execute();
+        log$8.info('Registered ledger %s in database', ledger);
       }
-      const transaction = ledgers.transaction();
-      // TODO: assert amount = 0
-      await StateMachine(transaction)
-        .getPayloads(payload)
-        .getSources({ ledger, destination: 'system' })
-        .then(t => t.continuePayload())
-        .then(t => t.addSystemSignatures())
-        .then(t => t.addSignatures({ ledger, ...registration }))
-        .then(t => t.save());
-      transaction.putKey({
-        ledger,
-        publicKeyArmored,
-        alias,
-        challenge: payload
-      });
-      await transaction.execute();
-      log$8.info('Registered ledger %s', ledger);
+      const user = await userpool.findUser(username);
+      if (!user) {
+        throw new Error(`User ${username} not found in userpool.`)
+      }
+      if (user.ledger) {
+        if (user.ledger === ledger) {
+          log$8.info(
+            'User account %s already attached to ledger %s',
+            username,
+            ledger
+          );
+        } else {
+          throw new Error(
+            `Username ${username} is already linked to ledger ${user.ledger}, unable to re-link to ${ledger}`
+          )
+        }
+      } else {
+        userpool.changeAttributes(username, { 'custom:ledger': ledger });
+      }
       return ledger
     },
     async forceSystemPayment (ledger, amount) {
@@ -1525,8 +1561,8 @@ var system = {
     }
   },
   'System': {
-    'register': async (system, { registration }) => {
-      return system.register(registration)
+    'register': async (system, { registration }, { username }) => {
+      return system.register(registration, username)
     },
     'parameters': async (system) => {
       return system.parameters()
@@ -1794,6 +1830,7 @@ function contextProcessor (event) {
     ledger: claims['custom:ledger'],
     verified: claims.email_verified,
     admin: claims['custom:administrator'],
+    username: claims.username,
     claims
   }
 }

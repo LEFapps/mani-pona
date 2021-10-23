@@ -23,6 +23,7 @@ import StandingOrderStack from '../routes/stacks/standingOrderStack'
 // import ContactListStack from '../routes/stacks/contactListStack'
 import { globalStyles } from '../styles/global'
 import { colors } from '../helpers/helper'
+import { log } from 'react-native-reanimated'
 
 const iconProps = { size: 24 }
 
@@ -187,42 +188,22 @@ export default function drawerNavigator (props) {
   const { maniClient } = global
   const user = useContext(UserContext)
   const [hasPending, setPending] = useState(null)
-  const [isPolling, setPolling] = useState(null)
   const Nav = createMaterialBottomTabNavigator()
 
   useEffect(() => {
-    if (props.authState === 'signedIn') pollPending && pollPending()
-  })
+    hasPending === null && getPending()
+  }, [hasPending])
 
-  if (props.authState !== 'signedIn' || !user) return <View />
-
-  const pollPending = async () => {
-    if (!isPolling) {
-      setPolling(true)
-      getPending()
-    }
-  }
-
-  const getPending = async () => {
-    // get attributes from Cognito claims
-    const { 'custom:ledger': ledger } = user.attributes
-    // autoLogout if not signed in correctly,
-    // else check for pending transactions
-    if (maniClient.id !== ledger) {
-      Alert.alert(
-        'De sleutels op dit toestel komen niet overeen met het account waarmee je je aangemeld hebt. Je bent terug afgemeld.'
-      )
-      await Auth.signOut({ global: true })
-    } else {
-      await maniClient.transactions
-        .pending()
-        .then(setPending)
-        .catch(e => {
-          console.error('main/pending', e)
-          e && Alert.alert(e.message)
-          setPending(undefined)
-        })
-    }
+  const getPending = () => {
+    // check for pending transactions
+    maniClient.transactions
+      .pending()
+      .then(setPending)
+      .catch(e => {
+        console.error('main/pending', e)
+        e && Alert.alert(e.message)
+        setPending(undefined)
+      })
   }
 
   const availableScreens = Object.keys(navScreens)
@@ -240,7 +221,7 @@ export default function drawerNavigator (props) {
       {hasPending === null ? (
         <View style={globalStyles.main}>
           <Text style={globalStyles.bigText}>
-            {!!isPolling && 'Even geduld, we halen je rekening op...'}
+            {'Even geduld, we halen je rekening op...'}
           </Text>
         </View>
       ) : (

@@ -14,6 +14,7 @@ import Alert from '../../shared/alert'
 import { GotoConfirmSignUp, GotoSignIn } from './StateManagers.js'
 import i18n from 'i18n-js'
 import { resetClient } from '../../../App.js'
+import AccountsList from './_accounts.js'
 
 export default function signUp (props) {
   const defaultState = {
@@ -26,6 +27,15 @@ export default function signUp (props) {
 
   const [state, setState] = useState(defaultState)
   const [errors, setErrors] = useState(defaultState)
+
+  const selectAccount = (username, key) => {
+    if (key) props.onStateChange('signIn', { username, key })
+    else {
+      if (username === 'new') props.onStateChange('signUp')
+      if (username === 'import') props.onStateChange('signIn', { prompt: true })
+      if (username === 'verify') props.onStateChange('confirmSignUp')
+    }
+  }
 
   async function onSubmit () {
     const emailError = validateEmail(state.email)
@@ -45,7 +55,6 @@ export default function signUp (props) {
           attributes: {
             'custom:requestedType': state.requestedType,
             'custom:alias': state.alias,
-            'custom:ledger': global.maniClient.id,
             email: state.email
           }
         })
@@ -144,10 +153,8 @@ export default function signUp (props) {
             <FlatButton options={accountTypes} />
 
             <Button text='Registreren' onPress={() => onSubmit()} />
-
-            <GotoSignIn {...props} />
-            <GotoConfirmSignUp {...props} />
           </View>
+          <AccountsList onSelect={selectAccount} />
         </View>
       </ScrollView>
     )

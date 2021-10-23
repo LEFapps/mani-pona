@@ -75,6 +75,7 @@ export default function (ledgers, userpool) {
         .then(t => t.getPrimaryEntry().challenge)
     },
     async register (registration, username) {
+      log.debug('REGISTERING %s', username)
       const { publicKeyArmored, payload, alias } = registration
       const ledger = await Verifier(publicKeyArmored).fingerprint()
       const existing = await ledgers.current(ledger)
@@ -105,9 +106,15 @@ export default function (ledgers, userpool) {
       }
       if (user.ledger) {
         if (user.ledger === ledger) {
-          log.info('User account %s already attached to ledger %s', username, ledger)
+          log.info(
+            'User account %s already attached to ledger %s',
+            username,
+            ledger
+          )
         } else {
-          throw new Error(`Username ${username} is already linked to ledger ${user.ledger}, unable to re-link to ${ledger}`)
+          throw new Error(
+            `Username ${username} is already linked to ledger ${user.ledger}, unable to re-link to ${ledger}`
+          )
         }
       } else {
         userpool.changeAttributes(username, { 'custom:ledger': ledger })

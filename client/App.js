@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from 'react'
 import { Text, TextInput, View, Dimensions, LogBox } from 'react-native'
+import { Authenticator } from 'aws-amplify-react-native'
 import { Amplify, Analytics } from 'aws-amplify'
 import log from 'loglevel'
 
 import SignIn from './src/screens/auth/signIn'
 import SignUp from './src/screens/auth/signUp'
 import ConfirmSignUp from './src/screens/auth/confirmSignUp'
+import VerifyContact from './src/screens/auth/verifyContact'
 import Navigation from './src/routes/main'
 import Splash from './src/screens/splash'
 import maniClient from './src/maniClient'
-import Authenticator from './src/authenticator'
+import Loreco from './src/authenticator'
 import graphqlClient from './apollo/client'
+import { globalStyles } from './src/styles/global'
 
 import config from './aws-config'
 
@@ -23,35 +26,30 @@ Analytics.configure({ disabled: true })
 
 log.enableAll()
 
-export const resetClient = async () => {
-  const mc = await maniClient({ graphqlClient })
+export const resetClient = async (options = {}) => {
+  const mc = await maniClient({ graphqlClient, ...options })
   global.maniClient = mc
   console.log('client/reset', mc.id)
   return mc
 }
 
-export default function App () {
-  // fail: 'unknown_id'||'timeout'
+const App = () => {
+  const [state, setState] = useState()
 
-  // LogBox.ignoreAllLogs();
+  const Container = ({ children }) => (
+    <View style={globalStyles.container}>{children}</View>
+  )
 
-  i18n.locale = 'nl-BE' // Localization.locale;
-  Text.defaultProps = Text.defaultProps || {}
-  Text.defaultProps.allowFontScaling = false
-  TextInput.defaultProps = Text.defaultProps || {}
-  TextInput.defaultProps.allowFontScaling = false
 
-  const [isSplashFinished, setIsSplashFinished] = useState(false)
-
-  useEffect(() => {
-    setupClient()
-  }, [])
-
-  const setupClient = async () => {
-    log.debug('Starting ManiClient')
-    await resetClient()
-    setIsSplashFinished(!!global.maniClient)
-  }
-
-  return isSplashFinished ? <Authenticator /> : <Splash />
+  return (
+    <Authenticator container={Container} hideDefault onStateChange={setState}>
+      <SignIn override={'SignIn'} />
+      <SignUp override={'SignUp'} />
+      <ConfirmSignUp override={'confirmSignUp'} />
+      <VerifyContact override={'verifyContact'} />
+      <Loreco />
+    </Authenticator>
+  )
 }
+
+export default App
