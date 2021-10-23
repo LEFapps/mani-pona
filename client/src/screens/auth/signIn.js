@@ -169,23 +169,25 @@ export default function SignIn (props = {}) {
             )
           } else if (Platform.OS === 'android') {
             showResetPass()
-          } else {
-            const { 'custom:ledger': ledgerId, email } = user.attributes
-            if (!ledgerId)
-              props.onStateChange('verifyContact', {
-                storageKey,
-                keyValue,
-                username: email,
-                email,
-                ...user
-              })
-
+          }
+        } else {
+          const { 'custom:ledger': ledgerId, email } = user.attributes
+          if (!ledgerId)
+            props.onStateChange('verifyContact', {
+              storageKey,
+              keyValue,
+              username: email,
+              email,
+              ...user
+            })
+          else {
             // init maniClient with ledger's keys
-            await (
-              await KeyManager(keyWarehouse.getKeyStore(storageKey))
-            ).setKeys(keyValue, email)
+            const keyManager = await KeyManager(
+              keyWarehouse.getKeyStore(storageKey)
+            )
+            const keyValue = keyManager.setKeys(keyValue, email)
             await resetClient({ storageKey })
-            props.onStateChange('signedIn', { keyValue })
+            props.onStateChange('signedIn')
           }
         }
       } catch (error) {
