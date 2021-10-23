@@ -41,6 +41,22 @@ export default function verifyContact ({ authState, authData, onStateChange }) {
     const { maniClient } = global
     await maniClient.register(alias)
 
+    // TODO: reset user context after registering
+    // the following lines are untested, and probably not necessary
+    // the ledger is already set in the maniClient and the user
+    // react context is not currently being updated for now
+    /*try {
+      const cognitoUser = await Auth.currentAuthenticatedUser();
+      const currentSession = await Auth.currentSession();
+      cognitoUser.refreshSession(currentSession.refreshToken, (err, session) => {
+        console.log('session', err, session);
+        const { idToken, refreshToken, accessToken } = session;
+        // do whatever you want to do now :)
+      });
+    } catch (e) {
+      console.log('Unable to refresh Token', e);
+    }*/
+
     onStateChange('signedIn')
   }
 
