@@ -1546,12 +1546,12 @@ const log$4 = serverLog.getLogger('graphql:system');
 
 var system = {
   Query: {
-    'system': (_, args, { core }) => {
+    system: (_, args, { core }) => {
       return core.system()
     }
   },
-  'Mutation': {
-    'admin': (_, args, { core, admin, ledger, claims }) => {
+  Mutation: {
+    admin: (_, args, { core, admin, ledger, claims }) => {
       if (!admin) {
         log$4.error(`Illegal system access attempt by ${ledger}`);
         throw new apolloServer.ForbiddenError('Access denied')
@@ -1560,49 +1560,55 @@ var system = {
       return core.system()
     }
   },
-  'System': {
-    'register': async (system, { registration }, { username }) => {
+  System: {
+    register: async (system, { registration }, { username }) => {
+      // TODO: [LORECO-95] username = undefined
       return system.register(registration, username)
     },
-    'parameters': async (system) => {
+    parameters: async system => {
       return system.parameters()
     },
-    'challenge': async (system) => {
+    challenge: async system => {
       return system.challenge()
     },
-    'findkey': async (system, { id }) => {
+    findkey: async (system, { id }) => {
       return system.findkey(id)
     },
-    'finduser': async (system, { username }) => {
+    finduser: async (system, { username }) => {
       return system.findUser(username)
     },
-    'accountTypes': async (system) => {
+    accountTypes: async system => {
       return system.getAccountTypes()
     }
   },
-  'Admin': {
-    'init': async (system) => {
+  Admin: {
+    init: async system => {
       return system.init()
     },
-    'jubilee': async (system, { paginationToken }) => {
+    jubilee: async (system, { paginationToken }) => {
       return system.jubilee(paginationToken)
     },
-    'changeAccountType': async (system, { username, type }) => {
+    changeAccountType: async (system, { username, type }) => {
       const result = await system.changeAccountType(username, type);
-      log$4.debug('Changed account %s to type %s, result %j', username, type, result);
+      log$4.debug(
+        'Changed account %s to type %s, result %j',
+        username,
+        type,
+        result
+      );
       return `Changed account type of ${username} to ${type}`
     },
-    'disableAccount': async (system, { username }) => {
+    disableAccount: async (system, { username }) => {
       const result = await system.disableAccount(username);
       log$4.debug('Disabled account %s, result %j', username, result);
       return `Disabled account ${username}`
     },
-    'enableAccount': async (system, { username }) => {
+    enableAccount: async (system, { username }) => {
       const result = await system.enableAccount(username);
       log$4.debug('Enabled account %s, result %j', username, result);
       return `Enabled account ${username}`
     },
-    'forceSystemPayment': async (system, { ledger, amount }) => {
+    forceSystemPayment: async (system, { ledger, amount }) => {
       const result = await system.forceSystemPayment(ledger, amount);
       return `Forced system payment of ${amount} on ledger ${ledger}, result: ${result}`
     }
@@ -1815,8 +1821,10 @@ const log = serverLog.getLogger('lambda:handler');
 
 const debug = process.env.DEBUG === 'true';
 const offline = process.env.IS_OFFLINE === 'true';
-const userpool = process.env.USER_POOL;
+const userpool = process.env.USER_POOL_ID || process.env.USER_POOL;
 const systemInit = process.env.AUTO_SYSTEM_INIT === 'true';
+
+log.debug('USERPOOL %j', process.env.USER_POOL_ID);
 
 function contextProcessor (event) {
   const { headers } = event;
@@ -1830,7 +1838,7 @@ function contextProcessor (event) {
     ledger: claims['custom:ledger'],
     verified: claims.email_verified,
     admin: claims['custom:administrator'],
-    username: claims.username,
+    username: claims.sub,
     claims
   }
 }

@@ -23,7 +23,7 @@ Resources:
           Mutable: true
         - Name: ledger
           AttributeDataType: String
-          Mutable: false
+          Mutable: true
         - Name: administrator
           AttributeDataType: String
           Mutable: true

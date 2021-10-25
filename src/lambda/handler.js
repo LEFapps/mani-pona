@@ -13,7 +13,7 @@ const log = getLogger('lambda:handler')
 
 const debug = process.env.DEBUG === 'true'
 const offline = process.env.IS_OFFLINE === 'true'
-const userpool = process.env.USER_POOL
+const userpool = process.env.USER_POOL_ID || process.env.USER_POOL
 const systemInit = process.env.AUTO_SYSTEM_INIT === 'true'
 
 function contextProcessor (event) {
@@ -28,7 +28,7 @@ function contextProcessor (event) {
     ledger: claims['custom:ledger'],
     verified: claims.email_verified,
     admin: claims['custom:administrator'],
-    username: claims.username,
+    username: claims.sub,
     claims
   }
 }
