@@ -170,6 +170,12 @@ export default function SignIn (props = {}) {
           }
         } else {
           const { 'custom:ledger': ledgerId, email } = user.attributes
+          if (keyValue) {
+            const keyManager = await KeyManager(
+              keyWarehouse.getKeyStore(storageKey)
+            )
+            keyManager.setKeys(keyValue, email)
+          }
           if (!ledgerId)
             props.onStateChange('verifyContact', {
               storageKey,
@@ -180,10 +186,6 @@ export default function SignIn (props = {}) {
             })
           else {
             // init maniClient with ledger's keys
-            const keyManager = await KeyManager(
-              keyWarehouse.getKeyStore(storageKey)
-            )
-            const keyValue = keyManager.setKeys(keyValue, email)
             await resetClient({ storageKey })
             props.onStateChange('signedIn')
           }

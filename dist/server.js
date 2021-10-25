@@ -1824,8 +1824,6 @@ const offline = process.env.IS_OFFLINE === 'true';
 const userpool = process.env.USER_POOL_ID || process.env.USER_POOL;
 const systemInit = process.env.AUTO_SYSTEM_INIT === 'true';
 
-log.debug('USERPOOL %j', process.env.USER_POOL_ID);
-
 function contextProcessor (event) {
   const { headers } = event;
   log.debug('Context Event: %j', event);
