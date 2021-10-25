@@ -1,15 +1,7 @@
 import React, { useEffect, useState } from 'react'
-import { View } from 'react-native'
-import { Authenticator, VerifyContact } from 'aws-amplify-react-native'
-import { Auth } from 'aws-amplify'
 
-import SignIn from '../src/screens/auth/signIn'
-import SignUp from '../src/screens/auth/signUp'
-import ConfirmSignUp from '../src/screens/auth/confirmSignUp'
-import KeyPrompt from '../src/screens/auth/keyPrompt'
 import Navigation from '../src/routes/main'
 import { resetClient } from '../App'
-import { KeyManager } from './helpers/keymanager'
 import { keyWarehouse } from './maniClient'
 
 export const UserContext = React.createContext(false)
@@ -30,7 +22,7 @@ export default ({ authState, authData: user, onStateChange, keyValue }) => {
       {}
     ).key
     if (!ledgerId)
-      onStateChange('verifyContact', { storageKey, keyValue, email })
+      onStateChange('verifyContact', { storageKey, keyValue, email, ...user })
 
     await resetClient({ storageKey })
     setReady(true)

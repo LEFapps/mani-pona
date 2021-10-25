@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react'
-import { Text, TextInput, View, Dimensions, LogBox } from 'react-native'
+import React, { useState } from 'react'
+import { View } from 'react-native'
 import { Authenticator } from 'aws-amplify-react-native'
 import { Amplify, Analytics } from 'aws-amplify'
 import log from 'loglevel'
@@ -8,8 +8,6 @@ import SignIn from './src/screens/auth/signIn'
 import SignUp from './src/screens/auth/signUp'
 import ConfirmSignUp from './src/screens/auth/confirmSignUp'
 import VerifyContact from './src/screens/auth/verifyContact'
-import Navigation from './src/routes/main'
-import Splash from './src/screens/splash'
 import maniClient from './src/maniClient'
 import Loreco from './src/authenticator'
 import graphqlClient from './apollo/client'
@@ -36,10 +34,11 @@ export const resetClient = async (options = {}) => {
 const App = () => {
   const [state, setState] = useState()
 
+  console.log('AUTH state:', state)
+
   const Container = ({ children }) => (
     <View style={globalStyles.container}>{children}</View>
   )
-
 
   return (
     <Authenticator container={Container} hideDefault onStateChange={setState}>

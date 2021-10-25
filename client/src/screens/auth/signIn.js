@@ -9,14 +9,12 @@ import {
   validatePasswordLogIn
 } from '../../helpers/validation'
 import Alert from '../../shared/alert'
-import { GotoSignUp, GotoConfirmSignUp } from './StateManagers.js'
 import i18n from 'i18n-js'
 import Dialog from 'react-native-dialog'
 import { resetClient } from '../../../App.js'
-import AccountsList, { accountStore } from './_accounts.js'
+import AccountsList from './_accounts.js'
 import { ImportModal } from './keyPrompt.js'
 import { KeyManager } from '../../helpers/keymanager.js'
-import random from 'lodash/random'
 import { keyWarehouse } from '../../maniClient.js'
 import { hash } from '../../../shared/crypto.js'
 

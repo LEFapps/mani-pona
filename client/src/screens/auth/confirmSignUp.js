@@ -10,10 +10,8 @@ import {
   validateVerificationCode
 } from '../../helpers/validation'
 import Alert from '../../shared/alert'
-import { GotoSignUp, GotoSignIn } from './StateManagers.js'
 import i18n from 'i18n-js'
 import Dialog from 'react-native-dialog'
-import { AppIntegrations } from 'aws-sdk'
 import AccountsList from './_accounts.js'
 import { keyWarehouse } from '../../maniClient.js'
 import { hash } from '../../../shared/crypto.js'
