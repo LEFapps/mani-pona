@@ -16,7 +16,13 @@
     "deploy:dev": "npm run deploy -- -s dev",
     "deploy:test": "npm run deploy -- -s test"
   },
-  "keywords": ["sumsy", "mani", "currency", "client", "payments"],
+  "keywords": [
+    "sumsy",
+    "mani",
+    "currency",
+    "client",
+    "payments"
+  ],
   "author": "Thomas Goorden <tg@eenwereldmetlef.be>",
   "license": "ISC",
   "devDependencies": {

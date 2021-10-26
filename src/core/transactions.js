@@ -1,5 +1,6 @@
 import StateMachine from './statemachine'
 import Ledger from '../dynamodb/ledger'
+import { toCSV } from 'util'
 // import { mani as Ledgers } from './ledgers'
 
 import { getLogger } from 'server-log'
@@ -86,6 +87,11 @@ export default (ledgers, fingerprint) => {
       } else {
         return 'No matching pending transaction found, it may have already been cancelled or confirmed.'
       }
+    },
+    async export () {
+      const atts = ledgers.shortAttributes()
+      const items = await ledger.export()
+      return toCSV(atts, items)
     }
   }
 }

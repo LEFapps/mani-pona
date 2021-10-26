@@ -1,7 +1,7 @@
 import { getLogger } from 'server-log'
 import tools from '../../client/shared/tools'
 const log = getLogger('dynamodb:table')
-const methods = ['get', 'put', 'query', 'update']
+const methods = ['get', 'put', 'query', 'update', 'queryAll', 'scanAll']
 
 /**
  * This helps significantly reduce the amount of DynamoDB code duplication. Essentially, it reuses the TableName and automatically constructs typical DynamoDB commands from input parameters and regular methods.

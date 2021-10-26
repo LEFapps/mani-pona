@@ -91,6 +91,8 @@ const SystemSchema = gql`
     enableAccount(username: String): String
     "Force a system payment"
     forceSystemPayment(ledger: String!, amount: Currency!): String
+    "Export ledgers, outputs a CSV formatted string"
+    exportLedgers(): String
   }
 
   type Query {

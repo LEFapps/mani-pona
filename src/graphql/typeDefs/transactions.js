@@ -52,6 +52,8 @@ export default gql`
     confirm(proof: Proof!): String
     "Cancel the currently pending transaction, matching this challenge."
     cancel(challenge: String!): String!
+    "Export the transactions on this ledger"
+    export(): String
   }
 
   type Query {

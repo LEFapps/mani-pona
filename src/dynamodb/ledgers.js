@@ -2,6 +2,21 @@ import assert from 'assert'
 import { getLogger } from 'server-log'
 const log = getLogger('dynamodb:ledgers')
 
+const SHORT_ATTRIBUTES = [
+  'ledger',
+  'destination',
+  'amount',
+  'balance',
+  'date',
+  'payload',
+  'next',
+  'sequence',
+  'uid',
+  'income',
+  'demurrage',
+  'challenge',
+  'message'
+]
 /**
  * Specialized functions to strictly work with ledgers. Continues building on table.
  */
@@ -58,22 +73,31 @@ function ledgers (table, prefix = '') {
         }
       })
     },
+    shortAttributes () {
+      return SHORT_ATTRIBUTES
+    },
+    async exportLedger (fingerprint) {
+      return table.attributes(SHORT_ATTRIBUTES).queryAll({
+        KeyConditionExpression:
+          'ledger = :ledger AND begins_with(entry, :slash)',
+        ExpressionAttributeValues: {
+          ':ledger': fingerprint,
+          ':slash': '/'
+        }
+      })
+    },
+    async exportAll () {
+      return table.attributes(SHORT_ATTRIBUTES).scanAll({
+        KeyConditionExpression:
+          'begins_with(entry, :slash)',
+        ExpressionAttributeValues: {
+          ':slash': '/'
+        }
+      })
+    },
     short () {
       // to reduce the size of the results, we can limit the attributes requested (omitting the signatures, which are fairly large text fields).
-      return ledgers(table.attributes([
-        'ledger',
-        'destination',
-        'amount',
-        'balance',
-        'date',
-        'payload',
-        'next',
-        'sequence',
-        'uid',
-        'income',
-        'demurrage',
-        'challenge'
-      ]), prefix)
+      return ledgers(table.attributes(SHORT_ATTRIBUTES), prefix)
     },
     transaction () {
       return ledgers(table.transaction(), prefix)

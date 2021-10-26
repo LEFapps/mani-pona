@@ -19,6 +19,9 @@ function ledger (ledgers, fingerprint) {
     async entry (entry, required = false) {
       return ledgers.entry(fingerprint, entry, required)
     },
+    async export () {
+      return ledgers.exportLedger(fingerprint)
+    },
     short () {
       return ledger(ledgers.short(), fingerprint)
     }

@@ -14,6 +14,7 @@ import {
   CREATE,
   CONFIRM,
   CANCEL,
+  EXPORT,
   FIND_KEY,
   FIND_USER,
   DISABLE_USER,
@@ -22,6 +23,7 @@ import {
   FORCE_SYSTEM_PAYMENT,
   CHANGE_ACCOUNT_TYPE,
   JUBILEE,
+  EXPORT_LEDGERS,
   INIT,
   SYSTEM_PARAMETERS,
   TIME
@@ -168,6 +170,9 @@ const ManiClient = async ({
         id,
         challenge
       })
+    },
+    async export () {
+      return query(EXPORT, 'ledger.transactions.export', { id })
     }
   }
   const system = {
@@ -232,6 +237,9 @@ const ManiClient = async ({
         ledger,
         amount: amount.format()
       })
+    },
+    async exportLedgers () {
+      return query(EXPORT_LEDGERS, 'admin.exportLedgers')
     },
     async current (ledger) {
       const current = await query(CURRENT, 'ledger.transactions.current', {

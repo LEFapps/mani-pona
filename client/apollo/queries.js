@@ -111,6 +111,16 @@ const CANCEL = gql`
     }
   }
 `
+const EXPORT = gql`
+  query ledger($id: String!) {
+    ledger(id: $id) {
+      transactions {
+        export
+      }
+    }
+  }
+`
+
 const FIND_KEY = gql`
   query findkey($id: String!) {
     system {
@@ -207,6 +217,14 @@ const FORCE_SYSTEM_PAYMENT = gql`
   }
 `
 
+const EXPORT_LEDGERS = gql`
+  query export {
+    admin {
+      exportLedgers
+    }
+  }
+`
+
 const INIT = gql`
   mutation init {
     admin {
@@ -225,6 +243,7 @@ export {
   CREATE,
   CONFIRM,
   CANCEL,
+  EXPORT,
   FIND_KEY,
   FIND_USER,
   DISABLE_USER,
@@ -233,6 +252,7 @@ export {
   CHANGE_ACCOUNT_TYPE,
   FORCE_SYSTEM_PAYMENT,
   JUBILEE,
+  EXPORT_LEDGERS,
   INIT,
   SYSTEM_PARAMETERS,
   TIME
