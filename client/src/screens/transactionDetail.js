@@ -1,6 +1,5 @@
 import React from 'react'
-import { View, Text, ScrollView } from 'react-native'
-import mani from '../../shared/mani'
+import { Text, ScrollView } from 'react-native'
 import { globalStyles } from '../styles/global'
 import Card from '../shared/card'
 import { Contact } from '../shared/contact'
@@ -16,7 +15,7 @@ export default function TransactionHitstory ({ route }) {
       </Card>
       <Card>
         <Text style={globalStyles.property}>Mededeling:</Text>
-        <Text style={globalStyles.price}>{transaction.msg}</Text>
+        <Text style={globalStyles.price}>{transaction.message}</Text>
       </Card>
       <Card>
         <Text style={globalStyles.property}>Bedrag:</Text>

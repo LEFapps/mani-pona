@@ -384,6 +384,11 @@ const sortBy = (property, direction = 'ASC') => {
     return bb - aa
   }
 };
+function fixedEncodeURIComponent (str) {
+  return encodeURIComponent(str).replace(/[!'()*]/g, function (c) {
+    return '%' + c.charCodeAt(0).toString(16)
+  })
+}
 
 const tools = {
   pad,
@@ -401,7 +406,8 @@ const tools = {
   toEntry,
   sortKey,
   sortBy,
-  flip
+  flip,
+  fixedEncodeURIComponent
 };
 
 const log$9 = serverLog.getLogger('core:util');
@@ -685,7 +691,7 @@ async function addSignatures (
 /**
  * Transition entries, adding/updating/deleting DB entries where necessarywhere necessary
  */
-function transition (table, { source, target }) {
+function transition (table, { source, target, message }) {
   if (target.entry === 'pending' && isSigned(target)) {
     target.entry = '/current';
     table.putEntry(target);
@@ -699,16 +705,17 @@ function transition (table, { source, target }) {
     }
   } else {
     // no state transition, we just save the target
+    target.message = message;
     table.putEntry(target);
   }
 }
 /**
  * Save the targets, transitioning entry states where relevant.
  */
-function saveResults (table, { sources, targets }) {
+function saveResults (table, { sources, targets, message }) {
   if (sources.ledger.ledger !== 'system') {
     // only happens during system init
-    transition(table, { source: sources.ledger, target: targets.ledger });
+    transition(table, { source: sources.ledger, target: targets.ledger, message });
   } else {
     assert__default['default'](
       targets.destination.challenge === targets.ledger.challenge,
@@ -717,7 +724,8 @@ function saveResults (table, { sources, targets }) {
   }
   transition(table, {
     source: sources.destination,
-    target: targets.destination
+    target: targets.destination,
+    message
   });
 }
 
@@ -788,6 +796,10 @@ const StateMachine = (table) => {
       },
       async addSignatures (signatures) {
         context.targets = await addSignatures(table, context, signatures);
+        return Continue(context)
+      },
+      async addMessage (message) {
+        context.message = message;
         return Continue(context)
       },
       async save () {
@@ -1044,7 +1056,7 @@ var Transactions = (ledgers, fingerprint) => {
         .then(t => t.addAmount(amount))
         .then(t => t.getPrimaryEntry().challenge)
     },
-    async create (proof) {
+    async create (proof, message = '-') {
       const existing = await ledger$1.pending();
       if (existing && existing.challenge === proof.payload) {
         log$7.info(`Transaction ${proof.payload} was already created`);
@@ -1057,6 +1069,7 @@ var Transactions = (ledgers, fingerprint) => {
         .getPayloadSources()
         .then(t => t.continuePayload())
         .then(t => t.addSignatures({ ledger: fingerprint, ...proof }))
+        .then(t => t.addMessage(message))
         .then(t => {
           next = t.getPrimaryEntry().next;
           return t
@@ -1474,7 +1487,7 @@ var transactions$1 = apolloServerLambda.gql`
     "Provide transaction challenge with supplied destination and amount"
     challenge(destination: String, amount: Currency): String
     "Create (pending) transaction"
-    create(proof: Proof!): String
+    create(proof: Proof!, message: String): String
     "Confirm pending transaction"
     confirm(proof: Proof!): String
     "Cancel the currently pending transaction, matching this challenge."
@@ -1648,8 +1661,8 @@ var transactions = {
       const pending = await transactions.pending();
       if (pending) {
         return {
-          ...pending,
           message: 'Pending',
+          ...pending,
           toSign: _.isEmpty(pending.signature)
         }
       }
@@ -1664,8 +1677,8 @@ var transactions = {
     challenge: async (transactions, { destination, amount }) => {
       return transactions.challenge(destination, amount)
     },
-    create: async (transactions, { proof }) => {
-      return transactions.create(proof)
+    create: async (transactions, { proof, message }) => {
+      return transactions.create(proof, message)
     },
     confirm: async (transactions, { proof }) => {
       return transactions.confirm(proof)

@@ -31,17 +31,21 @@ export default function Home ({ navigation }) {
       .split('/')
     log.debug('scanned action', action)
     if (action === 'scan') {
-      const [destination, incomingAmount] = params || []
-      log.debug('Scanned', destination, incomingAmount)
+      const [destination, incomingAmount, message] = params || []
+      log.debug('Scanned', destination, incomingAmount, message)
       const amount = Number(incomingAmount) / 100
-      setData({ destination, amount: Math.abs(amount).toString() })
+      setData({
+        destination,
+        amount: Math.abs(amount).toString(),
+        message: message ? decodeURIComponent(message) : ''
+      })
       setSign(amount > 0 ? 1 : -1)
     } else setData()
   }
 
   const createChallenge = async () => {
     setError([])
-    const { destination, amount } = getData
+    const { destination, amount, message } = getData
     maniClient.transactions
       .challenge(
         destination,
@@ -49,7 +53,7 @@ export default function Home ({ navigation }) {
       )
       .then(challenge => {
         // console.log('CHALLENGE', challenge)
-        return maniClient.transactions.create(challenge)
+        return maniClient.transactions.create(challenge, message)
       })
       .then(create => {
         // console.log('CREATE', create)
@@ -90,10 +94,13 @@ export default function Home ({ navigation }) {
                 ledger={getData.destination}
               />
             </Card>
-            {/* <Card>
+            <Card>
               <Text style={globalStyles.property}>Mededeling:</Text>
-              <Text style={globalStyles.price}>{transaction.msg}</Text>
-            </Card> */}
+              <TextInput
+                value={getData.message}
+                onChangeText={message => setData({ ...getData, message })}
+              />
+            </Card>
             <Card>
               <Text style={globalStyles.property}>Transactie:</Text>
               <Text style={globalStyles.price}>

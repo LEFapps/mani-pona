@@ -33,6 +33,7 @@ const CURRENT = gql`
           demurrage
           balance
           date
+          message
         }
       }
     }
@@ -50,6 +51,7 @@ const RECENT = gql`
           demurrage
           balance
           date
+          message
         }
       }
     }
