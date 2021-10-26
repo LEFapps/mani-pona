@@ -37,6 +37,27 @@ Resources:
         - Name: requestedType
           AttributeDataType: String
           Mutable: true
+        - Name: privacy
+          AttributeDataType: Number
+          Mutable: true
+        - Name: address
+          AttributeDataType: String
+          Mutable: true
+        - Name: zip
+          AttributeDataType: String
+          Mutable: true
+        - Name: city
+          AttributeDataType: String
+          Mutable: true
+        - Name: phone
+          AttributeDataType: String
+          Mutable: true
+        - Name: birthday
+          AttributeDataType: String
+          Mutable: true
+        - Name: companyTaxNumber
+          AttributeDataType: String
+          Mutable: true
       EmailVerificationMessage: 'Gebruik volgende code om uw account te verifiëren: {####}'
       EmailVerificationSubject: Welkom bij ${env:CLIENT}
       # LambdaConfig:
