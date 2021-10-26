@@ -8,6 +8,7 @@ var assert = require('assert');
 var sha1 = require('sha1');
 var _ = require('lodash');
 var openpgp = require('openpgp');
+require('lodash/random');
 var currency$1 = require('currency.js');
 var serverLog = require('server-log');
 var merge = require('@graphql-tools/merge');
@@ -197,6 +198,10 @@ class Mani {
     return this.m.value < 0
   }
 
+  zero () {
+    return this.m.value === 0
+  }
+
   format () {
     return this.m.format()
   }
@@ -369,6 +374,21 @@ function next ({ ledger, sequence, next }) {
 function challenge ({ date, source, target, amount }) {
   return payload({ date, from: next(source), to: next(target), amount })
 }
+const sortBy = (property, direction = 'ASC') => {
+  return (a, b) => {
+    let aa = _.get(a, property, 0);
+    let bb = _.get(b, property, 0);
+    if (_.isDate(aa)) aa = aa.valueOf();
+    if (_.isDate(bb)) bb = bb.valueOf();
+    if (direction === 'ASC') return aa - bb
+    return bb - aa
+  }
+};
+function fixedEncodeURIComponent (str) {
+  return encodeURIComponent(str).replace(/[!'()*]/g, function (c) {
+    return '%' + c.charCodeAt(0).toString(16)
+  })
+}
 
 const tools = {
   pad,
@@ -385,7 +405,9 @@ const tools = {
   challenge,
   toEntry,
   sortKey,
-  flip
+  sortBy,
+  flip,
+  fixedEncodeURIComponent
 };
 
 const log$9 = serverLog.getLogger('core:util');
@@ -669,7 +691,7 @@ async function addSignatures (
 /**
  * Transition entries, adding/updating/deleting DB entries where necessarywhere necessary
  */
-function transition (table, { source, target }) {
+function transition (table, { source, target, message }) {
   if (target.entry === 'pending' && isSigned(target)) {
     target.entry = '/current';
     table.putEntry(target);
@@ -683,16 +705,17 @@ function transition (table, { source, target }) {
     }
   } else {
     // no state transition, we just save the target
+    target.message = message;
     table.putEntry(target);
   }
 }
 /**
  * Save the targets, transitioning entry states where relevant.
  */
-function saveResults (table, { sources, targets }) {
+function saveResults (table, { sources, targets, message }) {
   if (sources.ledger.ledger !== 'system') {
     // only happens during system init
-    transition(table, { source: sources.ledger, target: targets.ledger });
+    transition(table, { source: sources.ledger, target: targets.ledger, message });
   } else {
     assert__default['default'](
       targets.destination.challenge === targets.ledger.challenge,
@@ -701,7 +724,8 @@ function saveResults (table, { sources, targets }) {
   }
   transition(table, {
     source: sources.destination,
-    target: targets.destination
+    target: targets.destination,
+    message
   });
 }
 
@@ -772,6 +796,10 @@ const StateMachine = (table) => {
       },
       async addSignatures (signatures) {
         context.targets = await addSignatures(table, context, signatures);
+        return Continue(context)
+      },
+      async addMessage (message) {
+        context.message = message;
         return Continue(context)
       },
       async save () {
@@ -853,31 +881,51 @@ function System (ledgers, userpool) {
         .then(t => t.addAmount(mani$1(0)))
         .then(t => t.getPrimaryEntry().challenge)
     },
-    async register (registration) {
+    async register (registration, username) {
+      log$8.debug('REGISTERING %s', username);
       const { publicKeyArmored, payload, alias } = registration;
       const ledger = await Verifier(publicKeyArmored).fingerprint();
       const existing = await ledgers.current(ledger);
       if (existing) {
         log$8.info('Ledger was already registered: %s', ledger);
-        return ledger // idempotency!
+      } else {
+        const transaction = ledgers.transaction();
+        // TODO: assert amount = 0
+        await StateMachine(transaction)
+          .getPayloads(payload)
+          .getSources({ ledger, destination: 'system' })
+          .then(t => t.continuePayload())
+          .then(t => t.addSystemSignatures())
+          .then(t => t.addSignatures({ ledger, ...registration }))
+          .then(t => t.save());
+        transaction.putKey({
+          ledger,
+          publicKeyArmored,
+          alias,
+          challenge: payload
+        });
+        await transaction.execute();
+        log$8.info('Registered ledger %s in database', ledger);
       }
-      const transaction = ledgers.transaction();
-      // TODO: assert amount = 0
-      await StateMachine(transaction)
-        .getPayloads(payload)
-        .getSources({ ledger, destination: 'system' })
-        .then(t => t.continuePayload())
-        .then(t => t.addSystemSignatures())
-        .then(t => t.addSignatures({ ledger, ...registration }))
-        .then(t => t.save());
-      transaction.putKey({
-        ledger,
-        publicKeyArmored,
-        alias,
-        challenge: payload
-      });
-      await transaction.execute();
-      log$8.info('Registered ledger %s', ledger);
+      const user = await userpool.findUser(username);
+      if (!user) {
+        throw new Error(`User ${username} not found in userpool.`)
+      }
+      if (user.ledger) {
+        if (user.ledger === ledger) {
+          log$8.info(
+            'User account %s already attached to ledger %s',
+            username,
+            ledger
+          );
+        } else {
+          throw new Error(
+            `Username ${username} is already linked to ledger ${user.ledger}, unable to re-link to ${ledger}`
+          )
+        }
+      } else {
+        userpool.changeAttributes(username, { 'custom:ledger': ledger });
+      }
       return ledger
     },
     async forceSystemPayment (ledger, amount) {
@@ -1008,7 +1056,7 @@ var Transactions = (ledgers, fingerprint) => {
         .then(t => t.addAmount(amount))
         .then(t => t.getPrimaryEntry().challenge)
     },
-    async create (proof) {
+    async create (proof, message = '-') {
       const existing = await ledger$1.pending();
       if (existing && existing.challenge === proof.payload) {
         log$7.info(`Transaction ${proof.payload} was already created`);
@@ -1021,6 +1069,7 @@ var Transactions = (ledgers, fingerprint) => {
         .getPayloadSources()
         .then(t => t.continuePayload())
         .then(t => t.addSignatures({ ledger: fingerprint, ...proof }))
+        .then(t => t.addMessage(message))
         .then(t => {
           next = t.getPrimaryEntry().next;
           return t
@@ -1288,7 +1337,7 @@ const SystemSchema = apolloServerLambda.gql`
     "(monthly) demurrage in percentage (so 5.0 would be a 5% demurrage)"
     demurrage: NonNegativeFloat!
   }
-  
+
   type Ledger {
     "The unique id of the ledger, the fingerprint of its public key."
     ledger: String!
@@ -1306,7 +1355,7 @@ const SystemSchema = apolloServerLambda.gql`
     "Signature of the payload by the private key corresponding to this public key"
     signature: String!
     "Signature of the 'flipped' payload (the transaction opposite to the payload)"
-    counterSignature: String! 
+    counterSignature: String!
     "A publically available alias of this ledger."
     alias: String
   }
@@ -1334,7 +1383,14 @@ const SystemSchema = apolloServerLambda.gql`
     lastModified: DateTime
     ledger: String
     type: String
-    requestedType: String 
+    requestedType: String
+    privacy: String
+    address: String
+    zip: String
+    city: String
+    phone: String
+    birthday: String
+    companyTaxNumber: String
   }
 
   type AccountType {
@@ -1343,7 +1399,7 @@ const SystemSchema = apolloServerLambda.gql`
     buffer: Currency!
     demurrage: Float!
   }
-  
+
   type System {
     "The current income and demurrage settings, returns nothing when system hasn't been initialized yet"
     parameters: SystemParameters
@@ -1431,7 +1487,7 @@ var transactions$1 = apolloServerLambda.gql`
     "Provide transaction challenge with supplied destination and amount"
     challenge(destination: String, amount: Currency): String
     "Create (pending) transaction"
-    create(proof: Proof!): String
+    create(proof: Proof!, message: String): String
     "Confirm pending transaction"
     confirm(proof: Proof!): String
     "Cancel the currently pending transaction, matching this challenge."
@@ -1510,12 +1566,12 @@ const log$4 = serverLog.getLogger('graphql:system');
 
 var system = {
   Query: {
-    'system': (_, args, { core }) => {
+    system: (_, args, { core }) => {
       return core.system()
     }
   },
-  'Mutation': {
-    'admin': (_, args, { core, admin, ledger, claims }) => {
+  Mutation: {
+    admin: (_, args, { core, admin, ledger, claims }) => {
       if (!admin) {
         log$4.error(`Illegal system access attempt by ${ledger}`);
         throw new apolloServer.ForbiddenError('Access denied')
@@ -1524,49 +1580,55 @@ var system = {
       return core.system()
     }
   },
-  'System': {
-    'register': async (system, { registration }) => {
-      return system.register(registration)
+  System: {
+    register: async (system, { registration }, { username }) => {
+      // TODO: [LORECO-95] username = undefined
+      return system.register(registration, username)
     },
-    'parameters': async (system) => {
+    parameters: async system => {
       return system.parameters()
     },
-    'challenge': async (system) => {
+    challenge: async system => {
       return system.challenge()
     },
-    'findkey': async (system, { id }) => {
+    findkey: async (system, { id }) => {
       return system.findkey(id)
     },
-    'finduser': async (system, { username }) => {
+    finduser: async (system, { username }) => {
       return system.findUser(username)
     },
-    'accountTypes': async (system) => {
+    accountTypes: async system => {
       return system.getAccountTypes()
     }
   },
-  'Admin': {
-    'init': async (system) => {
+  Admin: {
+    init: async system => {
       return system.init()
     },
-    'jubilee': async (system, { paginationToken }) => {
+    jubilee: async (system, { paginationToken }) => {
       return system.jubilee(paginationToken)
     },
-    'changeAccountType': async (system, { username, type }) => {
+    changeAccountType: async (system, { username, type }) => {
       const result = await system.changeAccountType(username, type);
-      log$4.debug('Changed account %s to type %s, result %j', username, type, result);
+      log$4.debug(
+        'Changed account %s to type %s, result %j',
+        username,
+        type,
+        result
+      );
       return `Changed account type of ${username} to ${type}`
     },
-    'disableAccount': async (system, { username }) => {
+    disableAccount: async (system, { username }) => {
       const result = await system.disableAccount(username);
       log$4.debug('Disabled account %s, result %j', username, result);
       return `Disabled account ${username}`
     },
-    'enableAccount': async (system, { username }) => {
+    enableAccount: async (system, { username }) => {
       const result = await system.enableAccount(username);
       log$4.debug('Enabled account %s, result %j', username, result);
       return `Enabled account ${username}`
     },
-    'forceSystemPayment': async (system, { ledger, amount }) => {
+    forceSystemPayment: async (system, { ledger, amount }) => {
       const result = await system.forceSystemPayment(ledger, amount);
       return `Forced system payment of ${amount} on ledger ${ledger}, result: ${result}`
     }
@@ -1599,8 +1661,8 @@ var transactions = {
       const pending = await transactions.pending();
       if (pending) {
         return {
-          ...pending,
           message: 'Pending',
+          ...pending,
           toSign: _.isEmpty(pending.signature)
         }
       }
@@ -1615,8 +1677,8 @@ var transactions = {
     challenge: async (transactions, { destination, amount }) => {
       return transactions.challenge(destination, amount)
     },
-    create: async (transactions, { proof }) => {
-      return transactions.create(proof)
+    create: async (transactions, { proof, message }) => {
+      return transactions.create(proof, message)
     },
     confirm: async (transactions, { proof }) => {
       return transactions.confirm(proof)
@@ -1779,7 +1841,7 @@ const log = serverLog.getLogger('lambda:handler');
 
 const debug = process.env.DEBUG === 'true';
 const offline = process.env.IS_OFFLINE === 'true';
-const userpool = process.env.USER_POOL;
+const userpool = process.env.USER_POOL_ID || process.env.USER_POOL;
 const systemInit = process.env.AUTO_SYSTEM_INIT === 'true';
 
 function contextProcessor (event) {
@@ -1794,6 +1856,7 @@ function contextProcessor (event) {
     ledger: claims['custom:ledger'],
     verified: claims.email_verified,
     admin: claims['custom:administrator'],
+    username: claims.sub,
     claims
   }
 }

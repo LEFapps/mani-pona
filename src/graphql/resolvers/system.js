@@ -5,7 +5,7 @@ const log = getLogger('graphql:system')
 
 export default {
   Query: {
-    'system': (_, args, { core }) => {
+    system: (_, args, { core }) => {
       return core.system()
     }
   },
@@ -48,7 +48,12 @@ export default {
     },
     async changeAccountType (system, { username, type }) {
       const result = await system.changeAccountType(username, type)
-      log.debug('Changed account %s to type %s, result %j', username, type, result)
+      log.debug(
+        'Changed account %s to type %s, result %j',
+        username,
+        type,
+        result
+      )
       return `Changed account type of ${username} to ${type}`
     },
     async disableAccount (system, { username }) {

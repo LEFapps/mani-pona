@@ -165,6 +165,11 @@ const sortBy = (property, direction = 'ASC') => {
     return bb - aa
   }
 }
+function fixedEncodeURIComponent (str) {
+  return encodeURIComponent(str).replace(/[!'()*]/g, function (c) {
+    return '%' + c.charCodeAt(0).toString(16)
+  })
+}
 
 /* DEPRECATED
 function nextEntry (from, to, date, amount) {
@@ -217,7 +222,8 @@ export {
   toEntry,
   sortKey,
   sortBy,
-  flip
+  flip,
+  fixedEncodeURIComponent
 }
 
 const tools = {
@@ -236,7 +242,8 @@ const tools = {
   toEntry,
   sortKey,
   sortBy,
-  flip
+  flip,
+  fixedEncodeURIComponent
 }
 
 export default tools

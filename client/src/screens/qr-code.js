@@ -5,9 +5,11 @@ import QRCode from 'react-native-qrcode-svg'
 import { globalStyles } from '../styles/global'
 import FlatButton from '../shared/buttons/historyButton'
 import Button from '../shared/buttons/button'
+import { fixedEncodeURIComponent } from '../../shared/tools'
 
 export default function Receive () {
   const [getAmount, setAmount] = useState('0')
+  const [getMsg, setMsg] = useState('')
   const [getSign, setSign] = useState(100)
   const [getConfirm, setConfirm] = useState(false)
   const [getValue, setValue] = useState('')
@@ -26,11 +28,11 @@ export default function Receive () {
   //   })
 
   const createQr = () => {
-    // barcode in the format: "loreco://scan/<fingerprint:destination>/<amount * 100>?"
+    // barcode in the format: "loreco://scan/<fingerprint:destination>/<amount * 100>?/msg?"
     setValue(
       `loreco://scan/${maniClient.id}/${parseFloat(
         getAmount.replace(',', '.')
-      ) * getSign}`
+      ) * getSign}/${fixedEncodeURIComponent(getMsg)}`
     )
     setConfirm(true)
   }
@@ -38,6 +40,7 @@ export default function Receive () {
   const reset = () => {
     setAmount('0')
     setValue('')
+    setMsg('')
     setConfirm(false)
   }
 
@@ -75,6 +78,14 @@ export default function Receive () {
               placeholder='0,00'
               onChangeText={setAmount}
               value={getAmount}
+            />
+          </View>
+          <View>
+            <Text style={globalStyles.label}>Mededeling (optioneel)</Text>
+            <TextInput
+              style={globalStyles.input}
+              onChangeText={setMsg}
+              value={getMsg}
             />
           </View>
           <View>

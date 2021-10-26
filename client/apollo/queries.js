@@ -33,6 +33,7 @@ const CURRENT = gql`
           demurrage
           balance
           date
+          message
         }
       }
     }
@@ -50,6 +51,7 @@ const RECENT = gql`
           demurrage
           balance
           date
+          message
         }
       }
     }
@@ -85,10 +87,10 @@ const CHALLENGE = gql`
   }
 `
 const CREATE = gql`
-  query ledger($id: String!, $proof: Proof!) {
+  query ledger($id: String!, $proof: Proof!, $message: String) {
     ledger(id: $id) {
       transactions {
-        create(proof: $proof)
+        create(proof: $proof, message: $message)
       }
     }
   }
@@ -168,6 +170,14 @@ const FIND_USER = gql`
         lastModified
         ledger
         type
+        requestedType
+        privacy
+        address
+        zip
+        city
+        phone
+        birthday
+        companyTaxNumber
       }
     }
   }

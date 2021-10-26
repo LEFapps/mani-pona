@@ -9,13 +9,18 @@ import {
   validatePasswordLogIn
 } from '../../helpers/validation'
 import Alert from '../../shared/alert'
-import { GotoSignUp, GotoConfirmSignUp } from './StateManagers.js'
 import i18n from 'i18n-js'
 import Dialog from 'react-native-dialog'
+import { resetClient } from '../../../App.js'
+import AccountsList from './_accounts.js'
+import { ImportModal } from './keyPrompt.js'
+import { KeyManager } from '../../helpers/keymanager.js'
+import { keyWarehouse } from '../../maniClient.js'
+import { hash } from '../../../shared/crypto.js'
 
 export default function SignIn (props = {}) {
   const { authData } = props
-  const { username } = authData || {}
+  const { username, key, keys, prompt } = authData || {}
   const [state, setState] = useState({
     email: username || '',
     password: ''
@@ -26,6 +31,9 @@ export default function SignIn (props = {}) {
   })
 
   const [user, setUser] = useState('')
+  const [storageKey, setStorageKey] = useState(key || '')
+  const [showPrompt, setPrompt] = useState(!!prompt)
+  const [keyValue, setValue] = useState(keys || undefined)
 
   const [newPassFirst, setNewPassFirst] = useState('')
   const [newPassSecond, setNewPassSecond] = useState('')
@@ -36,6 +44,18 @@ export default function SignIn (props = {}) {
   useEffect(() => {
     setState({ ...state, email: username || '' })
   }, [username])
+
+  useEffect(() => {
+    if (keys) setValue(keys)
+  }, [keys])
+
+  useEffect(() => {
+    if (key) setStorageKey(key)
+  }, [key])
+
+  useEffect(() => {
+    if (prompt) setPrompt(!!prompt)
+  }, [prompt])
 
   function showResetPass () {
     setRequirePass(true)
@@ -63,6 +83,24 @@ export default function SignIn (props = {}) {
       const changePassword = await Auth.completeNewPassword(user, newPass)
     } catch (error) {
       Alert.alert(error.message)
+    }
+  }
+
+  const importKeys = keys => {
+    const sk = 'mani_client_key_' + hash()
+    setValue(keys)
+    setStorageKey(sk)
+  }
+
+  const selectAccount = (email, key) => {
+    if (key) {
+      setStorageKey(key)
+      setState({ ...state, email })
+      setErrors({ email: '', password: '' })
+    } else {
+      if (email === 'new') props.onStateChange('signUp')
+      if (email === 'import') setPrompt(true)
+      if (email === 'verify') props.onStateChange('confirmSignUp')
     }
   }
 
@@ -130,6 +168,27 @@ export default function SignIn (props = {}) {
           } else if (Platform.OS === 'android') {
             showResetPass()
           }
+        } else {
+          const { 'custom:ledger': ledgerId, email } = user.attributes
+          if (keyValue) {
+            const keyManager = await KeyManager(
+              keyWarehouse.getKeyStore(storageKey)
+            )
+            keyManager.setKeys(keyValue, email)
+          }
+          if (!ledgerId)
+            props.onStateChange('verifyContact', {
+              storageKey,
+              keyValue,
+              username: email,
+              email,
+              ...user
+            })
+          else {
+            // init maniClient with ledger's keys
+            await resetClient({ storageKey })
+            props.onStateChange('signedIn')
+          }
         }
       } catch (error) {
         console.error('signIn', error)
@@ -141,44 +200,60 @@ export default function SignIn (props = {}) {
   if (props.authState === 'signIn') {
     return (
       <ScrollView style={globalStyles.container}>
-        <Text style={globalStyles.authTitle}>Log In</Text>
+        <Text style={globalStyles.authTitle}>Aanmelden</Text>
         <View style={globalStyles.main}>
+          {(!!storageKey || !!state.email) && (
+            <View>
+              <Text style={globalStyles.label}>E-mail</Text>
+              <TextInput
+                style={globalStyles.input}
+                placeholder='E-mail'
+                onChangeText={email => {
+                  setState({ ...state, email: email.toLowerCase() })
+                  setErrors({ ...errors, email: '' })
+                }}
+                value={state.email}
+                // editable={!state.email}
+              />
+
+              {!!errors.email && (
+                <Text style={globalStyles.errorText}>{errors.email}</Text>
+              )}
+
+              <Text style={globalStyles.label}>Wachtwoord</Text>
+              <TextInput
+                secureTextEntry={true}
+                style={globalStyles.input}
+                placeholder='Wachtwoord'
+                onChangeText={password => {
+                  setState({ ...state, password: password })
+                  setErrors({ ...errors, password: '' })
+                }}
+                value={state.password}
+              />
+
+              {!!errors.password && (
+                <Text style={globalStyles.errorText}>{errors.password}</Text>
+              )}
+
+              <Button text='Bevestigen' onPress={() => onSubmit()} />
+            </View>
+          )}
+
+          {showPrompt && (
+            <ImportModal
+              onValue={keys => {
+                importKeys(keys)
+                setPrompt(false)
+                setState({ ...state, email: '' })
+              }}
+              isOpen={showPrompt}
+              setOpen={setPrompt}
+            />
+          )}
+
           <View>
-            <Text style={globalStyles.label}>E-mail</Text>
-            <TextInput
-              style={globalStyles.input}
-              placeholder='E-mail'
-              onChangeText={email => {
-                setState({ ...state, email: email.toLowerCase() })
-                setErrors({})
-              }}
-              value={state.email}
-            />
-
-            {!!errors.email && (
-              <Text style={globalStyles.errorText}>{errors.email}</Text>
-            )}
-
-            <Text style={globalStyles.label}>Wachtwoord</Text>
-            <TextInput
-              secureTextEntry={true}
-              style={globalStyles.input}
-              placeholder='Wachtwoord'
-              onChangeText={password => {
-                setState({ ...state, password: password })
-                setErrors({})
-              }}
-              value={state.password}
-            />
-
-            {!!errors.password && (
-              <Text style={globalStyles.errorText}>{errors.password}</Text>
-            )}
-
-            <Button text='Bevestigen' onPress={() => onSubmit()} />
-
-            <GotoSignUp {...props} />
-            <GotoConfirmSignUp {...props} />
+            <AccountsList onSelect={selectAccount} />
 
             <Dialog.Container visible={requirePass}>
               <Dialog.Title>Nieuw wachtwoord vereist</Dialog.Title>

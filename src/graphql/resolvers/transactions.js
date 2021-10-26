@@ -27,8 +27,8 @@ export default {
       const pending = await transactions.pending()
       if (pending) {
         return {
-          ...pending,
           message: 'Pending',
+          ...pending,
           toSign: isEmpty(pending.signature)
         }
       }
@@ -43,8 +43,8 @@ export default {
     challenge: async (transactions, { destination, amount }) => {
       return transactions.challenge(destination, amount)
     },
-    create: async (transactions, { proof }) => {
-      return transactions.create(proof)
+    create: async (transactions, { proof, message }) => {
+      return transactions.create(proof, message)
     },
     confirm: async (transactions, { proof }) => {
       return transactions.confirm(proof)
