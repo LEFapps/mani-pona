@@ -55,10 +55,10 @@ export default function Home () {
 
       <ExportKeys />
       <CustomButton text='Afmelden' onPress={() => signOut()} />
-      <CustomButton
+      {/* <CustomButton
         text='Afmelden en sleutels wissen'
         onPress={() => signOut(true)}
-      />
+      /> */}
     </ScrollView>
   )
 }

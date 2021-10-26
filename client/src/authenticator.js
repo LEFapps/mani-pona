@@ -1,56 +1,38 @@
-import React, { useState } from 'react'
-import { View } from 'react-native'
-import { Authenticator, VerifyContact } from 'aws-amplify-react-native'
-import { Auth } from 'aws-amplify'
+import React, { useEffect, useState } from 'react'
 
-import SignIn from '../src/screens/auth/signIn'
-import SignUp from '../src/screens/auth/signUp'
-import ConfirmSignUp from '../src/screens/auth/confirmSignUp'
-import KeyPrompt from '../src/screens/auth/keyPrompt'
 import Navigation from '../src/routes/main'
+import { resetClient } from '../App'
+import { keyWarehouse } from './maniClient'
 
 export const UserContext = React.createContext(false)
 
-export default () => {
+export default ({ authState, authData: user, onStateChange, keyValue }) => {
   const { maniClient } = global
+  const [isReady, setReady] = useState()
 
-  // Keys present?
-  const [isNew, setNew] = useState(!maniClient.id)
-  const [hasKeys, setKeys] = useState(maniClient.id)
-  const [user, setUser] = useState(false)
+  useEffect(() => {
+    initClient()
+  }, [user, maniClient, authState])
 
-  if (!hasKeys)
-    return (
-      <KeyPrompt
-        onResolve={keys => {
-          if (keys === 'pasted') setNew(false)
-          setKeys(keys)
-        }}
-      />
-    )
+  const initClient = async () => {
+    if (!user || authState !== 'signedIn') return
+    const { 'custom:ledger': ledgerId, email } = user.attributes
+    const storageKey = (
+      (await keyWarehouse.list()).find(({ username }) => username === email) ||
+      {}
+    ).key
+    if (!ledgerId)
+      onStateChange('verifyContact', { storageKey, keyValue, email, ...user })
+
+    await resetClient({ storageKey })
+    setReady(true)
+  }
+
   return (
     <UserContext.Provider value={user}>
-      <Authenticator
-        container={({ children }) => {
-          return <View style={styles.container}>{children}</View>
-        }}
-        hideDefault
-        authState={isNew ? 'signUp' : 'signIn'}
-        onStateChange={async authState => {
-          if (authState === 'signedIn')
-            setUser(await Auth.currentAuthenticatedUser())
-          if (['signIn', 'signUp'].includes(authState))
-            setKeys(global.maniClient.id)
-          if (authState === 'verifyContact') return 'signedIn'
-          return authState
-        }}
-      >
+      {authState === 'signedIn' && !!user && !!maniClient && !!isReady ? (
         <Navigation />
-        <SignIn override={'SignIn'} />
-        <SignUp override={'SignUp'} />
-        <ConfirmSignUp override={'confirmSignUp'} />
-        <VerifyContact />
-      </Authenticator>
+      ) : null}
     </UserContext.Provider>
   )
 }

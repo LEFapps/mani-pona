@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import { KeyManager } from './helpers/keymanager'
 import { flip, fromDb } from '../shared/tools'
 import { mani } from '../shared/mani'
+import { KeyWrapper } from '../shared/crypto'
 import {
   REGISTER,
   SYSTEM_CHALLENGE,
@@ -31,50 +32,77 @@ import {
 
 const log = msg => loglevel.error(msg)
 
-const storageKey = 'mani_client_key_'
-
 function defaultContext () {
   return {}
 }
-const defaultKeyStore = {
-  async getKeys (index = 0) {
+
+export const keyWarehouse = {
+  async list () {
+    let storageKeys = []
+
+    //map AsyncStorage
     try {
-      const key = await AsyncStorage.getItem(storageKey + index)
-      if (key !== null) {
-        // key previously stored
-        return JSON.parse(key)
+      const allKeys = await AsyncStorage.getAllKeys()
+      storageKeys = allKeys.filter(k => k.indexOf('mani_client_key_') === 0)
+    } catch (e) {
+      console.error('KeyStorage LIST', e)
+    }
+
+    // returns storageKey + usernames (e-mail)
+    return await Promise.all(
+      storageKeys.map(async key => {
+        const fromStore = await AsyncStorage.getItem(key)
+        const stored = JSON.parse(fromStore)
+        return { key, username: stored && stored.username }
+      })
+    )
+  },
+
+  getKeyStore (storageKey) {
+    return {
+      async getKeys () {
+        try {
+          const key = await AsyncStorage.getItem(storageKey)
+          if (key !== null) {
+            // key previously stored
+            return JSON.parse(key)
+          }
+        } catch (e) {
+          // error reading key
+          log(e)
+        }
+      },
+      async saveKeys (keys, username) {
+        try {
+          await AsyncStorage.setItem(
+            storageKey,
+            JSON.stringify({ ...keys, username })
+          )
+        } catch (e) {
+          // saving error
+          log(e)
+        }
+      },
+      async removeKeys () {
+        try {
+          await AsyncStorage.removeItem(storageKey)
+        } catch (e) {
+          // removing error
+          log(e)
+        }
       }
-    } catch (e) {
-      // error reading key
-      log(e)
-    }
-  },
-  async saveKeys (keys, index = 0) {
-    try {
-      await AsyncStorage.setItem(storageKey + index, JSON.stringify(keys))
-    } catch (e) {
-      // saving error
-      log(e)
-    }
-  },
-  async removeKeys (index = 0) {
-    try {
-      await AsyncStorage.removeItem(storageKey + index)
-    } catch (e) {
-      // removing error
-      log(e)
     }
   }
 }
 
 const ManiClient = async ({
   graphqlClient,
-  keyStore = defaultKeyStore,
+  storageKey,
   fail = true,
   contextProvider = defaultContext,
   regenerate = false
 }) => {
-  const keyManager = await KeyManager(keyStore)
+  const keyManager = await KeyManager(keyWarehouse.getKeyStore(storageKey))
   let id = await keyManager.fingerprint(regenerate)
   async function query (query, path, variables = {}, required = true) {
     const result = await graphqlClient.query({
@@ -102,7 +130,9 @@ const ManiClient = async ({
   async function register (alias) {
     const challenge = await query(SYSTEM_CHALLENGE, 'system.challenge')
     const payload = challenge.replace('<fingerprint>', id)
+    const username = await keyManager.username()
     return query(REGISTER, 'system.register', {
+      username,
       registration: {
         publicKeyArmored: (await keyManager.getKeys()).publicKeyArmored,
         alias,

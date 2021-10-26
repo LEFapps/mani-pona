@@ -158,6 +158,14 @@ const FIND_USER = gql`
         lastModified
         ledger
         type
+        requestedType
+        privacy
+        address
+        zip
+        city
+        phone
+        birthday
+        companyTaxNumber
       }
     }
   }

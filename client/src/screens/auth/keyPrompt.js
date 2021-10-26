@@ -20,7 +20,7 @@ import { resetClient } from '../../../App'
 
 const KeyTabs = createMaterialTopTabNavigator()
 
-const ImportModal = ({ onValue, isOpen, setOpen }) => {
+export const ImportModal = ({ onValue, isOpen, setOpen }) => {
   const QrData = index => ({ navigation, route = {} }) => {
     const [modalStep, setStep] = useState()
     const { prevScan = '' } = route.params || {}
@@ -88,7 +88,7 @@ const ImportModal = ({ onValue, isOpen, setOpen }) => {
           />
         ) : (
           <TextInput
-            onChangeText={data => setStep(() => onValue(data))}
+            onChangeText={data => setStep(() => () => onValue(data))}
             // value={textData}
             style={{
               width: '100%',
