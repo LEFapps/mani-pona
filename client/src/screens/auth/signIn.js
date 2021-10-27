@@ -187,7 +187,15 @@ export default function SignIn (props = {}) {
           else {
             // init maniClient with ledger's keys
             await resetClient({ storageKey })
-            props.onStateChange('signedIn')
+            const { maniClient } = global
+            if (ledgerId === maniClient.id) props.onStateChange('signedIn')
+            else {
+              await Auth.signOut({ global: true })
+              props.onStateChange('signIn')
+              Alert.alert(
+                'Je hebt je aangemeld met een account dat niet bij deze sluetels hoort, prober opnieuw aub!'
+              )
+            }
           }
         }
       } catch (error) {
