@@ -1,7 +1,7 @@
 import StateMachine from './statemachine'
 import { KeyGenerator, Verifier, mani } from '../shared'
 import { getLogger } from 'server-log'
-import { toCSV } from 'util'
+import { toCSV } from './util'
 
 const PARAMETERS = { income: mani(100), demurrage: 5.0 }
 const log = getLogger('core:system')

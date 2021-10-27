@@ -1,6 +1,6 @@
 import StateMachine from './statemachine'
 import Ledger from '../dynamodb/ledger'
-import { toCSV } from 'util'
+import { toCSV } from './util'
 // import { mani as Ledgers } from './ledgers'
 
 import { getLogger } from 'server-log'
