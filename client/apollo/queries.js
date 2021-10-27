@@ -228,7 +228,7 @@ const FORCE_SYSTEM_PAYMENT = gql`
 `
 
 const EXPORT_LEDGERS = gql`
-  query export {
+  mutation export {
     admin {
       exportLedgers
     }

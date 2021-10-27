@@ -23,18 +23,18 @@ export default gql`
     "Set to true if the ledger still needs to sign. (The destination may or may not have already provided a counter-signature.)"
     toSign: Boolean
   }
-  
+
   type LedgerQuery {
     transactions: TransactionQuery
     # to add: notifications, issuedBuffers, standingOrders, contacts, demurageHistory
   }
-  
+
   input Proof {
     payload: String!
     "Signature of the payload by the private key corresponding to this public key"
     signature: String!
     "Signature of the 'flipped' payload (the transaction opposite to the payload)"
-    counterSignature: String! 
+    counterSignature: String!
   }
 
   type TransactionQuery {
@@ -53,7 +53,7 @@ export default gql`
     "Cancel the currently pending transaction, matching this challenge."
     cancel(challenge: String!): String!
     "Export the transactions on this ledger"
-    export(): String
+    export(id: String): String
   }
 
   type Query {

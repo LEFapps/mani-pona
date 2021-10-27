@@ -202,8 +202,8 @@ const ManiClient = async ({
         challenge
       })
     },
-    async export () {
-      return query(EXPORT, 'ledger.transactions.export', { id })
+    async export (ledger) {
+      return query(EXPORT, 'ledger.transactions.export', { id: ledger || id })
     }
   }
   const system = {
