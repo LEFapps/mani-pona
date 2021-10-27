@@ -1272,7 +1272,9 @@ function ledgers (table, prefix = '') {
   async function entry (fingerprint, entry, required = false) {
     const item = await table.getItem(
       { ledger: prefix + fingerprint, entry },
-      required ? `Entry ${entry} not found for ledger ${fingerprint}` : undefined
+      required
+        ? `Entry ${entry} not found for ledger ${fingerprint}`
+        : undefined
     );
     if (item) {
       item.ledger = item.ledger.substring(skip); // strip the prefix
@@ -1293,7 +1295,10 @@ function ledgers (table, prefix = '') {
       return table.putItem(entry)
     },
     async deletePending (fingerprint) {
-      return table.deleteItem({ ledger: prefix + fingerprint, entry: 'pending' })
+      return table.deleteItem({
+        ledger: prefix + fingerprint,
+        entry: 'pending'
+      })
     },
     async keys (fingerprint, required = false) {
       return table.getItem(
@@ -1302,7 +1307,9 @@ function ledgers (table, prefix = '') {
       )
     },
     async publicKey (fingerprint) {
-      return table.attributes(['ledger', 'publicKeyArmored', 'alias']).getItem({ ledger: fingerprint, entry: 'pk' })
+      return table
+        .attributes(['ledger', 'publicKeyArmored', 'alias'])
+        .getItem({ ledger: fingerprint, entry: 'pk' })
     },
     async putKey (key) {
       key.entry = 'pk';
@@ -1334,8 +1341,7 @@ function ledgers (table, prefix = '') {
     },
     async exportAll () {
       return table.attributes(SHORT_ATTRIBUTES).scanAll({
-        KeyConditionExpression:
-          'begins_with(entry, :slash)',
+        KeyConditionExpression: 'begins_with(entry, :slash)',
         ExpressionAttributeValues: {
           ':slash': '/'
         }
@@ -1612,7 +1618,7 @@ var system = {
       return core.system()
     }
   },
-  Mutation: {
+  'Mutation': {
     admin (_, args, { core, admin, ledger, claims }) {
       if (!admin) {
         log$4.error(`Illegal system access attempt by ${ledger}`);
@@ -1622,7 +1628,7 @@ var system = {
       return core.system()
     }
   },
-  System: {
+  'System': {
     async register (system, { registration }, { username }) {
       return system.register(registration, username)
     },
@@ -1642,7 +1648,7 @@ var system = {
       return system.getAccountTypes()
     }
   },
-  Admin: {
+  'Admin': {
     async init (system) {
       return system.init()
     },
@@ -1674,7 +1680,6 @@ var system = {
       return `Forced system payment of ${amount} on ledger ${ledger}, result: ${result}`
     },
     async exportLedgers (system) {
-      log$4.debug('EXPORT LEDGERS');
       return system.exportLedgers()
     }
   }

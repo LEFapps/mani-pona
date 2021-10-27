@@ -28,7 +28,7 @@ const EditIcon = props => (
   />
 )
 
-export const Dashboard = ({ navigation, route }) => {
+export const Users = ({ navigation, route }) => {
   const { maniClient } = global
   const [isBusy, setBusy] = useState(false)
   const [searchText, setSearch] = useState('')
@@ -169,4 +169,4 @@ export const Dashboard = ({ navigation, route }) => {
   )
 }
 
-export default Dashboard
+export default Users
