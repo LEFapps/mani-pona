@@ -35,7 +35,8 @@ export function validatePassword (password) {
 export function validateRegex (value, regex, required) {
   if (isString(regex)) {
     const regexPool = {
-      date: /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/
+      date: /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/,
+      dateBE: /^(0[1-9]|[12][0-9]|3[01])(-|\/)(0[1-9]|1[0-2])(-|\/)\d{4}$/
     }
     const reg = regexPool[regex]
     if (reg) regex = reg
