@@ -26,34 +26,27 @@ export default function AccountBalance ({ navigation }) {
     await maniClient
       .find(maniClient.id)
       .then(async found => {
-        if (!found) {
-          // autoRegister
-          const { email, 'custom:alias': alias } = user.attributes
-          await maniClient.register(alias || email)
-          loadData()
-        } else {
-          await maniClient.transactions
-            .current()
-            .then(setCurrent)
-            .catch(e => {
-              console.error('loadData/current', e)
-              e && Alert.alert(e.message)
-            })
-          await maniClient.system
-            .accountTypes()
-            .then(types => {
-              const { demurrage, income, buffer } = types.find(
-                ({ type }) =>
-                  type === (user.attributes['custom:type'] || 'default')
-              )
-              setParams({ demurrage, income, buffer })
-            })
-            .catch(e => {
-              console.error('loadData/params', e)
-              e && Alert.alert(e.message)
-            })
-          setReady(true)
-        }
+        await maniClient.transactions
+          .current()
+          .then(setCurrent)
+          .catch(e => {
+            console.error('loadData/current', e)
+            e && Alert.alert(e.message)
+          })
+        await maniClient.system
+          .accountTypes()
+          .then(types => {
+            const { demurrage, income, buffer } = types.find(
+              ({ type }) =>
+                type === (user.attributes['custom:type'] || 'default')
+            )
+            setParams({ demurrage, income, buffer })
+          })
+          .catch(e => {
+            console.error('loadData/params', e)
+            e && Alert.alert(e.message)
+          })
+        setReady(true)
       })
       .catch(e => {
         console.error('loadData/find', e)
@@ -73,48 +66,46 @@ export default function AccountBalance ({ navigation }) {
           </Text>
         </View>
 
-        {!!current.date && (
-          <Card>
-            <Text style={globalStyles.property}>Laatste wijziging</Text>
-            <Text style={globalStyles.price}>
-              {new Date(current.date).toLocaleString()}
-            </Text>
-          </Card>
-        )}
-        {!mani(income).zero() && (
-          <Card>
-            <Text style={globalStyles.property}>Inkomen</Text>
-            <Text style={globalStyles.price}>{income}</Text>
-          </Card>
-        )}
-        {!mani(buffer).zero() && (
-          <Card>
-            <Text style={globalStyles.property}>Vrije buffer</Text>
-            <Text style={globalStyles.price}>{buffer}</Text>
-          </Card>
-        )}
-        {!!demurrage && (
-          <Card>
-            <Text style={globalStyles.property}>Demurrage</Text>
-            <Text style={globalStyles.price}>{demurrage} %</Text>
-          </Card>
-        )}
-
         <View style={styles.part}>
           <CustomButton
+            text='Scan een QR-code'
+            onPress={() => navigation.navigate('Scan')}
+          />
+          <CustomButton
+            text='Maak een QR-code'
+            onPress={() => navigation.navigate('Create')}
+          />
+        </View>
+        <View style={styles.part}>
+          {!!current.date && (
+            <Card>
+              <Text style={globalStyles.property}>Laatste wijziging</Text>
+              <Text style={globalStyles.price}>
+                {new Date(current.date).toLocaleString()}
+              </Text>
+            </Card>
+          )}
+          {!mani(income).zero() && (
+            <Card>
+              <Text style={globalStyles.property}>Inkomen</Text>
+              <Text style={globalStyles.price}>{income}</Text>
+            </Card>
+          )}
+          {!mani(buffer).zero() && (
+            <Card>
+              <Text style={globalStyles.property}>Vrije buffer</Text>
+              <Text style={globalStyles.price}>{buffer}</Text>
+            </Card>
+          )}
+          {!!demurrage && (
+            <Card>
+              <Text style={globalStyles.property}>Demurrage</Text>
+              <Text style={globalStyles.price}>{demurrage} %</Text>
+            </Card>
+          )}
+          <CustomButton
             text='Bekijk voorspellingen'
-            onPress={() =>
-              navigation.navigate('Bijdragen', {
-                screen: 'Predictions',
-                params: {
-                  demurrage,
-                  buffer,
-                  income,
-                  date: current.date,
-                  balance: current.balance
-                }
-              })
-            }
+            onPress={() => navigation.navigate('Predictions')}
           />
         </View>
       </ScrollView>
@@ -126,7 +117,7 @@ export default function AccountBalance ({ navigation }) {
 
 const styles = StyleSheet.create({
   part: {
-    paddingVertical: 10,
+    paddingVertical: 24,
     borderBottomWidth: 1,
     borderBottomColor: DarkerBlue
   },

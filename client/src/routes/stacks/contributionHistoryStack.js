@@ -5,7 +5,6 @@ import { useIsFocused } from '@react-navigation/native'
 import Header from '../../shared/header'
 
 import ContributionHistory from '../../screens/contributionHistory'
-import Predictions from '../../screens/predictions'
 
 const Nav = createStackNavigator()
 
@@ -34,11 +33,6 @@ const contributionHistoryStack = () => {
               <Header title='Bijdrage Geschiedenis' icon='menu' />
             )
           })}
-        />
-        <Nav.Screen
-          name='Predictions'
-          component={Predictions}
-          options={{ title: 'Voorspellingen', headerBackTitle: 'Terug' }}
         />
       </Nav.Navigator>
     )

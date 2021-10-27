@@ -1,10 +1,12 @@
-import React, { useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { StyleSheet, View, Text, ScrollView } from 'react-native'
 import { globalStyles } from '../styles/global.js'
-import { Picker } from '@react-native-picker/picker'
 import mani from '../../shared/mani'
+import Alert from '../shared/alert'
 import { colors } from '../helpers/helper'
 import Card from '../shared/card.js'
+import { useIsFocused } from '@react-navigation/core'
+import { UserContext } from '../authenticator'
 const { CurrencyColor } = colors
 
 const monthStrings = [
@@ -22,21 +24,63 @@ const monthStrings = [
   'December'
 ]
 
-export default function Predictions ({ route }) {
-  const { demurrage, date, balance } = route.params
-  const buffer = mani(route.params.buffer)
-  const income = mani(route.params.income)
+export default function Predictions () {
+  const { maniClient } = global
+  const user = useContext(UserContext)
+
+  const isFocused = useIsFocused()
+
+  const [params, setParams] = useState({})
+  const [current, setCurrent] = useState({})
+
+  const [predictions, setPredictions] = useState([])
+  const [isReady, setReady] = useState()
 
   const start = new Date().getMonth() + 1
   const startYear = new Date().getFullYear()
-  let prev = balance
-  const predictions = monthStrings.map((m, i) => {
-    const base = prev.subtract(buffer)
-    const demued = base.multiply(1 - demurrage / 100)
-    prev = demued.add(income).add(buffer)
-    const month = start + i > 11 ? start + i - 12 : start + i
-    return { month: monthStrings[month], value: prev, i }
-  })
+  const { date, balance } = current
+  const { demurrage } = params || {}
+  const buffer = !!params.buffer ? mani(params.buffer) : mani(0)
+  const income = !!params.income ? mani(params.income) : mani(0)
+
+  useEffect(() => {
+    const loadParams = async () => {
+      await maniClient.transactions
+        .current()
+        .then(setCurrent)
+        .catch(e => {
+          console.error('loadData/current', e)
+          e && Alert.alert(e.message)
+        })
+      await maniClient.system
+        .accountTypes()
+        .then(types => {
+          const { demurrage, income, buffer } = types.find(
+            ({ type }) => type === (user.attributes['custom:type'] || 'default')
+          )
+          setParams({ demurrage, income, buffer })
+        })
+        .catch(e => {
+          console.error('loadData/params', e)
+          e && Alert.alert(e.message)
+        })
+      setReady(true)
+    }
+    isFocused ? loadParams() : setReady(false)
+  }, [isFocused])
+
+  useEffect(() => {
+    if (isFocused && isReady) {
+      let prev = balance
+      const pred = monthStrings.map((m, i) => {
+        const diff = prev.subtract(buffer).multiply(demurrage / 100)
+        prev = prev.subtract(diff).add(income)
+        const month = start + i > 11 ? start + i - 12 : start + i
+        return { month: monthStrings[month], value: prev, i }
+      })
+      setPredictions(pred)
+    }
+  }, [isReady, isFocused])
 
   return (
     <ScrollView style={globalStyles.main}>
@@ -47,26 +91,27 @@ export default function Predictions ({ route }) {
             {new Date(date).toLocaleString()}
           </Text>
         </View>
-        <Text style={globalStyles.price}>{balance.format()}</Text>
+        <Text style={globalStyles.price}>{balance && balance.format()}</Text>
       </Card>
       <View style={{ marginTop: 16 }}>
         <Text style={globalStyles.text}>Voorspelde rekeningstand voor …</Text>
       </View>
-      {predictions.map(({ month, value, i }) => (
-        <Card key={month}>
-          <View style={{ flexDirection: 'column' }}>
-            <Text style={globalStyles.property}>
-              {month} {startYear + (i >= 12 - start ? 1 : 0)}
-            </Text>
-            <Text style={globalStyles.date}>
-              {!income.zero() && `inkomen: ${income.format()}`}
-              {!income.zero() && !!demurrage && '|'}
-              {!!demurrage && `demurrage ${demurrage} %`}
-            </Text>
-          </View>
-          <Text style={globalStyles.price}>{value.format()}</Text>
-        </Card>
-      ))}
+      {isReady &&
+        predictions.map(({ month, value, i }) => (
+          <Card key={month}>
+            <View style={{ flexDirection: 'column' }}>
+              <Text style={globalStyles.property}>
+                {month} {startYear + (i >= 12 - start ? 1 : 0)}
+              </Text>
+              <Text style={globalStyles.date}>
+                {!income.zero() && `inkomen: ${income.format()}`}
+                {!income.zero() && !!demurrage && '|'}
+                {!!demurrage && `demurrage ${demurrage} %`}
+              </Text>
+            </View>
+            <Text style={globalStyles.price}>{value.format()}</Text>
+          </Card>
+        ))}
     </ScrollView>
   )
 }
