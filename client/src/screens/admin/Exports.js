@@ -9,16 +9,12 @@ import {
 } from 'react-native'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 
-import mani from '../../../shared/mani'
-
-import editable from './User'
-
-import Button from '../../shared/buttons/button'
 import Card from '../../shared/card'
 import universalAlert from '../../shared/alert'
 import { downloader } from '../../helpers/downloader'
 
 import { globalStyles } from '../../styles/global'
+import { DarkSpinner } from '../../helpers/loader'
 
 const EditIcon = props => (
   <MaterialCommunityIcons
@@ -32,38 +28,58 @@ const EditIcon = props => (
 export const Download = ({ navigation, route }) => {
   const { maniClient } = global
 
-  const dl = async (method, file) => {
-    const data = await method()
-    downloader(data, ...file)
+  const [isBusy, setBusy] = useState(false)
+
+  const dl = async (method, file, key = true) => {
+    setBusy(key)
+    method()
+      .then(data => {
+        downloader(data, ...file)
+        setBusy(false)
+      })
+      .catch(e => {
+        setBusy(false)
+        console.error(method, e)
+        universalAlert.alert(e.message || e)
+      })
   }
 
   const exportables = [
     {
+      key: 'exportLedgers',
       title: 'Rekeningen',
       onPress: () =>
-        dl(maniClient.admin.exportLedgers, ['loreco-rekeningen', 'text/csv'])
+        dl(
+          maniClient.admin.exportLedgers,
+          ['loreco-rekeningen', 'text/csv'],
+          'exportLedgers'
+        )
     }
   ]
 
   return (
     <ScrollView style={globalStyles.main}>
       <FlatList
-        keyExtractor={({ title }) => title}
+        keyExtractor={({ key }) => key}
         data={exportables}
         renderItem={({ item }) => {
-          const { title, onPress } = item || {}
+          const { title, onPress, key } = item || {}
           return (
-            <TouchableOpacity onPress={onPress}>
+            <TouchableOpacity onPress={isBusy ? undefined : onPress}>
               <Card>
                 <View style={{ flexDirection: 'column' }}>
                   <Text style={globalStyles.property}>{title}</Text>
                 </View>
                 <Text style={globalStyles.price}>
-                  <MaterialCommunityIcons
-                    name={'database-export'}
-                    size={20}
-                    // style={{ marginHorizontal: 8, alignSelf: 'center' }}
-                  />
+                  {isBusy === key ? (
+                    <DarkSpinner size={20} />
+                  ) : (
+                    <MaterialCommunityIcons
+                      name={'database-export'}
+                      size={20}
+                      // style={{ marginHorizontal: 8, alignSelf: 'center' }}
+                    />
+                  )}
                 </Text>
               </Card>
             </TouchableOpacity>

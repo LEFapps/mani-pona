@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react'
 import { View, Text, FlatList, TouchableOpacity } from 'react-native'
+import { MaterialCommunityIcons } from '@expo/vector-icons'
 
 import { Contact } from '../shared/contact'
 import Alert from '../shared/alert'
 import Card from '../shared/card'
 import FlatButton from '../shared/buttons/historyButton'
+import { downloader } from '../helpers/downloader'
+import { DarkSpinner } from '../helpers/loader'
 
 import { sortBy } from '../../shared/tools'
 import { globalStyles } from '../styles/global'
@@ -54,9 +57,9 @@ export default function TransactionHitstory ({ navigation }) {
   const transactionsToShow = transactions.filter(({ amount }) => {
     switch (filter) {
       case 'paid':
-        return amount.negative()
+        return !!amount && amount.negative()
       case 'received':
-        return amount.positive()
+        return !!amount && amount.positive()
       default:
         return true
     }
@@ -96,9 +99,56 @@ export default function TransactionHitstory ({ navigation }) {
             )}
           />
         </View>
+        <View style={{ marginTop: 32 }}>
+          <ExportTransactions />
+        </View>
       </View>
     )
   } else {
     return null
   }
+}
+
+const ExportTransactions = () => {
+  const { maniClient } = global
+
+  const [isBusy, setBusy] = useState(false)
+
+  const onPress = async () => {
+    setBusy(true)
+    const file = ['loreco-transacties-' + maniClient.id, 'text/csv']
+    maniClient.transactions
+      .export()
+      .then(data => {
+        downloader(data, ...file)
+        setBusy(false)
+      })
+      .catch(e => {
+        setBusy(false)
+        console.error(method, e)
+        Alert.alert(e.message || e)
+      })
+  }
+
+  return (
+    <TouchableOpacity onPress={isBusy ? undefined : onPress}>
+      <Card>
+        <View style={{ flexDirection: 'column' }}>
+          <Text style={globalStyles.property}>Transacties downloaden</Text>
+          <Text style={globalStyles.date}>(alles, csv-formaat)</Text>
+        </View>
+        <Text style={globalStyles.price}>
+          {isBusy ? (
+            <DarkSpinner size={24} />
+          ) : (
+            <MaterialCommunityIcons
+              name={'database-export'}
+              size={24}
+              // style={{ marginHorizontal: 8, alignSelf: 'center' }}
+            />
+          )}
+        </Text>
+      </Card>
+    </TouchableOpacity>
+  )
 }
