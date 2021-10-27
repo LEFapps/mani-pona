@@ -88,7 +88,7 @@ function ledgers (table, prefix = '') {
     },
     async exportAll () {
       return table.attributes(SHORT_ATTRIBUTES).scanAll({
-        KeyConditionExpression:
+        FilterExpression:
           'begins_with(entry, :slash)',
         ExpressionAttributeValues: {
           ':slash': '/'

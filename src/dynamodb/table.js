@@ -46,9 +46,13 @@ const table = function (db, options = {}) {
     const items = (await t.query(query)).Items
     return tools.fromDb(items)
   }
+  const scanAll = async (query) => t.scanAll(query)
+  const queryAll = async (query) => t.queryAll(query)
   return {
     getItem,
     queryItems,
+    scanAll,
+    queryAll,
     async putItem (input) {
       const Item = tools.toDb(input)
       return t.put({ Item })
@@ -60,6 +64,8 @@ const table = function (db, options = {}) {
       const TransactItems = []
       return {
         getItem,
+        scanAll,
+        queryAll,
         putItem (input) {
           TransactItems.push({
             Put: {
