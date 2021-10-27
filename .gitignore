@@ -8,3 +8,4 @@ client/sls-output*.json
 .serverless
 client/amplify
 client/web-build
+dist/*
