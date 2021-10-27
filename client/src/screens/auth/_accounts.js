@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from 'react'
-import { View, Text, FlatList, TouchableOpacity } from 'react-native'
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  ScrollView
+} from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import {
   MaterialIcons,
@@ -102,7 +108,7 @@ export const AccountsList = ({ onSelect }) => {
   )
 
   return (
-    <View style={globalStyles.main}>
+    <ScrollView style={globalStyles.main}>
       <View style={{ marginVertical: 32 }}>
         {isLoading ? (
           <Text>Rekeningen zoeken…</Text>
@@ -134,7 +140,7 @@ export const AccountsList = ({ onSelect }) => {
           />
         )}
       </View>
-    </View>
+    </ScrollView>
   )
 }
 

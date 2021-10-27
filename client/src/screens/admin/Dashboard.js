@@ -1,5 +1,11 @@
 import React from 'react'
-import { View, Text, FlatList, TouchableOpacity } from 'react-native'
+import {
+  ScrollView,
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity
+} from 'react-native'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 
 import { adminScreens } from '../../routes/stacks/adminStack'
@@ -13,7 +19,7 @@ export const Dashboard = ({ navigation, route }) => {
     .slice(1) // do not include overview page
     .filter(({ name }) => name.indexOf('/') < 0) // filter nested screens
   return (
-    <View style={globalStyles.main}>
+    <ScrollView style={globalStyles.main}>
       <FlatList
         keyExtractor={({ name }) => name}
         data={pages}
@@ -33,7 +39,7 @@ export const Dashboard = ({ navigation, route }) => {
           </TouchableOpacity>
         )}
       />
-    </View>
+    </ScrollView>
   )
 }
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { StyleSheet, View, Text } from 'react-native'
+import { StyleSheet, View, Text, ScrollView } from 'react-native'
 import { globalStyles } from '../styles/global.js'
 import { Picker } from '@react-native-picker/picker'
 import mani from '../../shared/mani'
@@ -33,7 +33,7 @@ export default function incomePrediction ({ route }) {
   // }
 
   return (
-    <View style={globalStyles.main}>
+    <ScrollView style={globalStyles.main}>
       <View style={globalStyles.amountHeader}>
         <Text style={globalStyles.property}>Voorspelling huidige maand:</Text>
         <Text style={globalStyles.price}>{income.format()}</Text>
@@ -75,7 +75,7 @@ export default function incomePrediction ({ route }) {
           <Text style={styles.amount}>+ {income.format()}</Text>
         </View>
                 </View>*/}
-    </View>
+    </ScrollView>
   )
 }
 const styles = StyleSheet.create({

@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { TextInput, View, Text } from 'react-native'
+import { TextInput, View, Text, ScrollView } from 'react-native'
 import Auth from '@aws-amplify/auth'
 
 import { globalStyles } from '../../styles/global.js'
@@ -73,15 +73,16 @@ export default function verifyContact ({ authState, authData, onStateChange }) {
     // - keys (hidden)
 
     return (
-      <View>
-        <Text style={globalStyles.label}>Alias</Text>
-        <TextInput
-          style={globalStyles.input}
-          onChangeText={setAlias}
-          defaultValue={alias}
-        />
+      <ScrollView style={globalStyles.container}>
+        <View style={globalStyles.main}>
+          <Text style={globalStyles.label}>Alias</Text>
+          <TextInput
+            style={globalStyles.input}
+            onChangeText={setAlias}
+            defaultValue={alias}
+          />
 
-        {/* <Text style={globalStyles.label}>PIN-code (min. 4 cijfers)</Text>
+          {/* <Text style={globalStyles.label}>PIN-code (min. 4 cijfers)</Text>
         <TextInput
           style={globalStyles.input}
           onChangeText={setPin}
@@ -104,15 +105,16 @@ export default function verifyContact ({ authState, authData, onStateChange }) {
           ]}
         /> */}
 
-        {!!errors.length &&
-          errors.map((e, i) => (
-            <Text style={globalStyles.errorText} key={i}>
-              {e}
-            </Text>
-          ))}
+          {!!errors.length &&
+            errors.map((e, i) => (
+              <Text style={globalStyles.errorText} key={i}>
+                {e}
+              </Text>
+            ))}
 
-        <Button text='Rekening openen' onPress={onSubmit} />
-      </View>
+          <Button text='Rekening openen' onPress={onSubmit} />
+        </View>
+      </ScrollView>
     )
   }
 

@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from 'react'
-import { View, Text, FlatList, TouchableOpacity } from 'react-native'
+import {
+  ScrollView,
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity
+} from 'react-native'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 
 import { Contact } from '../shared/contact'
@@ -67,7 +73,7 @@ export default function TransactionHitstory ({ navigation }) {
 
   if (ready) {
     return (
-      <View style={globalStyles.main}>
+      <ScrollView style={globalStyles.main}>
         <FlatButton options={filters} />
         <View>
           <FlatList
@@ -102,7 +108,7 @@ export default function TransactionHitstory ({ navigation }) {
         <View style={{ marginTop: 32 }}>
           <ExportTransactions />
         </View>
-      </View>
+      </ScrollView>
     )
   } else {
     return null
