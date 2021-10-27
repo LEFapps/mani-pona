@@ -1,7 +1,7 @@
 import { getLogger } from 'server-log'
 import tools from '../../client/shared/tools'
 const log = getLogger('dynamodb:table')
-const methods = ['get', 'put', 'query', 'update']
+const methods = ['get', 'put', 'query', 'update', 'queryAll', 'scanAll']
 
 /**
  * This helps significantly reduce the amount of DynamoDB code duplication. Essentially, it reuses the TableName and automatically constructs typical DynamoDB commands from input parameters and regular methods.
@@ -46,9 +46,13 @@ const table = function (db, options = {}) {
     const items = (await t.query(query)).Items
     return tools.fromDb(items)
   }
+  const scanAll = async (query) => t.scanAll(query)
+  const queryAll = async (query) => t.queryAll(query)
   return {
     getItem,
     queryItems,
+    scanAll,
+    queryAll,
     async putItem (input) {
       const Item = tools.toDb(input)
       return t.put({ Item })
@@ -60,6 +64,8 @@ const table = function (db, options = {}) {
       const TransactItems = []
       return {
         getItem,
+        scanAll,
+        queryAll,
         putItem (input) {
           TransactItems.push({
             Put: {

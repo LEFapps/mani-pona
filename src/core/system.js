@@ -1,6 +1,7 @@
 import StateMachine from './statemachine'
 import { KeyGenerator, Verifier, mani } from '../shared'
 import { getLogger } from 'server-log'
+import { toCSV } from './util'
 
 const PARAMETERS = { income: mani(100), demurrage: 5.0 }
 const log = getLogger('core:system')
@@ -134,7 +135,6 @@ export default function (ledgers, userpool) {
           )
         }
       }
-      const keys = ledgers.keys('system', true)
       const transaction = ledgers.transaction()
       await StateMachine(transaction)
         .getSources({ ledger, destination: 'system' })
@@ -199,6 +199,13 @@ export default function (ledgers, userpool) {
         paginationToken: nextToken,
         ...results
       }
+    },
+    async exportLedgers () {
+      // note: at some point this will run into performance issues of course
+      // we'd need to switch to e.g. an S3 based approach
+      const atts = ledgers.shortAttributes()
+      const items = await ledgers.exportAll()
+      return toCSV(atts, items)
     }
   }
 }

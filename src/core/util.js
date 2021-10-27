@@ -333,6 +333,23 @@ function saveResults (table, { sources, targets, message }) {
     message
   })
 }
+/**
+ * Convert items (Objects) to one big CSV string.
+ **/
+function toCSV (attributes, items) {
+  const output = []
+  output.push(attributes.join(';'))
+  items.forEach((item) => {
+    const values = attributes.reduce((acc, att) => {
+      log.debug('Getting %s from %j', att, item)
+      let value = item[att] || ''
+      acc.push(value)
+      return acc
+    }, [])
+    output.push(values.join(';'))
+  })
+  return output.join('\n')
+}
 
 export {
   getSources,
@@ -346,5 +363,6 @@ export {
   getPendingTargets,
   addSignatures,
   addSystemSignatures,
-  saveResults
+  saveResults,
+  toCSV
 }
