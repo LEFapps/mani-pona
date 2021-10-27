@@ -32,7 +32,7 @@ const standingOrderStack = () => {
           component={StandingOrder}
           options={() => ({
             headerTitle: () => (
-              <Header title='Betalingsopdrachten' icon='menu' />
+              <Header title='Openstaande betalingen' icon='menu' />
             )
           })}
         />

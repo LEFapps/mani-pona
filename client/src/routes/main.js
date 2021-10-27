@@ -25,7 +25,10 @@ import { globalStyles } from '../styles/global'
 import { colors } from '../helpers/helper'
 import { log } from 'react-native-reanimated'
 
-const iconProps = { size: 24 }
+const iconProps = {
+  size: 24,
+  style: { marginTop: -6.5 }
+}
 
 const navScreens = {
   // Overview: {component: ({Nav})=> (
@@ -56,11 +59,11 @@ const navScreens = {
       />
     )
   },
-  Betalingsopdrachten: {
+  OpenstaandeBetalingen: {
     component: ({ Nav }) => (
       <Nav.Screen
-        key='Betalingsopdrachten'
-        name='Betalingsopdrachten'
+        key='Openstaande betalingen'
+        name='Openstaande betalingen'
         component={StandingOrderStack}
         options={{
           drawerIcon: props => (
@@ -228,7 +231,7 @@ export default function drawerNavigator (props) {
         <NavigationContainer>
           <Nav.Navigator
             barStyle={{ backgroundColor: colors.DarkerBlue }}
-            initialRouteName={hasPending ? 'Betalingsopdrachten' : 'LoREco'}
+            initialRouteName={hasPending ? 'Openstaande betalingen' : 'LoREco'}
           >
             {availableScreens.map(screen =>
               navScreens[screen].component({ Nav })
