@@ -11,13 +11,13 @@ var openpgp = require('openpgp');
 require('lodash/random');
 var currency$1 = require('currency.js');
 var serverLog = require('server-log');
+var util = require('util');
 var merge = require('@graphql-tools/merge');
 var graphqlScalars = require('graphql-scalars');
 var graphql = require('graphql');
 var language = require('graphql/language');
 var apolloServer = require('apollo-server');
 var AWS = require('aws-sdk');
-var util = require('util');
 var fs = require('fs');
 
 function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
@@ -941,7 +941,6 @@ function System (ledgers, userpool) {
           )
         }
       }
-      ledgers.keys('system', true);
       const transaction = ledgers.transaction();
       await StateMachine(transaction)
         .getSources({ ledger, destination: 'system' })
@@ -1006,6 +1005,13 @@ function System (ledgers, userpool) {
         paginationToken: nextToken,
         ...results
       }
+    },
+    async exportLedgers () {
+      // note: at some point this will run into performance issues of course
+      // we'd need to switch to e.g. an S3 based approach
+      const atts = ledgers.shortAttributes();
+      const items = await ledgers.exportAll();
+      return util.toCSV(atts, items)
     }
   }
 }
@@ -1029,6 +1035,9 @@ function ledger (ledgers, fingerprint) {
     },
     async entry (entry, required = false) {
       return ledgers.entry(fingerprint, entry, required)
+    },
+    async export () {
+      return ledgers.exportLedger(fingerprint)
     },
     short () {
       return ledger(ledgers.short(), fingerprint)
@@ -1120,12 +1129,17 @@ var Transactions = (ledgers, fingerprint) => {
       } else {
         return 'No matching pending transaction found, it may have already been cancelled or confirmed.'
       }
+    },
+    async export () {
+      const atts = ledgers.shortAttributes();
+      const items = await ledger$1.export();
+      return util.toCSV(atts, items)
     }
   }
 };
 
 const log$6 = serverLog.getLogger('dynamodb:table');
-const methods = ['get', 'put', 'query', 'update'];
+const methods = ['get', 'put', 'query', 'update', 'queryAll', 'scanAll'];
 
 /**
  * This helps significantly reduce the amount of DynamoDB code duplication. Essentially, it reuses the TableName and automatically constructs typical DynamoDB commands from input parameters and regular methods.
@@ -1234,6 +1248,21 @@ const table = function (db, options = {}) {
 
 const log$5 = serverLog.getLogger('dynamodb:ledgers');
 
+const SHORT_ATTRIBUTES = [
+  'ledger',
+  'destination',
+  'amount',
+  'balance',
+  'date',
+  'payload',
+  'next',
+  'sequence',
+  'uid',
+  'income',
+  'demurrage',
+  'challenge',
+  'message'
+];
 /**
  * Specialized functions to strictly work with ledgers. Continues building on table.
  */
@@ -1290,22 +1319,31 @@ function ledgers (table, prefix = '') {
         }
       })
     },
+    shortAttributes () {
+      return SHORT_ATTRIBUTES
+    },
+    async exportLedger (fingerprint) {
+      return table.attributes(SHORT_ATTRIBUTES).queryAll({
+        KeyConditionExpression:
+          'ledger = :ledger AND begins_with(entry, :slash)',
+        ExpressionAttributeValues: {
+          ':ledger': fingerprint,
+          ':slash': '/'
+        }
+      })
+    },
+    async exportAll () {
+      return table.attributes(SHORT_ATTRIBUTES).scanAll({
+        KeyConditionExpression:
+          'begins_with(entry, :slash)',
+        ExpressionAttributeValues: {
+          ':slash': '/'
+        }
+      })
+    },
     short () {
       // to reduce the size of the results, we can limit the attributes requested (omitting the signatures, which are fairly large text fields).
-      return ledgers(table.attributes([
-        'ledger',
-        'destination',
-        'amount',
-        'balance',
-        'date',
-        'payload',
-        'next',
-        'sequence',
-        'uid',
-        'income',
-        'demurrage',
-        'challenge'
-      ]), prefix)
+      return ledgers(table.attributes(SHORT_ATTRIBUTES), prefix)
     },
     transaction () {
       return ledgers(table.transaction(), prefix)
@@ -1428,6 +1466,8 @@ const SystemSchema = apolloServerLambda.gql`
     enableAccount(username: String): String
     "Force a system payment"
     forceSystemPayment(ledger: String!, amount: Currency!): String
+    "Export ledgers, outputs a CSV formatted string"
+    exportLedgers: String
   }
 
   type Query {
@@ -1463,18 +1503,18 @@ var transactions$1 = apolloServerLambda.gql`
     "Set to true if the ledger still needs to sign. (The destination may or may not have already provided a counter-signature.)"
     toSign: Boolean
   }
-  
+
   type LedgerQuery {
     transactions: TransactionQuery
     # to add: notifications, issuedBuffers, standingOrders, contacts, demurageHistory
   }
-  
+
   input Proof {
     payload: String!
     "Signature of the payload by the private key corresponding to this public key"
     signature: String!
     "Signature of the 'flipped' payload (the transaction opposite to the payload)"
-    counterSignature: String! 
+    counterSignature: String!
   }
 
   type TransactionQuery {
@@ -1492,6 +1532,8 @@ var transactions$1 = apolloServerLambda.gql`
     confirm(proof: Proof!): String
     "Cancel the currently pending transaction, matching this challenge."
     cancel(challenge: String!): String!
+    "Export the transactions on this ledger"
+    export(id: String): String
   }
 
   type Query {
@@ -1571,7 +1613,7 @@ var system = {
     }
   },
   Mutation: {
-    admin: (_, args, { core, admin, ledger, claims }) => {
+    admin (_, args, { core, admin, ledger, claims }) {
       if (!admin) {
         log$4.error(`Illegal system access attempt by ${ledger}`);
         throw new apolloServer.ForbiddenError('Access denied')
@@ -1581,34 +1623,33 @@ var system = {
     }
   },
   System: {
-    register: async (system, { registration }, { username }) => {
-      // TODO: [LORECO-95] username = undefined
+    async register (system, { registration }, { username }) {
       return system.register(registration, username)
     },
-    parameters: async system => {
+    async parameters (system) {
       return system.parameters()
     },
-    challenge: async system => {
+    async challenge (system) {
       return system.challenge()
     },
-    findkey: async (system, { id }) => {
+    async findkey (system, { id }) {
       return system.findkey(id)
     },
-    finduser: async (system, { username }) => {
+    async finduser (system, { username }) {
       return system.findUser(username)
     },
-    accountTypes: async system => {
+    async accountTypes (system) {
       return system.getAccountTypes()
     }
   },
   Admin: {
-    init: async system => {
+    async init (system) {
       return system.init()
     },
-    jubilee: async (system, { paginationToken }) => {
+    async jubilee (system, { paginationToken }) {
       return system.jubilee(paginationToken)
     },
-    changeAccountType: async (system, { username, type }) => {
+    async changeAccountType (system, { username, type }) {
       const result = await system.changeAccountType(username, type);
       log$4.debug(
         'Changed account %s to type %s, result %j',
@@ -1618,19 +1659,23 @@ var system = {
       );
       return `Changed account type of ${username} to ${type}`
     },
-    disableAccount: async (system, { username }) => {
+    async disableAccount (system, { username }) {
       const result = await system.disableAccount(username);
       log$4.debug('Disabled account %s, result %j', username, result);
       return `Disabled account ${username}`
     },
-    enableAccount: async (system, { username }) => {
+    async enableAccount (system, { username }) {
       const result = await system.enableAccount(username);
       log$4.debug('Enabled account %s, result %j', username, result);
       return `Enabled account ${username}`
     },
-    forceSystemPayment: async (system, { ledger, amount }) => {
+    async forceSystemPayment (system, { ledger, amount }) {
       const result = await system.forceSystemPayment(ledger, amount);
       return `Forced system payment of ${amount} on ledger ${ledger}, result: ${result}`
+    },
+    async exportLedgers (system) {
+      log$4.debug('EXPORT LEDGERS');
+      return system.exportLedgers()
     }
   }
 };
