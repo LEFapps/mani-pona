@@ -74,7 +74,7 @@ export default function Predictions () {
       let prev = balance
       const pred = monthStrings.map((m, i) => {
         const diff = prev.subtract(buffer).multiply(demurrage / 100)
-        prev = prev.subtract(diff).add(income)
+        prev = prev.subtract(diff.negative() ? mani(0) : diff).add(income)
         const month = start + i > 11 ? start + i - 12 : start + i
         return { month: monthStrings[month], value: prev, i }
       })
