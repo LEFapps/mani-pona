@@ -114,16 +114,20 @@ const balance = ({ visible, user, onClose }) => {
     }
   ]
 
-  if (user.pending) {
-    onClose('Deze gebruiker heeft al een openstaande transactie.')
-    return null
-  }
+  useEffect(() => {
+    if (visible && user.pending)
+      onClose('Deze gebruiker heeft al een openstaande transactie.')
+  }, [visible, user.email])
 
   // submit action
   const action = () =>
     maniClient.admin
       .forceSystemPayment(user.ledger, mani(amount * sign))
-      .then(() => onClose(true))
+      .then(() => {
+        onClose(true)
+        setAmount(0)
+        setSign(1)
+      })
       .catch(e => onClose(e && e.message))
 
   return (
@@ -134,7 +138,7 @@ const balance = ({ visible, user, onClose }) => {
     >
       <FlatButton options={signs} />
       <TextInput
-        onChangeText={a => setAmount(Math.abs(Number(a)))}
+        onChangeText={a => setAmount(a.replace(',', '.'))}
         value={amount || 0}
       />
       <CustomButton
