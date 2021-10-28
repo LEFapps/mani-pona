@@ -8,9 +8,15 @@ import { globalStyles } from '../styles/global'
 
 import IconButton from '../shared/buttons/iconButton'
 
+let cameraLoaded = 'false'
+
 export default function Cam (props) {
   const [hasPermission, setHasPermission] = useState(null)
   const [selfie, setSelfie] = useState(false)
+
+  useEffect(() => {
+    cameraLoaded = 'true'
+  })
 
   const handleBarCodeScanned = barcode => {
     // barcode in the general format: "loreco://<action>/<param 1>/<param 2>?/..."
@@ -43,6 +49,7 @@ export default function Cam (props) {
             onError={handleBarCodeError}
             onScan={handleBarCodeScanned}
             style={cameraStyle}
+            key={cameraLoaded}
           >
             <Text>Requesting for camera permission</Text>
           </QrScanner>
