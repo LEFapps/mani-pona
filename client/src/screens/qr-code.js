@@ -1,5 +1,12 @@
 import React, { useState } from 'react'
-import { View, Text, TextInput, StyleSheet, ScrollView } from 'react-native'
+import {
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  ScrollView,
+  Dimensions
+} from 'react-native'
 import QRCode from 'react-native-qrcode-svg'
 
 import { globalStyles } from '../styles/global'
@@ -14,6 +21,7 @@ export default function Receive () {
   const [getConfirm, setConfirm] = useState(false)
   const [getValue, setValue] = useState('')
   const { maniClient } = global
+  const dim = Dimensions.get('window')
 
   // maniClient.transactions
   //   .current()
@@ -62,7 +70,11 @@ export default function Receive () {
       {getValue && getConfirm ? (
         <View style={styles.cont}>
           <View style={styles.qr}>
-            <QRCode value={getValue} size={320} quietZone={8} />
+            <QRCode
+              value={getValue}
+              size={Math.min(480, Math.min(dim.width, dim.height)) - 64}
+              quietZone={8}
+            />
           </View>
           <Text style={globalStyles.bigText}>
             Toon deze QR-Code om een transactie te starten.
