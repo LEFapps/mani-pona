@@ -1,7 +1,7 @@
 import StateMachine from './statemachine'
 import { KeyGenerator, Verifier, mani } from '../shared'
 import { getLogger } from 'server-log'
-import { toCSV } from './util'
+import { flip, toCSV } from './util'
 
 const PARAMETERS = { income: mani(100), demurrage: 5.0 }
 const log = getLogger('core:system')
@@ -45,7 +45,7 @@ export default function (ledgers, userpool) {
       log.info('Checking keys')
       if (keys) {
         log.info('System already initialized')
-        return // idempotency
+        return 'System already initialized' // idempotency
       }
       log.info('Generating system keys')
       // initializing fresh system:
@@ -63,9 +63,49 @@ export default function (ledgers, userpool) {
       log.debug('Database update: %j', trans.items())
       log.info('System keys and parameters stored')
       await trans.execute()
-      return `SuMsy initialized with ${mani(
-        100
-      ).format()} income and 5% demurrage.`
+      return `System was initialized.`
+    },
+    async createPrepaidLedger (amount) {
+      log.info('Creating prepaid (account-less) ledger with amount %s', amount)
+      // generate keys for new account
+      const keys = await KeyGenerator({}, log.info).generate()
+      const ledger = await keys.publicKey.fingerprint()
+      const { publicKeyArmored, privateKeyArmored } = keys
+      log.info('Prepaid ledger keys generated, id %s', ledger)
+      // prepare for initial transaction
+      const challenge = await StateMachine(ledgers)
+        .getSources({ ledger, destination: 'system' })
+        .then(t => t.addAmount(amount))
+        .then(t => t.getPrimaryEntry().challenge)
+        .catch(err => log.error('Creation of challenge failed %s\n%s', err, err.stack))
+      if (!challenge) { throw new Error('Challenge creation failed') }
+      log.info('Generated challenge for prepaid ledger: %s', challenge)
+      const signature = await keys.privateKey.sign(challenge)
+      const counterSignature = await keys.privateKey.sign(flip(challenge))
+      log.debug('Prepared initial transaction on prepaid ledger:\n%s\nsignature:\n%s\ncountersignature:\n%s', challenge, signature, counterSignature)
+      try {
+        const transaction = ledgers.transaction()
+        await StateMachine(transaction)
+          .getPayloads(challenge)
+          .getSources({ ledger, destination: 'system' })
+          .then(t => t.continuePayload())
+          .then(t => t.addSystemSignatures())
+          .then(t => t.addSignatures({ ledger, signature, counterSignature, publicKeyArmored }))
+          .then(t => t.save())
+        transaction.putKey({
+          ledger,
+          publicKeyArmored,
+          privateKeyArmored,
+          alias: 'Prepaid card',
+          challenge
+        })
+        await transaction.execute()
+        log.info('Registered prepaid ledger %s in database', ledger)
+        return ledger
+      } catch (err) {
+        log.error('Creation of prepaid ledger failed: %s\n%s', err, err.stack)
+        throw new Error('Creation of prepaid ledger failed, please check logs.')
+      }
     },
     async challenge () {
       // provides the payload of the first transaction on a new ledger

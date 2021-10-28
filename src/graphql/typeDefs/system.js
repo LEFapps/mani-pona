@@ -100,6 +100,8 @@ const SystemSchema = gql`
     forceSystemPayment(ledger: String!, amount: Currency!): String
     "Export ledgers, outputs a CSV formatted string"
     exportLedgers: String
+    "Create prepaid account with the supplied amount, return ledger id"
+    createPrepaidLedger(amount: Currency!): String!
   }
 
   type Query {

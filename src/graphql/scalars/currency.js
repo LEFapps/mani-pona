@@ -20,12 +20,13 @@ const currency = new GraphQLScalarType({
   },
   // value from client in AST representation
   parseLiteral (ast) {
-    if (ast.kind !== Kind.STRING || ast.kind !== Kind.INT || ast.kind !== Kind.FLOAT) {
+    if (ast.kind === Kind.STRING || ast.kind === Kind.INT || ast.kind === Kind.FLOAT) {
+      return mani(ast.value)
+    } else {
       throw new TypeError(
-        `Unknown representation of currency ${'value' in ast && ast.value}`
+        `Unknown representation of currency ${'value' in ast && ast.value}, ast kind: ${ast.kind}`
       )
     }
-    return mani(ast.value)
   }
 })
 

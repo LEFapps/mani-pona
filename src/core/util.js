@@ -364,5 +364,6 @@ export {
   addSignatures,
   addSystemSignatures,
   saveResults,
+  flip,
   toCSV
 }
