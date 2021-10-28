@@ -227,6 +227,14 @@ const FORCE_SYSTEM_PAYMENT = gql`
   }
 `
 
+const CREATE_PREPAID_LEDGER = gql`
+  mutation prepaid($amount: Currency!) {
+    admin {
+      createPrepaidLedger(amount: $amount)
+    }
+  }
+`
+
 const EXPORT_LEDGERS = gql`
   mutation export {
     admin {
@@ -261,6 +269,7 @@ export {
   ACCOUNT_TYPES,
   CHANGE_ACCOUNT_TYPE,
   FORCE_SYSTEM_PAYMENT,
+  CREATE_PREPAID_LEDGER,
   JUBILEE,
   EXPORT_LEDGERS,
   INIT,

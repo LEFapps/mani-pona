@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import { KeyManager } from './helpers/keymanager'
 import { flip, fromDb } from '../shared/tools'
 import { mani } from '../shared/mani'
-import { KeyWrapper } from '../shared/crypto'
+// import { KeyWrapper } from '../shared/crypto'
 import {
   REGISTER,
   SYSTEM_CHALLENGE,
@@ -22,6 +22,7 @@ import {
   ENABLE_USER,
   ACCOUNT_TYPES,
   FORCE_SYSTEM_PAYMENT,
+  CREATE_PREPAID_LEDGER,
   CHANGE_ACCOUNT_TYPE,
   JUBILEE,
   EXPORT_LEDGERS,
@@ -41,8 +42,7 @@ function defaultContext () {
 export const keyWarehouse = {
   async list () {
     let storageKeys = []
-
-    //map AsyncStorage
+    // map AsyncStorage
     try {
       const allKeys = await AsyncStorage.getAllKeys()
       storageKeys = allKeys.filter(k => k.indexOf('mani_client_key_') === 0)
@@ -51,7 +51,7 @@ export const keyWarehouse = {
     }
 
     // returns storageKey + usernames (e-mail)
-    return await Promise.all(
+    return Promise.all(
       storageKeys.map(async key => {
         const fromStore = await AsyncStorage.getItem(key)
         const stored = JSON.parse(fromStore)
@@ -266,6 +266,13 @@ const ManiClient = async ({
     async forceSystemPayment (ledger, amount) {
       return query(FORCE_SYSTEM_PAYMENT, 'admin.forceSystemPayment', {
         ledger,
+        amount: amount.format()
+      })
+    },
+    // note that this amount is from the POV of the system, so it must be *negative* to make sense.
+    // returns ledger id (for QR generation)
+    async createPrepaidLedger (amount) {
+      return query(CREATE_PREPAID_LEDGER, 'admin.createPrepaidLedger', {
         amount: amount.format()
       })
     },
