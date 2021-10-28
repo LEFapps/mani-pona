@@ -21,25 +21,29 @@ export default function Cam (props) {
 
   if (hasPermission === false) return <Text>No access to camera</Text>
 
+  const [selfie, setSelfie] = useState(false)
   return (
-    <View style={globalStyles.screen}>
-      <View style={globalStyles.camPlace}>
-        <QrScanner
-          onLoad={props.onInit}
-          constraints={{ video: { facingMode: { exact: `environment` } } }}
-          delay={100}
-          onError={handleBarCodeError}
-          onScan={handleBarCodeScanned}
-          style={cameraStyle}
-        >
-          <Text>Requesting for camera permission</Text>
-        </QrScanner>
-      </View>
+    <>
+      <button onClick={() => setSelfie(!selfie)}>Flip camera</button>
+      <View style={globalStyles.screen}>
+        <View style={globalStyles.camPlace}>
+          <QrScanner
+            onLoad={props.onInit}
+            facingMode={selfie ? 'front' : 'rear'}
+            delay={100}
+            onError={handleBarCodeError}
+            onScan={handleBarCodeScanned}
+            style={cameraStyle}
+          >
+            <Text>Requesting for camera permission</Text>
+          </QrScanner>
+        </View>
 
-      <View style={globalStyles.qrTextContainer}>
-        <Text style={globalStyles.qrText}>{props.text}</Text>
+        <View style={globalStyles.qrTextContainer}>
+          <Text style={globalStyles.qrText}>{props.text}</Text>
+        </View>
       </View>
-    </View>
+    </>
   )
 }
 
