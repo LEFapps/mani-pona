@@ -93,31 +93,31 @@ const navScreens = {
       />
     )
   },
-  Bijdragen: {
-    component: ({ Nav }) => (
-      <Nav.Screen
-        key='Bijdragen'
-        name='Bijdragen'
-        component={ContributionHistoryStack}
-        options={{
-          drawerIcon: props => (
-            <MaterialIcons
-              name='swap-vertical-circle'
-              color={props.color}
-              {...iconProps}
-            />
-          ),
-          tabBarIcon: ({ focused, color = 'white' }) => (
-            <MaterialIcons
-              name='swap-vertical-circle'
-              color={color}
-              {...iconProps}
-            />
-          )
-        }}
-      />
-    )
-  },
+  // Bijdragen: {
+  //   component: ({ Nav }) => (
+  //     <Nav.Screen
+  //       key='Bijdragen'
+  //       name='Bijdragen'
+  //       component={ContributionHistoryStack}
+  //       options={{
+  //         drawerIcon: props => (
+  //           <MaterialIcons
+  //             name='swap-vertical-circle'
+  //             color={props.color}
+  //             {...iconProps}
+  //           />
+  //         ),
+  //         tabBarIcon: ({ focused, color = 'white' }) => (
+  //           <MaterialIcons
+  //             name='swap-vertical-circle'
+  //             color={color}
+  //             {...iconProps}
+  //           />
+  //         )
+  //       }}
+  //     />
+  //   )
+  // },
   // 'Beheer Vrije Buffer': {component: ({Nav})=> (
   //   <Nav.Screen
   //     key='Beheer Vrije Buffer'
