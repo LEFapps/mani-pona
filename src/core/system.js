@@ -118,7 +118,7 @@ export default function (ledgers, userpool) {
           )
         }
       } else {
-        userpool.changeAttributes(username, { 'custom:ledger': ledger })
+        await userpool.changeAttributes(username, { 'custom:ledger': ledger })
       }
       return ledger
     },

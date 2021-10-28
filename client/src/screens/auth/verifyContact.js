@@ -10,6 +10,7 @@ import { keyWarehouse } from '../../maniClient.js'
 export default function verifyContact ({ authState, authData, onStateChange }) {
   const { storageKey, keyValue, email, ...user } = authData || {}
 
+  const [isBusy, setBusy] = useState(false)
   const [alias, setAlias] = useState(
     (user && user.attributes && user.attributes['custom:alias']) || email
   )
@@ -18,7 +19,8 @@ export default function verifyContact ({ authState, authData, onStateChange }) {
   const [errors, setErrors] = useState([])
 
   const onSubmit = async () => {
-    if (checkForErrors()) return
+    setBusy(true)
+    if (checkForErrors()) return setBusy(false)
 
     // init maniClient for account fetching
     let fetchedKey = ''
@@ -39,22 +41,20 @@ export default function verifyContact ({ authState, authData, onStateChange }) {
     try {
       const cognitoUser = await Auth.currentAuthenticatedUser()
       const currentSession = await Auth.currentSession()
-      await cognitoUser.refreshSession(
+      cognitoUser.refreshSession(
         currentSession.refreshToken,
         async (err, session) => {
-          const { idToken, refreshToken, accessToken } = session
           // do whatever you want to do now :)
           const newCognitoUser = await Auth.currentAuthenticatedUser({
             bypassCache: true
           })
+          setBusy(false)
           onStateChange('signedIn', { ...newCognitoUser })
         }
       )
     } catch (e) {
       console.log('Unable to refresh Token', e)
     }
-
-    // onStateChange('signedIn')
   }
 
   const checkForErrors = () => {
@@ -112,7 +112,10 @@ export default function verifyContact ({ authState, authData, onStateChange }) {
               </Text>
             ))}
 
-          <Button text='Rekening openen' onPress={onSubmit} />
+          <Button
+            text={isBusy ? '• • •' : 'Rekening openen'}
+            onPress={onSubmit}
+          />
         </View>
       </ScrollView>
     )
