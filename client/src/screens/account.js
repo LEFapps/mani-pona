@@ -1,15 +1,17 @@
-import React, { useState, useEffect } from 'react'
-import { View, Text, Alert, ScrollView } from 'react-native'
+import React, { useState, useEffect, useContext } from 'react'
+import { View, Text, ScrollView } from 'react-native'
 import { globalStyles } from '../styles/global'
 import Auth from '@aws-amplify/auth'
 import Card from '../shared/card'
 import CustomButton from '../shared/buttons/button'
 import ExportKeys from './auth/_keys'
 import { resetClient } from '../../App'
+import { useNotifications } from '../shared/notifications'
 
 export default function Home () {
   const { maniClient } = global
 
+  const notification = useNotifications()
   const [email, setEmail] = useState('')
   const [alias, setAlias] = useState('')
 
@@ -35,8 +37,8 @@ export default function Home () {
       if (clearKeys) await maniClient.cleanup()
       await resetClient()
       await Auth.signOut({ global: true })
-    } catch (error) {
-      Alert.alert('error signing out: ', error)
+    } catch ({ message }) {
+      notification.add({ message, title: 'Afmelden mislukt', type: 'warning' })
     }
   }
 

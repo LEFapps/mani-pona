@@ -7,20 +7,12 @@ import {
   ScrollView
 } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import {
-  MaterialIcons,
-  MaterialCommunityIcons,
-  Entypo
-} from '@expo/vector-icons'
+import { MaterialIcons } from '@expo/vector-icons'
 import loglevel from 'loglevel'
 import uniq from 'lodash/uniq'
 
-import { Contact } from '../../shared/contact'
-import Alert from '../../shared/alert'
 import Card from '../../shared/card'
-import FlatButton from '../../shared/buttons/historyButton'
 
-import { sortBy } from '../../../shared/tools'
 import { globalStyles } from '../../styles/global'
 import { keyWarehouse } from '../../maniClient'
 import { colors } from '../../helpers/helper'

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useContext } from 'react'
 import {
   ScrollView,
   View,
@@ -9,7 +9,6 @@ import {
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 
 import { Contact } from '../shared/contact'
-import Alert from '../shared/alert'
 import Card from '../shared/card'
 import FlatButton from '../shared/buttons/historyButton'
 import { downloader } from '../helpers/downloader'
@@ -17,19 +16,23 @@ import { DarkSpinner } from '../shared/loader'
 
 import { sortBy } from '../../shared/tools'
 import { globalStyles } from '../styles/global'
+import { useNotifications } from '../shared/notifications'
 
 export default function TransactionHitstory ({ navigation }) {
+  const { maniClient } = global
+
+  const notification = useNotifications()
+
   const [transactions, setTransactions] = useState([])
   const [filter, setFilter] = useState('all')
   const [ready, setReady] = useState(false)
-  const ManiClient = global.maniClient
 
   useEffect(() => {
     loadData()
   }, [])
 
   function loadData () {
-    ManiClient.transactions
+    maniClient.transactions
       .recent()
       .then(transactions => {
         transactions.sort(sortBy('date', 'DESC'))
@@ -38,7 +41,11 @@ export default function TransactionHitstory ({ navigation }) {
       })
       .catch(e => {
         console.error('transactions/recent', e)
-        e && Alert.alert(e.message)
+        notification.add({
+          type: 'warning',
+          message: e && e.message,
+          title: 'transactions/recent'
+        })
       })
   }
 
@@ -132,7 +139,11 @@ const ExportTransactions = () => {
       .catch(e => {
         setBusy(false)
         console.error(method, e)
-        Alert.alert(e.message || e)
+        notification.add({
+          type: 'warning',
+          message: e && e.message,
+          title: method
+        })
       })
   }
 

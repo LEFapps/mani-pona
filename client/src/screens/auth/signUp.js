@@ -1,7 +1,6 @@
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { TextInput, View, Text, ScrollView } from 'react-native'
 import Auth from '@aws-amplify/auth'
-import size from 'lodash/size'
 
 import { globalStyles } from '../../styles/global.js'
 import Button from '../../shared/buttons/button'
@@ -13,12 +12,10 @@ import {
   validateNotEmpty,
   validateRegex
 } from '../../helpers/validation'
-import Alert from '../../shared/alert'
-import { GotoConfirmSignUp, GotoSignIn } from './StateManagers.js'
+import { useNotifications } from '../../shared/notifications'
 import i18n from 'i18n-js'
 import { resetClient } from '../../../App.js'
 import AccountsList from './_accounts.js'
-import { PhoneNumberResolver } from 'graphql-scalars'
 
 export default function signUp (props) {
   const defaultState = {
@@ -38,6 +35,7 @@ export default function signUp (props) {
 
   const [state, setState] = useState(defaultState)
   const [errors, setErrors] = useState(defaultState)
+  const notification = useNotifications()
 
   const selectAccount = (username, key) => {
     if (key) props.onStateChange('signIn', { username, key })
@@ -113,12 +111,29 @@ export default function signUp (props) {
             'custom:companyTaxNumber': state.companyTaxNumber || ''
           }
         })
-        if (userConfirmed)
+        if (userConfirmed) {
           props.onStateChange('signIn', { username: state.email })
-        else props.onStateChange('confirmSignUp', { username: state.email })
+          notification.add({
+            type: 'success',
+            title: 'Welkom!',
+            message: 'Je registratie is gelukt, je kan je nu aanmelden.'
+          })
+        } else {
+          props.onStateChange('confirmSignUp', { username: state.email })
+          notification.add({
+            type: 'success',
+            title: 'Welkom!',
+            message:
+              'Je registratie is gelukt, verifieer je e-mailadres nu met de code die je ontvangen hebt via e-mail.'
+          })
+        }
       } catch (error) {
         console.error('signUp', error)
-        Alert.alert(i18n.t(error.code))
+        notification.add({
+          type: 'danger',
+          title: 'Registratie mislukt',
+          message: e && e.message
+        })
       }
     }
   }

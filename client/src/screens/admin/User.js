@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useContext } from 'react'
 import { View, Text, StyleSheet, TextInput } from 'react-native'
 import Modal from 'modal-react-native-web'
 
@@ -6,9 +6,9 @@ import mani from '../../../shared/mani'
 
 import FlatButton from '../../shared/buttons/historyButton'
 import CustomButton from '../../shared/buttons/button'
-import Alert from '../../shared/alert'
 
 import { globalStyles } from '../../styles/global'
+import { useNotifications } from '../../shared/notifications'
 
 const Container = ({ visible, title, onCancel, children }) => {
   return (
@@ -53,6 +53,7 @@ const enabled = ({ visible, user, onClose }) => {
 
 const type = ({ visible, user, onClose }) => {
   const { maniClient } = global
+  const notification = useNotifications()
   const [newType, setType] = useState(user.type)
   const [userTypes, setTypes] = useState([])
   useEffect(() => {
@@ -61,7 +62,11 @@ const type = ({ visible, user, onClose }) => {
       .then(setTypes)
       .catch(e => {
         console.error('editor/accounttypes', e)
-        e && Alert.alert(e.message)
+        notification.add({
+          type: 'warning',
+          message: e && e.message,
+          title: 'editor/accounttypes'
+        })
       })
   }, [])
 

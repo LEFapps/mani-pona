@@ -2,15 +2,17 @@ import React, { useState, useEffect, useContext } from 'react'
 import { View, Text, StyleSheet, ScrollView } from 'react-native'
 import CustomButton from '../shared/buttons/button'
 import { globalStyles } from '../styles/global.js'
-import Alert from '../shared/alert'
 import Card from '../shared/card'
 import { colors } from '../helpers/helper'
 import mani from '../../shared/mani'
 import { UserContext } from '../authenticator'
+import { useNotifications } from '../shared/notifications'
+
 const { DarkerBlue, CurrencyColor } = colors
 
 export default function AccountBalance ({ navigation }) {
   const user = useContext(UserContext)
+  const notification = useNotifications()
 
   const [params, setParams] = useState({})
   const [current, setCurrent] = useState({})
@@ -31,7 +33,11 @@ export default function AccountBalance ({ navigation }) {
           .then(setCurrent)
           .catch(e => {
             console.error('loadData/current', e)
-            e && Alert.alert(e.message)
+            notification.add({
+              type: 'warning',
+              message: e && e.message,
+              title: 'loadData/current'
+            })
           })
         await maniClient.system
           .accountTypes()
@@ -44,13 +50,21 @@ export default function AccountBalance ({ navigation }) {
           })
           .catch(e => {
             console.error('loadData/params', e)
-            e && Alert.alert(e.message)
+            notification.add({
+              type: 'warning',
+              message: e && e.message,
+              title: 'loadData/params'
+            })
           })
         setReady(true)
       })
       .catch(e => {
         console.error('loadData/find', e)
-        e && Alert.alert(e.message)
+        notification.add({
+          type: 'warning',
+          message: e && e.message,
+          title: 'loadData/find'
+        })
       })
   }
 

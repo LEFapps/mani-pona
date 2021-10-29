@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import {
   View,
   Text,
@@ -15,6 +15,7 @@ import { downloader } from '../../helpers/downloader'
 
 import { globalStyles } from '../../styles/global'
 import { DarkSpinner } from '../../shared/loader'
+import { useNotifications } from '../../shared/notifications'
 
 const EditIcon = props => (
   <MaterialCommunityIcons
@@ -27,7 +28,7 @@ const EditIcon = props => (
 
 export const Download = ({ navigation, route }) => {
   const { maniClient } = global
-
+  const notification = useNotifications()
   const [isBusy, setBusy] = useState(false)
 
   const dl = async (method, file, key = true) => {
@@ -40,7 +41,11 @@ export const Download = ({ navigation, route }) => {
       .catch(e => {
         setBusy(false)
         console.error(method, e)
-        universalAlert.alert(e.message || e)
+        notification.add({
+          type: 'warning',
+          title: method,
+          message: e && e.message
+        })
       })
   }
 
