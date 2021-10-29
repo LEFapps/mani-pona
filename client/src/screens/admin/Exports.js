@@ -14,7 +14,7 @@ import universalAlert from '../../shared/alert'
 import { downloader } from '../../helpers/downloader'
 
 import { globalStyles } from '../../styles/global'
-import { DarkSpinner } from '../../helpers/loader'
+import { DarkSpinner } from '../../shared/loader'
 
 const EditIcon = props => (
   <MaterialCommunityIcons

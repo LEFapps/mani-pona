@@ -13,7 +13,7 @@ import Alert from '../shared/alert'
 import Card from '../shared/card'
 import FlatButton from '../shared/buttons/historyButton'
 import { downloader } from '../helpers/downloader'
-import { DarkSpinner } from '../helpers/loader'
+import { DarkSpinner } from '../shared/loader'
 
 import { sortBy } from '../../shared/tools'
 import { globalStyles } from '../styles/global'
