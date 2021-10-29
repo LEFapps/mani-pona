@@ -46,7 +46,7 @@ const navScreens = {
     component: ({ Nav }) => (
       <Nav.Screen
         key='LoREco'
-        name='LoREco'
+        name='Startscherm'
         component={QrStack}
         options={{
           drawerIcon: props => (

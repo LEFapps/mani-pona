@@ -39,28 +39,28 @@ const qrStack = () => {
         <Nav.Screen
           name='AccountBalance'
           component={Overview}
-          options={{ title: 'LoREco', headerBackTitle: 'Terug' }}
+          options={{ title: 'Startscherm', headerBackTitle: 'Terug' }}
         />
         <Nav.Screen
           name='Scan'
           component={Scan}
           options={{
-            title: 'Scannen',
-            headerBackTitle: 'LoREco',
+            title: 'QR Scannen',
+            headerBackTitle: 'Startscherm',
             lazy: true
           }}
         />
         <Nav.Screen
           name='Create'
           component={Create}
-          options={{ title: 'Maken', headerBackTitle: 'LoREco' }}
+          options={{ title: 'QR Maken', headerBackTitle: 'Startscherm' }}
         />
         <Nav.Screen
           name='Predictions'
           component={Predictions}
           options={{
             title: 'Prognose',
-            headerBackTitle: 'LoREco',
+            headerBackTitle: 'Startscherm',
             lazy: true
           }}
         />
