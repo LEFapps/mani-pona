@@ -31,21 +31,23 @@ export default function Home ({ navigation }) {
       .split('/')
     log.debug('scanned action', action)
     if (action === 'scan') {
-      const [destination, incomingAmount, message] = params || []
+      const [destination, incomingAmount = 0, message] = params || []
       log.debug('Scanned', destination, incomingAmount, message)
-      const amount = Number(incomingAmount) / 100
+      const prepaid = incomingAmount === '__prepaid__'
+      const amount = prepaid ? 0 : Number(incomingAmount) / 100
       setData({
         destination,
         amount: Math.abs(amount).toString(),
-        message: message ? decodeURIComponent(message) : ''
+        message: message ? decodeURIComponent(message) : '',
+        prepaid
       })
-      setSign(amount > 0 ? 1 : -1)
+      setSign(amount >= 0 ? 1 : -1)
     } else setData()
   }
 
   const createChallenge = async () => {
     setError([])
-    const { destination, amount, message } = getData
+    const { destination, amount, message, prepaid } = getData
     maniClient.transactions
       .challenge(
         destination,
@@ -53,7 +55,7 @@ export default function Home ({ navigation }) {
       )
       .then(challenge => {
         // console.log('CHALLENGE', challenge)
-        return maniClient.transactions.create(challenge, message)
+        return maniClient.transactions.create(challenge, message, prepaid)
       })
       .then(create => {
         // console.log('CREATE', create)

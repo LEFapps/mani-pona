@@ -3,7 +3,13 @@ import { Text } from 'react-native'
 import { createStackNavigator } from '@react-navigation/stack'
 import { useIsFocused } from '@react-navigation/native'
 
-import { Dashboard, Parameters, Users, Exports } from '../../screens/admin'
+import {
+  Dashboard,
+  Parameters,
+  Users,
+  Prepaid,
+  Exports
+} from '../../screens/admin'
 
 const AdminStack = createStackNavigator()
 
@@ -32,6 +38,12 @@ export const adminScreens = [
     component: Users,
     options: { title: 'Rekeningen' },
     icon: 'account-group'
+  },
+  {
+    name: 'prepaid',
+    component: Prepaid,
+    options: { title: 'Offline betalingen' },
+    icon: 'credit-card-outline'
   },
   {
     name: 'exports',
