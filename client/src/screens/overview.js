@@ -7,6 +7,7 @@ import Card from '../shared/card'
 import { colors } from '../helpers/helper'
 import mani from '../../shared/mani'
 import { UserContext } from '../authenticator'
+import Predictions from '../screens/predictions'
 const { DarkerBlue, CurrencyColor } = colors
 
 export default function AccountBalance ({ navigation }) {
@@ -16,6 +17,8 @@ export default function AccountBalance ({ navigation }) {
   const [current, setCurrent] = useState({})
   const [ready, setReady] = useState(false)
   const { maniClient } = global
+
+  const [showPredictions, setShowPredictions] = useState(false)
 
   useEffect(() => {
     loadData()
@@ -104,9 +107,17 @@ export default function AccountBalance ({ navigation }) {
             </Card>
           )}
           <CustomButton
-            text='Bekijk voorspellingen'
-            onPress={() => navigation.navigate('Predictions')}
+            text={`${!showPredictions ? 'Bekijk' : 'Verberg'} voorspellingen`}
+            // onPress={() => navigation.navigate('Predictions')}
+            onPress={() => {
+              setShowPredictions(!showPredictions)
+            }}
           />
+          {!!showPredictions && (
+            <View>
+              <Predictions />
+            </View>
+          )}
         </View>
       </ScrollView>
     )

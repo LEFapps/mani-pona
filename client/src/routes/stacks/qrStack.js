@@ -55,7 +55,7 @@ const qrStack = () => {
           component={Create}
           options={{ title: 'QR Maken', headerBackTitle: 'Startscherm' }}
         />
-        <Nav.Screen
+        {/* <Nav.Screen
           name='Predictions'
           component={Predictions}
           options={{
@@ -63,7 +63,7 @@ const qrStack = () => {
             headerBackTitle: 'Startscherm',
             lazy: true
           }}
-        />
+        /> */}
         {/* <Nav.Screen
         name='IncomePrediction'
         component={IncomePrediction}
