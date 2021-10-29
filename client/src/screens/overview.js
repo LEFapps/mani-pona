@@ -99,7 +99,7 @@ export default function AccountBalance ({ navigation }) {
           )}
           {!!demurrage && (
             <Card>
-              <Text style={globalStyles.property}>Demurrage</Text>
+              <Text style={globalStyles.property}>Gemeenschapsbijdrage</Text>
               <Text style={globalStyles.price}>{demurrage} %</Text>
             </Card>
           )}

@@ -48,7 +48,9 @@ const Screen = ({ navigation, route }) => {
                   <Text style={globalStyles.price}>{buffer}</Text>
                 </Card>
                 <Card>
-                  <Text style={globalStyles.property}>Demurrage</Text>
+                  <Text style={globalStyles.property}>
+                    Gemeenschapsbijdrage
+                  </Text>
                   <Text style={globalStyles.price}>{demurrage} %</Text>
                 </Card>
               </View>
