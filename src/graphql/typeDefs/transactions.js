@@ -24,6 +24,21 @@ export default gql`
     toSign: Boolean
   }
 
+  type TransactionStatus {
+    "Ledger ID of transaction origin"
+    from: String!
+    "Ledger ID of transaction destination"
+    to: String!
+    "The date when this transfer was initiated"
+    date: DateTime!
+    "The amount to transfer. Note that a negative amount means it will be decrease the balance on the 'from' ledger and vice versa."
+    amount: Currency!
+    "An (optional) message that was added to the transaction"
+    message: String!
+    "Status: 'pending', 'complete' or 'error'" 
+    status: String!
+  }
+
   type LedgerQuery {
     transactions: TransactionQuery
     # to add: notifications, issuedBuffers, standingOrders, contacts, demurageHistory
@@ -46,8 +61,8 @@ export default gql`
     recent: [Transaction]
     "Provide transaction challenge with supplied destination and amount"
     challenge(destination: String, amount: Currency): String
-    "Create (pending) transaction"
-    create(proof: Proof!, message: String): String
+    "Create (pending) transaction, with an optional message. You can (optionally) indicate that the destination is prepaid (autosigning)."
+    create(proof: Proof!, message: String, prepaid: Boolean): String
     "Confirm pending transaction"
     confirm(proof: Proof!): String
     "Cancel the currently pending transaction, matching this challenge."

@@ -43,8 +43,8 @@ export default {
     challenge: async (transactions, { destination, amount }) => {
       return transactions.challenge(destination, amount)
     },
-    create: async (transactions, { proof, message }) => {
-      return transactions.create(proof, message)
+    create: async (transactions, { proof, message, prepaid }) => {
+      return transactions.create(proof, message, prepaid)
     },
     confirm: async (transactions, { proof }) => {
       return transactions.confirm(proof)
