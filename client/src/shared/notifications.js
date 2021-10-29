@@ -1,4 +1,10 @@
-import React, { createContext, useEffect, useState } from 'react'
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useRef
+} from 'react'
 import { View, Text, StyleSheet } from 'react-native'
 import { TouchableOpacity } from 'react-native-web'
 import { colors } from '../helpers/helper'
@@ -11,7 +17,7 @@ import { colors } from '../helpers/helper'
  * 1 wrap your app in NotificationProvider
  *
  * 2 use in component:
- * const notification = useContext(NotificationContext)
+ * const notification = useNotifications()
  * notficiation.add({...props})
  *
  * props for add()
@@ -22,54 +28,59 @@ import { colors } from '../helpers/helper'
  *
  */
 
+const timeout = 5000 // 5 sec
+
 export const NotificationContext = createContext({
-  notifications: [],
-  addNotification: () => {}
+  add: () => {}
 })
+
+export const useNotifications = () => {
+  return useContext(NotificationContext)
+}
 
 export const Notification = ({
   title,
   message,
   buttons = [],
   type = 'info',
-  visible,
-  onHide
+  onHide,
+  id
 }) => {
   useEffect(() => {
-    if (!buttons.length) setTimeout(onHide, 5000)
-  })
+    if (!buttons.length) {
+      setTimeout(() => onHide(id), timeout)
+    }
+  }, [id])
   const titleStyle = StyleSheet.compose(style.title, style[type] || style.info)
   return (
-    visible && (
-      <View style={style.alertContainer}>
-        {title && <Text style={titleStyle}>{title}</Text>}
-        {message && <Text style={style.message}>{message}</Text>}
-        {!!buttons.length && (
-          <View style={style.buttons}>
-            {buttons.map(({ onPress, label, text }, key) => (
-              <TouchableOpacity
-                key={key}
-                onPress={() => {
-                  onPress && onPress()
-                  onHide()
-                }}
-                style={style.button}
-              >
-                <Text>{label || text}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
-      </View>
-    )
+    <View style={style.alert}>
+      {title && <Text style={titleStyle}>{title}</Text>}
+      {message && <Text style={style.message}>{message}</Text>}
+      {!!buttons.length && (
+        <View style={style.buttons}>
+          {buttons.map(({ onPress, label, text }, key) => (
+            <TouchableOpacity
+              key={key}
+              onPress={() => {
+                onPress && onPress()
+                onHide(id)
+              }}
+              style={style.button}
+            >
+              <Text>{label || text}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
+    </View>
   )
 }
 
 export const Notifications = ({ notifications, onRemove }) => {
   return (
-    <View>
-      {notifications.map((not, key) => (
-        <Notification key={key} {...not} onHide={() => onRemove(key)} />
+    <View style={style.alertContainer}>
+      {notifications.map(({ id, ...notification }) => (
+        <Notification key={id} id={id} {...notification} onHide={onRemove} />
       ))}
     </View>
   )
@@ -77,17 +88,23 @@ export const Notifications = ({ notifications, onRemove }) => {
 
 export const NotificationProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([])
-  const addNotification = n =>
-    setNotifications([
-      ...notifications.filter(({ visible }) => !!visible),
-      { ...n, visible: true }
-    ])
-  const removeNotification = key =>
-    setNotifications(
-      notifications.slice(0, key - 1).concat(notifications.slice(key + 1))
-    )
+  const notificationsRef = useRef(notifications)
+  notificationsRef.current = notifications
+
+  const add = n => {
+    const notification = { ...n, id: Date.now() }
+    setNotifications([...notifications, notification])
+  }
+
+  const removeNotification = key => {
+    const updated = [...notificationsRef.current]
+    const removeIndex = updated.findIndex(({ id }) => id === key)
+    if (removeIndex >= 0) updated.splice(removeIndex, 1)
+    setNotifications(updated)
+  }
+
   return (
-    <NotificationContext.Provider value={{ add: addNotification }}>
+    <NotificationContext.Provider value={{ add }}>
       {children}
       <Notifications
         notifications={notifications}
@@ -100,9 +117,15 @@ export const NotificationProvider = ({ children }) => {
 const style = StyleSheet.create({
   alertContainer: {
     position: 'fixed',
-    bottom: 16,
+    top: 16,
     left: 16,
     right: 16,
+    zIndex: 666,
+    display: 'flex',
+    flexDirection: 'column-reverse'
+  },
+  alert: {
+    marginTop: 16,
     padding: 16,
     backgroundColor: '#FFF',
     borderRadius: 8,

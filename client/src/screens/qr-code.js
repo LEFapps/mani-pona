@@ -15,25 +15,15 @@ import Button from '../shared/buttons/button'
 import { fixedEncodeURIComponent } from '../../shared/tools'
 
 export default function Receive () {
+  const { maniClient } = global
+
   const [getAmount, setAmount] = useState('0')
   const [getMsg, setMsg] = useState('')
   const [getSign, setSign] = useState(100)
   const [getConfirm, setConfirm] = useState(false)
   const [getValue, setValue] = useState('')
-  const { maniClient } = global
-  const dim = Dimensions.get('window')
 
-  // maniClient.transactions
-  //   .current()
-  //   .then(confirmation => {
-  //     Alert.alert(confirmation.message + ': ' + confirmation.amount)
-  //     // confirm the payment using the callback provided in the confirmation
-  //   })
-  //   .catch(error => {
-  //     // e.g. time-outs, cancels, etc
-  //     const maniError = new ManiError(error)
-  //     Alert.alert(maniError.message)
-  //   })
+  const dim = Dimensions.get('window')
 
   const createQr = () => {
     // barcode in the format: "loreco://scan/<fingerprint:destination>/<amount * 100>?/msg?"

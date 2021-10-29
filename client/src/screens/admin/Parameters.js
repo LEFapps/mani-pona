@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { View, Text, FlatList, Button } from 'react-native'
 import { ScrollView } from 'react-native-web'
 
@@ -7,7 +7,7 @@ import { globalStyles } from '../../styles/global'
 
 const Screen = ({ navigation, route }) => {
   const { maniClient } = global
-
+  const notification = useContext(Notification)
   const [parameters, setParameters] = useState()
   const [errorText, setError] = useState('')
 
@@ -20,7 +20,14 @@ const Screen = ({ navigation, route }) => {
     maniClient.system
       .accountTypes()
       .then(setParameters)
-      .catch(e => setError(e.message || e))
+      .catch(e => {
+        console.error('system/accountTypes', e)
+        notification.add({
+          type: 'warning',
+          title: 'system/accountTypes',
+          message: e && e.message
+        })
+      })
   }
 
   return (

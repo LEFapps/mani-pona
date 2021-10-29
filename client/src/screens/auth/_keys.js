@@ -13,7 +13,6 @@ import Modal from 'modal-react-native-web'
 import QRCode from 'react-native-qrcode-svg'
 
 import CustomButton from '../../shared/buttons/button'
-import Alert from '../../shared/alert'
 import { globalStyles } from '../../styles/global'
 
 const KeyTabs = createMaterialTopTabNavigator()
@@ -105,7 +104,6 @@ const ExportKeys = () => {
       })
       .catch(e => {
         console.error('exposeKeys', e)
-        e && Alert.alert(e.message)
       })
   }
 

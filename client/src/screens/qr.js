@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { View, StyleSheet, ScrollView, Text } from 'react-native'
 import { useIsFocused } from '@react-navigation/native'
 import RoundButton from '../shared/buttons/roundIconButton'
@@ -11,8 +11,13 @@ import { globalStyles } from '../styles/global'
 import { Contact } from '../shared/contact'
 import log from 'loglevel'
 import { TextInput } from 'react-native-paper'
+import { useNotifications } from '../shared/notifications'
 
 export default function Home ({ navigation }) {
+  const { maniClient } = global
+
+  const notification = useNotifications()
+
   const isFocused = useIsFocused()
   const [getData, setData] = useState()
   const [getSign, setSign] = useState()
@@ -21,7 +26,6 @@ export default function Home ({ navigation }) {
     setData()
     setError()
   }
-  const maniClient = global.maniClient
 
   const readChallenge = (data = 'loreco://null') => {
     log.debug('scanned data', data)
@@ -51,16 +55,35 @@ export default function Home ({ navigation }) {
         destination,
         MANI(Math.abs(parseFloat(amount.replace(',', '.'))) * getSign)
       )
+      .catch(e => {
+        console.error('transactions/challenge', e)
+        notification.add({
+          type: 'danger',
+          title: 'Transactie opbouwen mislukt',
+          message: e && e.message
+        })
+      })
       .then(challenge => {
-        // console.log('CHALLENGE', challenge)
         return maniClient.transactions.create(challenge, message)
       })
+      .catch(e => {
+        console.error('transactions/create', e)
+        notification.add({
+          type: 'danger',
+          title: 'Transactie starten mislukt',
+          message: e && e.message
+        })
+      })
       .then(create => {
-        // console.log('CREATE', create)
         if (create) navigation.navigate('AccountBalance')
       })
-      .catch(err => {
-        setError(err.message)
+      .catch(e => {
+        console.error('transactions/create (after)', e)
+        notification.add({
+          type: 'warning',
+          title: 'Transactie afronden mislukt',
+          message: e && e.message
+        })
       })
   }
 
