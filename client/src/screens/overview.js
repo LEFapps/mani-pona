@@ -95,7 +95,7 @@ export default function AccountBalance ({ navigation }) {
             <Card>
               <Text style={globalStyles.property}>Laatste wijziging</Text>
               <Text style={globalStyles.price}>
-                {new Date(current.date).toLocaleString()}
+                {new Date(current.date).toLocaleString('nl-BE')}
               </Text>
             </Card>
           )}
@@ -113,7 +113,7 @@ export default function AccountBalance ({ navigation }) {
           )}
           {!!demurrage && (
             <Card>
-              <Text style={globalStyles.property}>Demurrage</Text>
+              <Text style={globalStyles.property}>Gemeenschapsbijdrage</Text>
               <Text style={globalStyles.price}>{demurrage} %</Text>
             </Card>
           )}
