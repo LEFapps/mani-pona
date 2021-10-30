@@ -18,6 +18,7 @@ import Card from '../../shared/card'
 import universalAlert from '../../shared/alert'
 
 import { globalStyles } from '../../styles/global'
+import { useNotifications } from '../../shared/notifications'
 
 const EditIcon = props => (
   <MaterialCommunityIcons
@@ -30,6 +31,7 @@ const EditIcon = props => (
 
 export const Users = ({ navigation, route }) => {
   const { maniClient } = global
+  const notification = useNotifications()
   const [isBusy, setBusy] = useState(false)
   const [searchText, setSearch] = useState('')
   const [errorText, setError] = useState('')
@@ -81,7 +83,11 @@ export const Users = ({ navigation, route }) => {
       .catch(e => {
         setBusy(false)
         console.error('search/findUser', e)
-        setError(e.message || e)
+        notification.add({
+          type: 'warning',
+          title: 'search/findUser',
+          message: e && e.message
+        })
       })
   }
 

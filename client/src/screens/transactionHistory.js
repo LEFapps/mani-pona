@@ -1,26 +1,38 @@
-import React, { useState, useEffect } from 'react'
-import { View, Text, FlatList, TouchableOpacity } from 'react-native'
+import React, { useState, useEffect, useContext } from 'react'
+import {
+  ScrollView,
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity
+} from 'react-native'
+import { MaterialCommunityIcons } from '@expo/vector-icons'
 
 import { Contact } from '../shared/contact'
-import Alert from '../shared/alert'
 import Card from '../shared/card'
 import FlatButton from '../shared/buttons/historyButton'
+import { downloader } from '../helpers/downloader'
+import { DarkSpinner } from '../shared/loader'
 
 import { sortBy } from '../../shared/tools'
 import { globalStyles } from '../styles/global'
+import { useNotifications } from '../shared/notifications'
 
 export default function TransactionHitstory ({ navigation }) {
+  const { maniClient } = global
+
+  const notification = useNotifications()
+
   const [transactions, setTransactions] = useState([])
   const [filter, setFilter] = useState('all')
   const [ready, setReady] = useState(false)
-  const ManiClient = global.maniClient
 
   useEffect(() => {
     loadData()
   }, [])
 
   function loadData () {
-    ManiClient.transactions
+    maniClient.transactions
       .recent()
       .then(transactions => {
         transactions.sort(sortBy('date', 'DESC'))
@@ -29,7 +41,11 @@ export default function TransactionHitstory ({ navigation }) {
       })
       .catch(e => {
         console.error('transactions/recent', e)
-        e && Alert.alert(e.message)
+        notification.add({
+          type: 'warning',
+          message: e && e.message,
+          title: 'transactions/recent'
+        })
       })
   }
 
@@ -54,9 +70,9 @@ export default function TransactionHitstory ({ navigation }) {
   const transactionsToShow = transactions.filter(({ amount }) => {
     switch (filter) {
       case 'paid':
-        return amount.negative()
+        return !!amount && amount.negative()
       case 'received':
-        return amount.positive()
+        return !!amount && amount.positive()
       default:
         return true
     }
@@ -64,7 +80,7 @@ export default function TransactionHitstory ({ navigation }) {
 
   if (ready) {
     return (
-      <View style={globalStyles.main}>
+      <ScrollView style={globalStyles.main}>
         <FlatButton options={filters} />
         <View>
           <FlatList
@@ -96,9 +112,60 @@ export default function TransactionHitstory ({ navigation }) {
             )}
           />
         </View>
-      </View>
+        <View style={{ marginTop: 32 }}>
+          <ExportTransactions />
+        </View>
+      </ScrollView>
     )
   } else {
     return null
   }
+}
+
+const ExportTransactions = () => {
+  const { maniClient } = global
+
+  const [isBusy, setBusy] = useState(false)
+
+  const onPress = async () => {
+    setBusy(true)
+    const file = ['loreco-transacties-' + maniClient.id, 'text/csv']
+    maniClient.transactions
+      .export()
+      .then(data => {
+        downloader(data, ...file)
+        setBusy(false)
+      })
+      .catch(e => {
+        setBusy(false)
+        console.error(method, e)
+        notification.add({
+          type: 'warning',
+          message: e && e.message,
+          title: method
+        })
+      })
+  }
+
+  return (
+    <TouchableOpacity onPress={isBusy ? undefined : onPress}>
+      <Card>
+        <View style={{ flexDirection: 'column' }}>
+          <Text style={globalStyles.property}>Transacties downloaden</Text>
+          <Text style={globalStyles.date}>(alles, csv-formaat)</Text>
+        </View>
+        <Text style={globalStyles.price}>
+          {isBusy ? (
+            <DarkSpinner size={24} />
+          ) : (
+            <MaterialCommunityIcons
+              name={'database-export'}
+              size={24}
+              // style={{ marginHorizontal: 8, alignSelf: 'center' }}
+            />
+          )}
+        </Text>
+      </Card>
+    </TouchableOpacity>
+  )
 }

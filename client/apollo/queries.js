@@ -186,7 +186,7 @@ const FIND_USER = gql`
 const DISABLE_USER = gql`
   mutation disableuser($username: String!) {
     admin {
-      disableUser(username: $username)
+      disableAccount(username: $username)
     }
   }
 `
@@ -194,7 +194,7 @@ const DISABLE_USER = gql`
 const ENABLE_USER = gql`
   mutation enableuser($username: String!) {
     admin {
-      enableUser(username: $username)
+      enableAccount(username: $username)
     }
   }
 `

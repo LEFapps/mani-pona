@@ -1,7 +1,6 @@
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { TextInput, View, Text, ScrollView } from 'react-native'
 import Auth from '@aws-amplify/auth'
-import size from 'lodash/size'
 
 import { globalStyles } from '../../styles/global.js'
 import Button from '../../shared/buttons/button'
@@ -13,12 +12,10 @@ import {
   validateNotEmpty,
   validateRegex
 } from '../../helpers/validation'
-import Alert from '../../shared/alert'
-import { GotoConfirmSignUp, GotoSignIn } from './StateManagers.js'
+import { useNotifications } from '../../shared/notifications'
 import i18n from 'i18n-js'
 import { resetClient } from '../../../App.js'
 import AccountsList from './_accounts.js'
-import { PhoneNumberResolver } from 'graphql-scalars'
 
 export default function signUp (props) {
   const defaultState = {
@@ -38,6 +35,7 @@ export default function signUp (props) {
 
   const [state, setState] = useState(defaultState)
   const [errors, setErrors] = useState(defaultState)
+  const notification = useNotifications()
 
   const selectAccount = (username, key) => {
     if (key) props.onStateChange('signIn', { username, key })
@@ -55,21 +53,43 @@ export default function signUp (props) {
       validatePasswordRepeat(state.password, state.password2)
     const privacyError = validateNotEmpty(state.privacy)
     const aliasError = validateNotEmpty(!!state.alias)
-    const dateError = validateRegex(state.birthday, 'date')
+    const addressError = validateNotEmpty(!!state.address)
+    const zipError = validateNotEmpty(!!state.zip)
+    const cityError = validateNotEmpty(!!state.city)
+    const phoneError = validateNotEmpty(!!state.phone)
+    const dateError =
+      state.requestedType === 'professional'
+        ? false
+        : validateNotEmpty(!!state.birthday) ||
+          validateRegex(state.birthday, 'dateBE')
+    const taxError =
+      state.requestedType === 'professional'
+        ? validateNotEmpty(!!state.companyTaxNumber)
+        : false
 
     if (
       emailError ||
       passwordError ||
       privacyError ||
       aliasError ||
-      dateError
+      dateError ||
+      addressError ||
+      zipError ||
+      cityError ||
+      phoneError ||
+      taxError
     ) {
       setErrors({
         email: emailError,
         password: passwordError,
         privacy: privacyError,
         alias: aliasError,
-        birthday: dateError
+        birthday: dateError,
+        address: addressError,
+        zip: zipError,
+        city: cityError,
+        phone: phoneError,
+        companyTaxNumber: taxError
       })
     } else {
       setState(defaultState)
@@ -91,25 +111,48 @@ export default function signUp (props) {
             'custom:companyTaxNumber': state.companyTaxNumber || ''
           }
         })
-        if (userConfirmed)
+        if (userConfirmed) {
           props.onStateChange('signIn', { username: state.email })
-        else props.onStateChange('confirmSignUp', { username: state.email })
+          notification.add({
+            type: 'success',
+            title: 'Welkom!',
+            message: 'Je registratie is gelukt, je kan je nu aanmelden.'
+          })
+        } else {
+          props.onStateChange('confirmSignUp', { username: state.email })
+          notification.add({
+            type: 'success',
+            title: 'Welkom!',
+            message:
+              'Je registratie is gelukt, verifieer je e-mailadres nu met de code die je ontvangen hebt via e-mail.'
+          })
+        }
       } catch (error) {
         console.error('signUp', error)
-        Alert.alert(i18n.t(error.code))
+        notification.add({
+          type: 'danger',
+          title: 'Registratie mislukt',
+          message: e && e.message
+        })
       }
     }
   }
 
   const accountTypes = [
     {
-      title: 'Standaardaccount',
-      onPress: () => setState({ ...state, requestedType: 'default' }),
+      title: 'Particulier account',
+      onPress: () => {
+        setState({ ...state, requestedType: 'default' })
+        setErrors({ ...errors, companyTaxNumber: false })
+      },
       active: () => state.requestedType === 'default'
     },
     {
       title: 'Professioneel account',
-      onPress: () => setState({ ...state, requestedType: 'professional' }),
+      onPress: () => {
+        setState({ ...state, requestedType: 'professional' })
+        setErrors({ ...errors, birthday: false })
+      },
       active: () => state.requestedType === 'professional'
     }
   ]
@@ -184,7 +227,10 @@ export default function signUp (props) {
             <FlatButton options={accountTypes} />
 
             <Text style={globalStyles.label}>
-              {state.requestedType === 'professional' ? 'Bedrijf' : 'Naam'} *
+              {state.requestedType === 'professional'
+                ? 'Bedrijf of organisatie'
+                : 'Naam'}{' '}
+              *
             </Text>
             <TextInput
               style={globalStyles.input}
@@ -204,7 +250,7 @@ export default function signUp (props) {
               <Text style={globalStyles.errorText}>{errors.alias}</Text>
             )}
 
-            <Text style={globalStyles.label}>Adres</Text>
+            <Text style={globalStyles.label}>Adres *</Text>
             <TextInput
               style={globalStyles.input}
               placeholder='Straat + nr.'
@@ -215,7 +261,11 @@ export default function signUp (props) {
               value={state.address}
             />
 
-            <Text style={globalStyles.label}>Postcode</Text>
+            {!!errors.address && (
+              <Text style={globalStyles.errorText}>{errors.address}</Text>
+            )}
+
+            <Text style={globalStyles.label}>Postcode *</Text>
             <TextInput
               style={globalStyles.input}
               onChangeText={zip => {
@@ -225,7 +275,11 @@ export default function signUp (props) {
               value={state.zip}
             />
 
-            <Text style={globalStyles.label}>Gemeente</Text>
+            {!!errors.zip && (
+              <Text style={globalStyles.errorText}>{errors.zip}</Text>
+            )}
+
+            <Text style={globalStyles.label}>Gemeente *</Text>
             <TextInput
               style={globalStyles.input}
               onChangeText={city => {
@@ -235,7 +289,11 @@ export default function signUp (props) {
               value={state.city}
             />
 
-            <Text style={globalStyles.label}>Telefoonnr.</Text>
+            {!!errors.city && (
+              <Text style={globalStyles.errorText}>{errors.city}</Text>
+            )}
+
+            <Text style={globalStyles.label}>Telefoonnr. *</Text>
             <TextInput
               style={globalStyles.input}
               placeholder='0400 00 00 00'
@@ -246,28 +304,36 @@ export default function signUp (props) {
               value={state.phone}
             />
 
-            <Text style={globalStyles.label}>
-              {state.requestedType === 'professional'
-                ? 'Datum oprichting bedrijf'
-                : 'Geboortedatum'}
-            </Text>
-            <TextInput
-              style={globalStyles.input}
-              placeholder='JJJJ-MM-DD'
-              onChangeText={birthday => {
-                setState({ ...state, birthday })
-                setErrors({ ...errors, birthday: '' })
-              }}
-              value={state.birthday}
-            />
+            {!!errors.phone && (
+              <Text style={globalStyles.errorText}>{errors.phone}</Text>
+            )}
 
-            {!!errors.birthday && (
-              <Text style={globalStyles.errorText}>{errors.birthday}</Text>
+            {state.requestedType !== 'professional' && (
+              <View>
+                <Text style={globalStyles.label}>
+                  {state.requestedType === 'professional'
+                    ? 'Datum oprichting *'
+                    : 'Geboortedatum *'}
+                </Text>
+                <TextInput
+                  style={globalStyles.input}
+                  placeholder='DD/MM/JJJJ'
+                  onChangeText={birthday => {
+                    setState({ ...state, birthday })
+                    setErrors({ ...errors, birthday: '' })
+                  }}
+                  value={state.birthday}
+                />
+
+                {!!errors.birthday && (
+                  <Text style={globalStyles.errorText}>{errors.birthday}</Text>
+                )}
+              </View>
             )}
 
             {state.requestedType === 'professional' && (
               <View>
-                <Text style={globalStyles.label}>Onderneminsgnr.</Text>
+                <Text style={globalStyles.label}>Onderneminsgnr. *</Text>
                 <TextInput
                   style={globalStyles.input}
                   placeholder='BE0.000.000.000'
@@ -277,6 +343,12 @@ export default function signUp (props) {
                   }}
                   value={state.companyTaxNumber}
                 />
+
+                {!!errors.companyTaxNumber && (
+                  <Text style={globalStyles.errorText}>
+                    {errors.companyTaxNumber}
+                  </Text>
+                )}
               </View>
             )}
 
@@ -296,7 +368,7 @@ export default function signUp (props) {
                 rel='noopener noreferrer'
                 href='https://loreco-assets.s3.eu-west-1.amazonaws.com/Algemene_voorwaarden_Klavers_Lichtervelde.docx.pdf'
               >
-                Algemene Voorwaarden*
+                Algemene Voorwaarden *
               </a>
             </Text>
             <FlatButton options={privacies} />

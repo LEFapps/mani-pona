@@ -5,20 +5,22 @@ import {
   Text,
   View,
   StyleSheet,
-  ScrollView
+  ScrollView,
+  Dimensions
 } from 'react-native'
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs'
 import Modal from 'modal-react-native-web'
 import QRCode from 'react-native-qrcode-svg'
 
 import CustomButton from '../../shared/buttons/button'
-import Alert from '../../shared/alert'
 import { globalStyles } from '../../styles/global'
 
 const KeyTabs = createMaterialTopTabNavigator()
 
 const ModalContent = ({ data }) => {
   if (!data) return null
+
+  const dim = Dimensions.get('window')
 
   const QrData = index => () => (
     <View
@@ -38,9 +40,9 @@ const ModalContent = ({ data }) => {
           value={
             'loreco://import/' + (index < 0 ? data.join('/') : data[index])
           }
-          size={320}
+          size={Math.min(480, Math.min(dim.width, dim.height)) - 64}
           quietZone={8}
-          style={{ maxWidth: '80vw' }}
+          ecl={'L'}
         />
       </View>
     </View>
@@ -102,7 +104,6 @@ const ExportKeys = () => {
       })
       .catch(e => {
         console.error('exposeKeys', e)
-        e && Alert.alert(e.message)
       })
   }
 

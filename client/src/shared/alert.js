@@ -1,14 +1,15 @@
 import { Platform, Alert } from 'react-native'
 import log from 'loglevel'
 
-const web = msg => {
+const web = (title, msg, btns) => {
   log.debug('ALERT web:', msg)
-  alert(msg)
+  const content = (title || '') + (!!title && !!msg ? '\n\n' : '') + (msg || '')
+  alert(content)
 }
 
-const native = msg => {
+const native = (title, msg, btns) => {
   log.debug('ALERT native:', msg)
-  Alert.alert(msg)
+  Alert.alert(title, msg, btns)
 }
 
 export const universalAlert = {

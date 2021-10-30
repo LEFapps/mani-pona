@@ -1,20 +1,18 @@
 import React, { useState, useEffect } from 'react'
-import { View, Text, FlatList, TouchableOpacity } from 'react-native'
-import AsyncStorage from '@react-native-async-storage/async-storage'
 import {
-  MaterialIcons,
-  MaterialCommunityIcons,
-  Entypo
-} from '@expo/vector-icons'
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  ScrollView
+} from 'react-native'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import { MaterialIcons } from '@expo/vector-icons'
 import loglevel from 'loglevel'
 import uniq from 'lodash/uniq'
 
-import { Contact } from '../../shared/contact'
-import Alert from '../../shared/alert'
 import Card from '../../shared/card'
-import FlatButton from '../../shared/buttons/historyButton'
 
-import { sortBy } from '../../../shared/tools'
 import { globalStyles } from '../../styles/global'
 import { keyWarehouse } from '../../maniClient'
 import { colors } from '../../helpers/helper'
@@ -102,7 +100,7 @@ export const AccountsList = ({ onSelect }) => {
   )
 
   return (
-    <View style={globalStyles.main}>
+    <ScrollView style={globalStyles.main}>
       <View style={{ marginVertical: 32 }}>
         {isLoading ? (
           <Text>Rekeningen zoeken…</Text>
@@ -134,7 +132,7 @@ export const AccountsList = ({ onSelect }) => {
           />
         )}
       </View>
-    </View>
+    </ScrollView>
   )
 }
 

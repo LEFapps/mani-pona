@@ -1,28 +1,29 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs'
 import { useIsFocused } from '@react-navigation/native'
+
+import { UserContext } from '../../authenticator'
+
 import Scan from '../../screens/qr'
 import Create from '../../screens/qr-code'
 import Overview from '../../screens/overview'
-import ContributionPrediction from '../../screens/contributionPrediction'
-import Transaction from '../../screens/transactionFromHome'
-import AddContact from '../../screens/addContact'
+import Predictions from '../../screens/predictions'
 
-import IncomePrediction from '../../screens/incomePredictions'
-
-import { globalStyles } from '../../styles/global'
 import { colors } from '../../helpers/helper'
-import Header from '../../shared/header'
-import { View, Text } from 'react-native'
 
 const Nav = createMaterialTopTabNavigator()
 
 const qrStack = () => {
   const isFocused = useIsFocused()
+  const user = useContext(UserContext)
+  const { 'custom:type': userType } = (user && user.attributes) || {}
+
   return (
     isFocused && (
       <Nav.Navigator
-        initialRouteName='AccountBalance'
+        initialRouteName={
+          userType === 'professional' ? 'Create' : 'AccountBalance'
+        }
         screenOptions={{
           headerStyle: {
             backgroundColor: colors.DarkerBlue
@@ -38,21 +39,31 @@ const qrStack = () => {
         <Nav.Screen
           name='AccountBalance'
           component={Overview}
-          options={{ title: 'Overzicht', headerBackTitle: 'Terug' }}
+          options={{ title: 'Startscherm', headerBackTitle: 'Terug' }}
         />
         <Nav.Screen
           name='Scan'
           component={Scan}
           options={{
-            headerTitle: () => <Header title='Scan' icon='menu' />,
-            headerBackTitle: 'LoREco'
+            title: 'QR Scannen',
+            headerBackTitle: 'Startscherm',
+            lazy: true
           }}
         />
         <Nav.Screen
           name='Create'
           component={Create}
-          options={{ title: 'Create', headerBackTitle: 'LoREco' }}
+          options={{ title: 'QR Maken', headerBackTitle: 'Startscherm' }}
         />
+        {/* <Nav.Screen
+          name='Predictions'
+          component={Predictions}
+          options={{
+            title: 'Prognose',
+            headerBackTitle: 'Startscherm',
+            lazy: true
+          }}
+        /> */}
         {/* <Nav.Screen
         name='IncomePrediction'
         component={IncomePrediction}

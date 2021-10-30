@@ -2,16 +2,10 @@ import React, { useState, useEffect, useContext } from 'react'
 import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs'
 import { NavigationContainer } from '@react-navigation/native'
 import { View, Text } from 'react-native'
-import {
-  MaterialIcons,
-  MaterialCommunityIcons,
-  Entypo
-} from '@expo/vector-icons'
-import Auth from '@aws-amplify/auth'
+import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons'
 
 import { UserContext } from '../authenticator'
-
-import Alert from '../shared/alert'
+import { useNotifications } from '../shared/notifications'
 
 import AdminStack from './stacks/adminStack'
 import AccountStack from '../routes/stacks/accountStack'
@@ -23,7 +17,6 @@ import StandingOrderStack from '../routes/stacks/standingOrderStack'
 // import ContactListStack from '../routes/stacks/contactListStack'
 import { globalStyles } from '../styles/global'
 import { colors } from '../helpers/helper'
-import { log } from 'react-native-reanimated'
 
 const iconProps = {
   size: 24,
@@ -46,7 +39,7 @@ const navScreens = {
     component: ({ Nav }) => (
       <Nav.Screen
         key='LoREco'
-        name='LoREco'
+        name='Startscherm'
         component={QrStack}
         options={{
           drawerIcon: props => (
@@ -93,31 +86,31 @@ const navScreens = {
       />
     )
   },
-  Bijdragen: {
-    component: ({ Nav }) => (
-      <Nav.Screen
-        key='Bijdragen'
-        name='Bijdragen'
-        component={ContributionHistoryStack}
-        options={{
-          drawerIcon: props => (
-            <MaterialIcons
-              name='swap-vertical-circle'
-              color={props.color}
-              {...iconProps}
-            />
-          ),
-          tabBarIcon: ({ focused, color = 'white' }) => (
-            <MaterialIcons
-              name='swap-vertical-circle'
-              color={color}
-              {...iconProps}
-            />
-          )
-        }}
-      />
-    )
-  },
+  // Bijdragen: {
+  //   component: ({ Nav }) => (
+  //     <Nav.Screen
+  //       key='Bijdragen'
+  //       name='Bijdragen'
+  //       component={ContributionHistoryStack}
+  //       options={{
+  //         drawerIcon: props => (
+  //           <MaterialIcons
+  //             name='swap-vertical-circle'
+  //             color={props.color}
+  //             {...iconProps}
+  //           />
+  //         ),
+  //         tabBarIcon: ({ focused, color = 'white' }) => (
+  //           <MaterialIcons
+  //             name='swap-vertical-circle'
+  //             color={color}
+  //             {...iconProps}
+  //           />
+  //         )
+  //       }}
+  //     />
+  //   )
+  // },
   // 'Beheer Vrije Buffer': {component: ({Nav})=> (
   //   <Nav.Screen
   //     key='Beheer Vrije Buffer'
@@ -189,6 +182,7 @@ const navScreens = {
 
 export default function drawerNavigator (props) {
   const { maniClient } = global
+  const notification = useNotifications()
   const user = useContext(UserContext)
   const [hasPending, setPending] = useState(null)
   const Nav = createMaterialBottomTabNavigator()
@@ -202,9 +196,13 @@ export default function drawerNavigator (props) {
     maniClient.transactions
       .pending()
       .then(setPending)
-      .catch(e => {
-        console.error('main/pending', e)
-        e && Alert.alert(e.message)
+      .catch(({ message }) => {
+        console.error('main/pending', message)
+        notification.add({
+          type: 'warning',
+          title: 'Transacties ophalen mislukt',
+          message
+        })
         setPending(undefined)
       })
   }

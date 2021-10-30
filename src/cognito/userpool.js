@@ -49,14 +49,14 @@ const CognitoUserPool = UserPoolId => {
         income: mani(income)
       }))
     },
-    async disableUser (Username) {
+    async disableAccount (Username) {
       provider.adminDisableUser = promisify(provider.adminDisableUser)
       return provider.adminDisableUser({
         UserPoolId,
         Username
       })
     },
-    async enableUser (Username) {
+    async enableAccount (Username) {
       provider.adminEnableUser = promisify(provider.adminEnableUser)
       return provider.adminEnableUser({
         UserPoolId,

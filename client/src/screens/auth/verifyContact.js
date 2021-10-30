@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { TextInput, View, Text } from 'react-native'
+import { TextInput, View, Text, ScrollView } from 'react-native'
 import Auth from '@aws-amplify/auth'
 
 import { globalStyles } from '../../styles/global.js'
@@ -10,6 +10,7 @@ import { keyWarehouse } from '../../maniClient.js'
 export default function verifyContact ({ authState, authData, onStateChange }) {
   const { storageKey, keyValue, email, ...user } = authData || {}
 
+  const [isBusy, setBusy] = useState(false)
   const [alias, setAlias] = useState(
     (user && user.attributes && user.attributes['custom:alias']) || email
   )
@@ -18,7 +19,8 @@ export default function verifyContact ({ authState, authData, onStateChange }) {
   const [errors, setErrors] = useState([])
 
   const onSubmit = async () => {
-    if (checkForErrors()) return
+    setBusy(true)
+    if (checkForErrors()) return setBusy(false)
 
     // init maniClient for account fetching
     let fetchedKey = ''
@@ -39,22 +41,20 @@ export default function verifyContact ({ authState, authData, onStateChange }) {
     try {
       const cognitoUser = await Auth.currentAuthenticatedUser()
       const currentSession = await Auth.currentSession()
-      await cognitoUser.refreshSession(
+      cognitoUser.refreshSession(
         currentSession.refreshToken,
         async (err, session) => {
-          const { idToken, refreshToken, accessToken } = session
           // do whatever you want to do now :)
           const newCognitoUser = await Auth.currentAuthenticatedUser({
             bypassCache: true
           })
+          setBusy(false)
           onStateChange('signedIn', { ...newCognitoUser })
         }
       )
     } catch (e) {
       console.log('Unable to refresh Token', e)
     }
-
-    // onStateChange('signedIn')
   }
 
   const checkForErrors = () => {
@@ -73,15 +73,16 @@ export default function verifyContact ({ authState, authData, onStateChange }) {
     // - keys (hidden)
 
     return (
-      <View>
-        <Text style={globalStyles.label}>Alias</Text>
-        <TextInput
-          style={globalStyles.input}
-          onChangeText={setAlias}
-          defaultValue={alias}
-        />
+      <ScrollView style={globalStyles.container}>
+        <View style={globalStyles.main}>
+          <Text style={globalStyles.label}>Alias</Text>
+          <TextInput
+            style={globalStyles.input}
+            onChangeText={setAlias}
+            defaultValue={alias}
+          />
 
-        {/* <Text style={globalStyles.label}>PIN-code (min. 4 cijfers)</Text>
+          {/* <Text style={globalStyles.label}>PIN-code (min. 4 cijfers)</Text>
         <TextInput
           style={globalStyles.input}
           onChangeText={setPin}
@@ -104,15 +105,19 @@ export default function verifyContact ({ authState, authData, onStateChange }) {
           ]}
         /> */}
 
-        {!!errors.length &&
-          errors.map((e, i) => (
-            <Text style={globalStyles.errorText} key={i}>
-              {e}
-            </Text>
-          ))}
+          {!!errors.length &&
+            errors.map((e, i) => (
+              <Text style={globalStyles.errorText} key={i}>
+                {e}
+              </Text>
+            ))}
 
-        <Button text='Rekening openen' onPress={onSubmit} />
-      </View>
+          <Button
+            text={isBusy ? '• • •' : 'Rekening openen'}
+            onPress={onSubmit}
+          />
+        </View>
+      </ScrollView>
     )
   }
 

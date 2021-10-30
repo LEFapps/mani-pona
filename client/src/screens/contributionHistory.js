@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { View, Text, FlatList } from 'react-native'
+import { ScrollView, Text, FlatList } from 'react-native'
 
 import Card from '../shared/card'
 import Alert from '../shared/alert'
@@ -36,7 +36,7 @@ export default function Home () {
     return null
   } else {
     return (
-      <View style={globalStyles.main}>
+      <ScrollView style={globalStyles.main}>
         <FlatList
           data={contributions}
           keyExtractor={item => JSON.stringify(item)} // TODO: handle keys smarter
@@ -49,7 +49,7 @@ export default function Home () {
             </Card>
           )}
         />
-      </View>
+      </ScrollView>
     )
   }
 }

@@ -1,5 +1,12 @@
 import React from 'react'
-import { Text, View, StyleSheet, FlatList, Alert } from 'react-native'
+import {
+  Text,
+  View,
+  StyleSheet,
+  FlatList,
+  Alert,
+  ScrollView
+} from 'react-native'
 import { globalStyles } from '../styles/global'
 import InfoButton from '../shared/buttons/infoButton'
 import mani from '../../shared/mani'
@@ -26,7 +33,7 @@ export default function ContributionPrediction ({ route }) {
   }
 
   return (
-    <View style={globalStyles.main}>
+    <ScrollView style={globalStyles.main}>
       <View style={globalStyles.amountHeader}>
         <Text style={globalStyles.property}>Totaal voorspelde bijdrage:</Text>
         <Text style={globalStyles.price}>
@@ -67,7 +74,7 @@ export default function ContributionPrediction ({ route }) {
           </View>
         )}
               />*/}
-    </View>
+    </ScrollView>
   )
 }
 

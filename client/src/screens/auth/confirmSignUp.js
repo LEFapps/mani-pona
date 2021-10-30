@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { TextInput, View, Text, ScrollView } from 'react-native'
 import { globalStyles } from '../../styles/global.js'
 import Button from '../../shared/buttons/button'
@@ -6,20 +6,21 @@ import Auth from '@aws-amplify/auth'
 import {
   validateEmail,
   validatePassword,
-  validatePasswordLogIn,
   validateVerificationCode
 } from '../../helpers/validation'
-import Alert from '../../shared/alert'
-import i18n from 'i18n-js'
 import Dialog from 'react-native-dialog'
 import AccountsList from './_accounts.js'
 import { keyWarehouse } from '../../maniClient.js'
 import { hash } from '../../../shared/crypto.js'
 import { KeyManager } from '../../helpers/keymanager.js'
+import { useNotifications } from '../../shared/notifications.js'
 
 export default function confirmSignUp (props = {}) {
   const { authData } = props
   const { username } = authData || {}
+
+  const notification = useNotifications()
+
   const [state, setState] = useState({
     email: username || '',
     verificationCode: ''
@@ -70,9 +71,18 @@ export default function confirmSignUp (props = {}) {
           storageKey,
           keyValue
         })
-      } catch (error) {
-        console.error('confirmSignup', error)
-        Alert.alert(i18n.t(error.code))
+        notification.add({
+          type: 'success',
+          message: 'Je verificatie is gelukt, je kan je nu aanmelden.',
+          title: 'Verificatie gelukt'
+        })
+      } catch (e) {
+        console.error('confirmSignup', e)
+        notification.add({
+          type: 'warning',
+          message: e && e.message,
+          title: 'Verificatie mislukt'
+        })
       }
     }
   }
@@ -135,10 +145,11 @@ export default function confirmSignUp (props = {}) {
                 label='Annuleren'
                 onPress={() => {
                   hideResetCancel()
-                  Alert.alert(
-                    'Geannuleerd',
-                    'Nieuw wachtwoord instellen geannuleerd'
-                  )
+                  notification.add({
+                    type: 'info',
+                    message: 'Nieuw wachtwoord instellen geannuleerd',
+                    title: 'Gennuleerd'
+                  })
                 }}
               />
               <Dialog.Button
@@ -149,10 +160,11 @@ export default function confirmSignUp (props = {}) {
                     showPasswordControle()
                   } else {
                     setNewPassFirst('')
-                    Alert.alert(
-                      'Wachtwoord fout',
-                      validatePassword(newPassFirst)
-                    )
+                    notification.add({
+                      type: 'warning',
+                      title: 'Wachtwoord fout',
+                      message: validatePassword(newPassFirst)
+                    })
                   }
                 }}
               />
@@ -178,10 +190,11 @@ export default function confirmSignUp (props = {}) {
                     newPassword(newPassFirst)
                     hideControle()
                   } else {
-                    Alert.alert(
-                      'Wachtwoord fout',
-                      'Wachtwoorden niet hetzelfde, probeer opnieuw'
-                    )
+                    notification.add({
+                      type: 'warning',
+                      title: 'Wachtwoord fout',
+                      message: 'Wachtwoorden niet hetzelfde, probeer opnieuw'
+                    })
                   }
                 }}
               />

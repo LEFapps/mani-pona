@@ -1,29 +1,39 @@
-import React, { useState, useEffect } from 'react'
+import React, { useContext, useState, useEffect } from 'react'
 import { View, Text, FlatList, ScrollView } from 'react-native'
 import Card from '../shared/bigCardWithButtons'
-import Alert from '../shared/alert'
 import { Contact } from '../shared/contact'
+import { useNotifications } from '../shared/notifications'
 
 import { globalStyles } from '../styles/global'
 
 export default function StandingOrder ({ navigation }) {
+  const { maniClient } = global
+
+  const notification = useNotifications()
+
   const [standingOrders, setOrders] = useState([])
   const [ready, setReady] = useState(false)
   const [error, setError] = useState(false)
-  const ManiClient = global.maniClient
 
   useEffect(() => {
     loadData()
   }, [])
 
   async function loadData () {
-    await ManiClient.transactions
+    await maniClient.transactions
       .pending()
       .then(pending => {
         setOrders(pending ? [{ ...pending, key: 'pending' }] : [])
         setReady(true)
       })
-      .catch(e => setError(e.message))
+      .catch(e => {
+        console.error('transactions/pending', e)
+        notification.add({
+          type: 'warning',
+          title: 'loadData/pending',
+          message: e && e.message
+        })
+      })
   }
 
   if (ready) {
@@ -66,7 +76,7 @@ export default function StandingOrder ({ navigation }) {
                   !toSign
                     ? undefined
                     : () =>
-                        ManiClient.transactions
+                        maniClient.transactions
                           .confirm(challenge)
                           .then(confirm => {
                             // console.log('CONFIRM', confirm)
@@ -74,14 +84,18 @@ export default function StandingOrder ({ navigation }) {
                           })
                           .catch(e => {
                             console.error('transaction/confirm', e)
-                            e && Alert.alert(e.message)
+                            notification.add({
+                              type: 'warning',
+                              message: e && e.message,
+                              title: 'transaction/confirm'
+                            })
                           })
                 }
                 onPressCancel={
                   destination === 'system' || !toSign
                     ? undefined
                     : () =>
-                        ManiClient.transactions
+                        maniClient.transactions
                           .cancel(challenge)
                           .then(cancel => {
                             // console.log('CANCEL', cancel)
@@ -89,7 +103,11 @@ export default function StandingOrder ({ navigation }) {
                           })
                           .catch(e => {
                             console.error('transaction/cancel', e)
-                            a && Alert.alert(e.message)
+                            notification.add({
+                              type: 'warning',
+                              message: e && e.message,
+                              title: 'transaction/cancel'
+                            })
                           })
                 }
               >

@@ -144,14 +144,14 @@ const mockTransactions = [
   {
     transactionId: 3,
     contactId: 3,
-    msg: 'Demurrage toegepast',
+    msg: 'Gemeenschapsbijdrage toegepast',
     amount: mani(-7.1),
     date: new Date('03 Nov 2020 10:07:38 GMT')
   },
   {
     transactionId: 4,
     contactId: 3,
-    msg: 'Demurrage toegepast',
+    msg: 'Gemeenschapsbijdrage toegepast',
     amount: mani(-10),
     date: new Date('03 Dec 2020 10:07:38 GMT')
   },
@@ -203,7 +203,7 @@ const mockNotifications = [
   },
   {
     type: 'demurrage',
-    msg: 'Demurrage toegepast',
+    msg: 'Gemeenschapsbijdrage toegepast',
     amount: mani(-10),
     date: new Date('03 Dec 2020 10:07:38 GMT'),
     confirm: _.noop

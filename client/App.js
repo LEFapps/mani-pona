@@ -18,6 +18,7 @@ import config from './aws-config'
 import * as Localization from 'expo-localization'
 import i18n from 'i18n-js'
 import './src/helpers/i18n'
+import { NotificationProvider } from './src/shared/notifications'
 
 Amplify.configure(config)
 Analytics.configure({ disabled: true })
@@ -25,29 +26,33 @@ Analytics.configure({ disabled: true })
 log.enableAll()
 
 export const resetClient = async (options = {}) => {
-  const mc = await maniClient({ graphqlClient, ...options })
-  global.maniClient = mc
-  console.log('client/reset', mc.id)
-  return mc
+  try {
+    const mc = await maniClient({ graphqlClient, ...options })
+    global.maniClient = mc
+    // console.log('client/reset', mc.id)
+    return mc
+  } catch (error) {
+    console.error('client/reset', error)
+  }
 }
 
 const App = () => {
   const [state, setState] = useState()
-
-  console.log('AUTH state:', state)
 
   const Container = ({ children }) => (
     <View style={globalStyles.container}>{children}</View>
   )
 
   return (
-    <Authenticator container={Container} hideDefault onStateChange={setState}>
-      <SignIn override={'SignIn'} />
-      <SignUp override={'SignUp'} />
-      <ConfirmSignUp override={'confirmSignUp'} />
-      <VerifyContact override={'verifyContact'} />
-      <Loreco />
-    </Authenticator>
+    <NotificationProvider>
+      <Authenticator container={Container} hideDefault onStateChange={setState}>
+        <SignIn override={'SignIn'} />
+        <SignUp override={'SignUp'} />
+        <ConfirmSignUp override={'confirmSignUp'} />
+        <VerifyContact override={'verifyContact'} />
+        <Loreco />
+      </Authenticator>
+    </NotificationProvider>
   )
 }
 
