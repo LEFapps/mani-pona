@@ -87,7 +87,12 @@ const CHALLENGE = gql`
   }
 `
 const CREATE = gql`
-  query ledger($id: String!, $proof: Proof!, $message: String, $prepaid: Boolean) {
+  query ledger(
+    $id: String!
+    $proof: Proof!
+    $message: String
+    $prepaid: Boolean
+  ) {
     ledger(id: $id) {
       transactions {
         create(proof: $proof, message: $message, prepaid: $prepaid)
