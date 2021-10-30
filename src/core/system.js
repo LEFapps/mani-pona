@@ -44,7 +44,7 @@ export default function (ledgers, userpool) {
       let keys = await ledgers.keys('system')
       log.info('Checking keys')
       if (keys) {
-        log.info('System already initialized')
+        log.debug('System already initialized %j', keys)
         return 'System already initialized' // idempotency
       }
       log.info('Generating system keys')

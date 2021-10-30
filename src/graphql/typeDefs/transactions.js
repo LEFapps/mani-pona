@@ -30,13 +30,13 @@ export default gql`
     "Ledger ID of transaction destination"
     to: String!
     "The date when this transfer was initiated"
-    date: DateTime!
+    date: String
     "The amount to transfer. Note that a negative amount means it will be decrease the balance on the 'from' ledger and vice versa."
-    amount: Currency!
+    amount: String
     "An (optional) message that was added to the transaction"
-    message: String!
+    message: String
     "Status: 'pending', 'complete' or 'error'" 
-    status: String!
+    status: String
   }
 
   type LedgerQuery {

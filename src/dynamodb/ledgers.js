@@ -1,5 +1,6 @@
 import assert from 'assert'
 import { getLogger } from 'server-log'
+import { KeyWrapper } from '../../client/shared/crypto'
 const log = getLogger('dynamodb:ledgers')
 
 const SHORT_ATTRIBUTES = [
@@ -55,10 +56,11 @@ function ledgers (table, prefix = '') {
       })
     },
     async keys (fingerprint, required = false) {
-      return table.getItem(
+      const keys = await table.getItem(
         { ledger: fingerprint, entry: 'pk' },
         required ? `Key(s) not found for ledger ${fingerprint}` : undefined
       )
+      return keys ? KeyWrapper(keys) : undefined
     },
     async publicKey (fingerprint) {
       return table

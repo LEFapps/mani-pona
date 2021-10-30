@@ -185,7 +185,7 @@ const ManiClient = async ({
         amount: amount.format()
       })
     },
-    async create (challenge, message) {
+    async create (challenge, message, prepaid = false) {
       return query(CREATE, 'ledger.transactions.create', {
         id,
         proof: {
@@ -193,7 +193,8 @@ const ManiClient = async ({
           counterSignature: await keyManager.sign(flip(challenge)),
           payload: challenge
         },
-        message
+        message,
+        prepaid
       })
     },
     async cancel (challenge) {

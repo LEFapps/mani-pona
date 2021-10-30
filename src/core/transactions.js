@@ -1,6 +1,7 @@
 import StateMachine from './statemachine'
 import Ledger from '../dynamodb/ledger'
 import { flip, destructure, toCSV } from './util'
+import { strict as assert } from 'assert'
 // import { mani as Ledgers } from './ledgers'
 
 import { getLogger } from 'server-log'
@@ -25,7 +26,8 @@ export default (ledgers, fingerprint) => {
         .then(t => t.getPrimaryEntry().challenge)
     },
     async create (proof, message = '-', prepaid = false) {
-      const { from, to, date, amount } = destructure(proof.payload)
+      const { from: { ledger: from }, to: { ledger: to }, date, amount } = destructure(proof.payload)
+      assert.equal(from, fingerprint)
       if (to === 'system') { throw new Error('Nice try.') }
       const existing = await ledger.pending()
       if (existing && existing.challenge === proof.payload) {
@@ -66,15 +68,17 @@ export default (ledgers, fingerprint) => {
           await transaction.execute()
           status = 'complete'
         }
-        return {
+        const result = {
           from,
           to,
-          date,
-          amount,
+          date: date.toISOString(),
+          amount: amount.format(),
           transaction: next,
           message,
           status
         }
+        log.debug('Result:\n%j', result)
+        return result
       } catch (err) {
         log.error('Error while creating transaction: %s\n%s', err, err.stack)
         throw new Error('Error while creating transaction, please check logs.')

@@ -90,7 +90,7 @@ const KeyWrapper = key => {
   return {
     publicKey: Verifier(key.publicKeyArmored),
     publicKeyArmored: key.publicKeyArmored,
-    privateKey: Signer(key.privateKeyArmored),
+    privateKey: key.privateKeyArmored ? Signer(key.privateKeyArmored) : undefined,
     privateKeyArmored: key.privateKeyArmored
   }
 }
