@@ -28,7 +28,7 @@ const exportables = {
   ledgerTransactions: {
     title: 'Exporteer transacties',
     method: 'transactions.export',
-    file: 'loreco-rekeningen-ledger',
+    file: 'loreco-transacties-ledger',
     type: 'text/csv'
   }
 }
@@ -56,7 +56,7 @@ export const Exportable = ({ exportable, args = [], ...props }) => {
     }
     fx(...args)
       .then(data => {
-        downloader(data, file, type)
+        downloader(data, props.filename || file, type)
         setBusy(false)
       })
       .catch(e => {
@@ -74,17 +74,17 @@ export const Exportable = ({ exportable, args = [], ...props }) => {
     <TouchableOpacity onPress={isBusy ? undefined : onPress}>
       <Card>
         <View style={{ flexDirection: 'column' }}>
-          <Text style={globalStyles.property}>{title}</Text>
+          {props.title ? (
+            props.title
+          ) : (
+            <Text style={globalStyles.property}>{title}</Text>
+          )}
         </View>
         <Text style={globalStyles.price}>
           {isBusy ? (
             <DarkSpinner size={20} />
           ) : (
-            <MaterialCommunityIcons
-              name={'database-export'}
-              size={20}
-              // style={{ marginHorizontal: 8, alignSelf: 'center' }}
-            />
+            <MaterialCommunityIcons name={'database-export'} size={20} />
           )}
         </Text>
       </Card>

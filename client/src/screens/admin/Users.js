@@ -179,6 +179,7 @@ export const Users = ({ navigation, route }) => {
           <View style={{ marginTop: 32 }}>
             <Exportable
               exportable={'ledgerTransactions'}
+              filename={`loreco-transacties-${result.alias}-${result.ledger}`}
               args={[result.ledger]}
             />
           </View>

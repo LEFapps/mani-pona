@@ -7,7 +7,8 @@ import {
   FlatList,
   TouchableOpacity,
   ScrollView,
-  StyleSheet
+  StyleSheet,
+  Dimensions
 } from 'react-native'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import QRCode from 'react-native-qrcode-svg'
@@ -33,7 +34,18 @@ export const Prepaid = ({ navigation, route }) => {
   const [prepaid, setPrepaid] = useState('')
   const [isBusy, setBusy] = useState()
 
+  const dim = Dimensions.get('window')
+
   const onCreate = async () => {
+    if (!amount || amount <= 0) {
+      notification.add({
+        type: 'danger',
+        title: 'Foutief startbedrag',
+        message:
+          'Het startbedrag van een prepaid ledger moet een waarde van meer dan 0 ɱ zijn.'
+      })
+      return
+    }
     setBusy(true)
     await maniClient.admin
       .createPrepaidLedger(mani(amount))
@@ -62,7 +74,7 @@ export const Prepaid = ({ navigation, route }) => {
   const svgComp = !!prepaid && (
     <QRCode
       value={prepaid}
-      size={320}
+      size={Math.min(480, Math.min(dim.width, dim.height)) - 64}
       quietZone={8}
       color={colors.DarkerBlue}
     />

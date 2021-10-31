@@ -41,7 +41,7 @@ export const globalStyles = StyleSheet.create({
   container: {
     flex: 1,
     fontSize: 16,
-    marginTop: Platform.OS === 'android' ? StatusBar.currentHeight : 45,
+    // marginTop: Platform.OS === 'android' ? StatusBar.currentHeight : 45,
     backgroundColor: 'white',
     width: '100vw',
     height: 'auto',
