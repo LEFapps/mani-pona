@@ -78,7 +78,12 @@ export default function Home ({ navigation }) {
         })
       })
       .then(create => {
-        if (create) navigation.navigate('AccountBalance')
+        if (create) {
+          if (create.entry === 'current') navigation.navigate('AccountBalance')
+          else if (create.entry === 'pending')
+            navigation.navigate('Openstaande betalingen')
+          else navigation.navigate('AccountBalance')
+        }
       })
       .catch(e => {
         console.error('transactions/create (after)', e)

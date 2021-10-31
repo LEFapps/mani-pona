@@ -21,9 +21,12 @@ import { globalStyles } from '../../styles/global'
 import FlatButton from '../../shared/buttons/button'
 import { downloader } from '../../helpers/downloader'
 import { colors } from '../../helpers/helper'
+import { useNotifications } from '../../shared/notifications'
 
 export const Prepaid = ({ navigation, route }) => {
   const { maniClient } = global
+
+  const notification = useNotifications()
 
   const [amount, setAmount] = useState('0')
   const [ledger, setLedger] = useState('')
@@ -39,7 +42,14 @@ export const Prepaid = ({ navigation, route }) => {
         // barcode in the format: "loreco://scan/<fingerprint:destination>/<amount * 100>?/msg?"
         setPrepaid(`loreco://scan/${ledger}/__prepaid__`)
       })
-      .catch(console.error)
+      .catch(e => {
+        console.error('amdin/createPrepaidLedger', e)
+        notification.add({
+          type: 'danger',
+          title: 'Prepaid aanmaken mislukt',
+          message: e && e.message
+        })
+      })
   }
 
   const reset = () => {
@@ -75,7 +85,7 @@ export const Prepaid = ({ navigation, route }) => {
         <View style={styles.cont}>
           <View style={styles.qr}>{svgComp}</View>
           <Text style={globalStyles.bigText}>
-            Bewaar deze QR-code om offline te betalen.
+            Bewaar en print deze QR-code om offline te betalen.
           </Text>
           <FlatButton text='Bewaren' onPress={dl} />
           <FlatButton text='Nieuw' onPress={reset} />
