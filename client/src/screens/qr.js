@@ -52,7 +52,7 @@ export default function Home ({ navigation }) {
   const createChallenge = async () => {
     setError([])
     const { destination, amount, message, prepaid } = getData
-    maniClient.transactions
+    await maniClient.transactions
       .challenge(
         destination,
         MANI(Math.abs(parseFloat(amount.replace(',', '.'))) * getSign)
@@ -93,6 +93,7 @@ export default function Home ({ navigation }) {
           message: e && e.message
         })
       })
+    reset()
   }
 
   return (

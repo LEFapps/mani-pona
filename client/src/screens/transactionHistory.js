@@ -103,7 +103,7 @@ export default function TransactionHitstory ({ navigation }) {
                       ledger={item.destination}
                     />
                     <Text style={globalStyles.date}>
-                      {new Date(item.date).toLocaleString()}
+                      {new Date(item.date).toLocaleString('nl-BE')}
                     </Text>
                   </View>
                   <Text style={globalStyles.price}>{item.amount.format()}</Text>
