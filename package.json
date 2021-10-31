@@ -11,7 +11,7 @@
     "test": "LOG_PREFIX=sumsy NODE_DEBUG=sumsy* LOG_LEVEL=error JEST_CIRCUS=1 LEDGER=manipona jest --bail",
     "test:debug": "LOG_PREFIX=sumsy NODE_DEBUG=sumsy:* LOG_LEVEL=debug JEST_CIRCUS=1 LEDGER=manipona jest --bail",
     "test:dynamodb": "NODE_ENV=development sls dynamodb start --inMemory",
-    "offline": "npm run build && sls offline start --ignoreJWTSignature --stage offline",
+    "offline": "npm run build && sls offline start --noAuth --stage offline",
     "deploy": "npm run build && sls deploy",
     "deploy:dev": "npm run deploy -- -s dev",
     "deploy:test": "npm run deploy -- -s test"
