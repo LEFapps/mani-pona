@@ -95,7 +95,17 @@ const CREATE = gql`
   ) {
     ledger(id: $id) {
       transactions {
-        create(proof: $proof, message: $message, prepaid: $prepaid)
+        create(proof: $proof, message: $message, prepaid: $prepaid) {
+          ledger
+          destination
+          entry
+          amount
+          income
+          demurrage
+          balance
+          date
+          message
+        }
       }
     }
   }
