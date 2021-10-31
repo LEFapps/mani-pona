@@ -12,6 +12,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons'
 import mani from '../../../shared/mani'
 
 import editable from './User'
+import { Exportable } from './Exports'
 
 import Button from '../../shared/buttons/button'
 import Card from '../../shared/card'
@@ -136,45 +137,56 @@ export const Users = ({ navigation, route }) => {
       {!!errorText && <Text style={globalStyles.errorText}>{errorText}</Text>}
 
       {!!result && (
-        <FlatList
-          keyExtractor={item => item}
-          data={fields}
-          renderItem={({ item }) => {
-            const value = result[item]
-            const Editor = editable[item]
-            return (
-              <TouchableOpacity onPress={() => setEditor(item)}>
-                <Card>
-                  <View style={{ flexDirection: 'column' }}>
-                    <Text style={globalStyles.property}>{item}</Text>
-                    {!!Editor && (
-                      <Editor
-                        visible={openEditor === item}
-                        user={result}
-                        onClose={refetch => {
-                          if (refetch === true) refetch && doSearch()
-                          else if (refetch) universalAlert.alert(refetch)
-                          setEditor('')
-                        }}
-                      />
-                    )}
-                  </View>
-                  <Text style={globalStyles.price}>
-                    {!!Editor && <EditIcon />}
-                    {value === true
-                      ? 'ja'
-                      : value
-                      ? value.toString
-                        ? value.toString()
+        <View>
+          <FlatList
+            keyExtractor={item => item}
+            data={fields}
+            renderItem={({ item }) => {
+              const value = result[item]
+              const Editor = editable[item]
+              return (
+                <TouchableOpacity onPress={() => setEditor(item)}>
+                  <Card>
+                    <View style={{ flexDirection: 'column' }}>
+                      <Text style={globalStyles.property}>{item}</Text>
+                      {!!Editor && (
+                        <Editor
+                          visible={openEditor === item}
+                          user={result}
+                          onClose={refetch => {
+                            if (refetch === true) refetch && doSearch()
+                            else if (refetch) universalAlert.alert(refetch)
+                            setEditor('')
+                          }}
+                        />
+                      )}
+                    </View>
+                    <Text style={globalStyles.price}>
+                      {!!Editor && <EditIcon />}
+                      {value === true
+                        ? 'ja'
                         : value
-                      : '-'}
-                  </Text>
-                </Card>
-              </TouchableOpacity>
-            )
-          }}
-        />
+                        ? value.toString
+                          ? value.toString()
+                          : value
+                        : '-'}
+                    </Text>
+                  </Card>
+                </TouchableOpacity>
+              )
+            }}
+          />
+          <View style={{ marginTop: 32 }}>
+            <Exportable
+              exportable={'ledgerTransactions'}
+              args={[result.ledger]}
+            />
+          </View>
+        </View>
       )}
+      <View style={{ marginTop: 32 }}>
+        <Exportable exportable={'ledgers'} />
+      </View>
     </ScrollView>
   )
 }
