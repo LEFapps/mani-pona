@@ -170,42 +170,55 @@ function fixedEncodeURIComponent (str) {
     return '%' + c.charCodeAt(0).toString(16)
   })
 }
+/**
+ * Calculates the 'virtual balance', based on the current transaction (balance and date) and user parameters (buffer, income and demurrage).
+ * The 'unit' represents the time interval over which the parameters are set (current one month), in seconds.
+ *
+ * Note that the calculation is mostly done in manicents, so we can work strictly with integers. There is also a remainder,
+ * which should be stored in the database, but not shown to the user. This remainder keeps track of amounts that would be lost
+ * during the rounding, resulting in (possibly severe) underestimations of the demurrage.
+ *
+ * The default unit is 30 days, this could be made more precise by using e.g. one day or week as unit.
+ */
+// const log = require('util').debuglog('sumsy:redeem')
+const log = () => {}
+function redeem ({ balance, date, remainder = 0 }, { income, buffer, demurrage }, { unit = 1000 * 60 * 60 * 24 * 30, now = new Date() }) {
+  const interval = now.getTime() - date.getTime()
+  log('Interval %d out of unit %d, ratio %d', interval, unit, interval / unit)
+  const cutoff = unit // one manicent is the cut-off, which we denormalise with the unit to get a big number instead of fractions
+  log('Cut-off %d', cutoff)
+  let demurrageTaken = 0
+  let incomeGranted = 0
+  // step 1: calculate demurrage on anything not protected by the buffer
+  if (demurrage !== 0) {
+    log('Calculating demurrage %d', demurrage)
+    const unbufferedBalance = balance.subtract(buffer)
+    log('Unbuffered balance %s', unbufferedBalance)
+    if (unbufferedBalance.value > 0) {
+      log('Interval %d', interval)
+      if (interval < 0) return { balance, date: now, remainder } // we shouldn't throw an error here, because it might just be a client that has a bad clock
+      const scope = unbufferedBalance.intValue * interval * demurrage * 0.01 + remainder // manicent-milliseconds, kind of like kWh
+      log('Demurrage scope %d', scope)
+      demurrageTaken = Math.floor(scope / cutoff) / 100 // renormalize
+      log('Demurrage: %d', demurrageTaken)
+      balance = balance.subtract(demurrageTaken)
+      remainder = 0 - (scope % cutoff) // this may look weird, but it avoids accidentally ending up with a negative zero
+      log('Remainder after demurrage: %d', remainder)
+    }
+  }
+  // step 2: add income, if available
+  if (!income.zero()) {
+    const scope = income.intValue * interval + remainder
+    log('Income scope %d', scope)
+    incomeGranted = Math.floor(scope / cutoff) / 100 // renormalize
+    log('Income: %d', incomeGranted)
+    balance = balance.add(incomeGranted)
+    remainder = scope % cutoff
+    log('Remainder after income: %d (%d MOD %d)', remainder, scope, cutoff)
+  }
+  return { balance, date: now, remainder, demurrageTaken, incomeGranted }
+}
 
-/* DEPRECATED
-function nextEntry (from, to, date, amount) {
-  const entry = {
-    ...next(from),
-    'entry': 'pending', // ready to be signed
-    'sequence': from.sequence + 1,
-    'uid': from.next,
-    date,
-    amount,
-    'balance': from.balance.add(amount),
-    payload: payload({ date: date, from: next(from), to: next(to), amount: amount })
-  }
-  return entry
-}
-*/
-/* DEPRECATED
-function continuation ({ date, source, target, amount }) { // continue from (previous) transactions
-  return {
-    date,
-    ledger: nextEntry(source, target, date, amount),
-    destination: nextEntry(target, source, date, amount),
-    amount
-  }
-} */
-/* DEPRECATED
-function check (entry) { // superficial integrity check
-  assert(isString(entry.ledger), 'ledger')
-  assert(entry.entry === '/current', 'current entry')
-  assert(isInteger(entry.sequence), 'sequence')
-  assert(entry.sequence >= 0, 'sequence must be positive integer')
-  assert(isString(entry.next), 'next uid')
-  assert(entry.balance instanceof Mani, 'balance')
-  return true
-}
-*/
 export {
   pad,
   other,
@@ -223,7 +236,8 @@ export {
   sortKey,
   sortBy,
   flip,
-  fixedEncodeURIComponent
+  fixedEncodeURIComponent,
+  redeem
 }
 
 const tools = {
