@@ -57,23 +57,15 @@ export default function Home ({ navigation }) {
         destination,
         MANI(Math.abs(parseFloat(amount.replace(',', '.'))) * getSign)
       )
-      .catch(e => {
-        console.error('transactions/challenge', e)
-        notification.add({
-          type: 'danger',
-          title: 'Transactie opbouwen mislukt',
-          message: e && e.message
-        })
-      })
       .then(challenge => {
         // console.log('CHALLENGE', challenge)
         return maniClient.transactions.create(challenge, message, prepaid)
       })
       .catch(e => {
-        console.error('transactions/create', e)
+        console.error('transactions/challenge', e)
         notification.add({
           type: 'danger',
-          title: 'Transactie starten mislukt',
+          title: 'Transactie opbouwen mislukt',
           message: e && e.message
         })
       })
@@ -86,10 +78,10 @@ export default function Home ({ navigation }) {
         }
       })
       .catch(e => {
-        console.error('transactions/create (after)', e)
+        console.error('transactions/create', e)
         notification.add({
-          type: 'warning',
-          title: 'Transactie afronden mislukt',
+          type: 'danger',
+          title: 'Transactie starten mislukt',
           message: e && e.message
         })
       })
