@@ -20,6 +20,9 @@ export default {
     }
   },
   TransactionQuery: {
+    available: async transactions => {
+      return transactions.available()
+    },
     current: async transactions => {
       return transactions.short().current()
     },

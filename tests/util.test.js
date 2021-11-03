@@ -37,8 +37,8 @@ describe('Tools', () => {
       balance: mani(0),
       date: now,
       remainder: 0,
-      demurrageTaken: 0,
-      incomeGranted: 0
+      demurrage: mani(0),
+      income: mani(0)
     })
     // One month demurrage
     expect(redeem({
@@ -53,8 +53,8 @@ describe('Tools', () => {
       balance: mani(99.99),
       date: now,
       remainder: 0,
-      demurrageTaken: 0.01,
-      incomeGranted: 0
+      demurrage: mani(0.01),
+      income: mani(0)
     })
 
     // Single day demurrage
@@ -70,8 +70,8 @@ describe('Tools', () => {
       balance: mani(2990),
       date: now,
       remainder: 0,
-      demurrageTaken: 10,
-      incomeGranted: 0
+      demurrage: mani(10),
+      income: mani(0)
     })
     // One month income and demurrage
     expect(redeem({
@@ -86,8 +86,8 @@ describe('Tools', () => {
       balance: mani(204),
       date: now,
       remainder: 0,
-      demurrageTaken: 1,
-      incomeGranted: 5
+      demurrage: mani(1),
+      income: mani(5)
     })
     // fractional income
     let transaction = {
@@ -108,8 +108,8 @@ describe('Tools', () => {
       balance: mani(2.5),
       date: now,
       remainder: 0,
-      demurrageTaken: 0,
-      incomeGranted: 0.04
+      demurrage: mani(0),
+      income: mani(0.04)
     })
   })
 })

@@ -26,6 +26,16 @@ export default gql`
     toSign: Boolean
   }
 
+  "Balance is a representation of the (virtual) balance of a ledger at some point in time."
+  type Balance {
+    balance: Currency!
+    date: DateTime!
+    income: Currency!
+    demurrage: Currency!
+    "Added just for completeness, but keep in mind that the unit of this is manicent-milliseconds..."
+    remainder: Int!
+  }
+
   type LedgerQuery {
     transactions: TransactionQuery
     # to add: notifications, issuedBuffers, standingOrders, contacts, demurageHistory
@@ -40,7 +50,9 @@ export default gql`
   }
 
   type TransactionQuery {
-    "Current transaction aka the current balance of the ledger"
+    "The (virtual) balance of the ledger, should demurrage and income be calculated based on the current time."
+    available: Balance!
+    "Current transaction (last one that was completed) on the ledger"
     current: Transaction
     "Pending transaction (note: use the signing interface to sign, not this informative entry)"
     pending: Transaction

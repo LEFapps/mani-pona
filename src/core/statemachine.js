@@ -31,7 +31,6 @@ const StateMachine = (table) => {
       async continuePending () {
         context.targets = await getPendingTargets(table, context)
         context.sources = await getPendingSources(table, context)
-        // log(JSON.stringify(context, null, 2))
         return Continue(context)
       }
     }
@@ -47,10 +46,11 @@ const StateMachine = (table) => {
     } else {
       context.targets = await getNextTargets(table, context)
       return {
-        addAmount (amount) {
+        async addAmount (amount) {
           context.targets = addAmount(context, amount)
           return Continue(context)
         },
+        // @Deprecated:
         addDI (DI) {
           context.targets = addDI(context, DI)
           return Continue(context)

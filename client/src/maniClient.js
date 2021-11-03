@@ -8,6 +8,7 @@ import { mani } from '../shared/mani'
 import {
   REGISTER,
   SYSTEM_CHALLENGE,
+  AVAILABLE,
   CURRENT,
   RECENT,
   PENDING,
@@ -151,6 +152,12 @@ const ManiClient = async ({
       })
       // log(JSON.stringify(recent, null, 2))
       return fromDb(recent)
+    },
+    async available () {
+      const available = await query(AVAILABLE, 'ledger.transactions.available', {
+        id
+      })
+      return fromDb(available)
     },
     async current () {
       const current = await query(CURRENT, 'ledger.transactions.current', {

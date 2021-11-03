@@ -1,7 +1,7 @@
 import AWS from 'aws-sdk'
 import { promisify } from 'util'
 import { getLogger } from 'server-log'
-import { mani } from '../../client/shared/mani'
+import { getAccountTypes } from './util'
 
 const log = getLogger('cognito')
 
@@ -37,18 +37,7 @@ const CognitoUserPool = UserPoolId => {
   }
   const provider = new AWS.CognitoIdentityServiceProvider()
   return {
-    getAccountTypes () {
-      const config = process.env.ACCOUNT_TYPES
-      if (!config) {
-        log.error('Missing ACCOUNT_TYPES ENV variable')
-        return []
-      }
-      return JSON.parse(config).map(({ income, buffer, ...type }) => ({
-        ...type,
-        buffer: mani(buffer),
-        income: mani(income)
-      }))
-    },
+    getAccountTypes,
     async disableAccount (Username) {
       provider.adminDisableUser = promisify(provider.adminDisableUser)
       return provider.adminDisableUser({

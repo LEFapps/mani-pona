@@ -100,6 +100,7 @@ function addAmount ({ targets: { ledger, destination } }, amount) {
     to: destination,
     amount
   })
+  // TODO: rewrite
   if (ledger.ledger !== 'system' && ledger.balance.value < 0) { throw new Error(`Amount not available on ${ledger.ledger}`) }
   const complement = amount.multiply(-1)
   destination.amount = complement

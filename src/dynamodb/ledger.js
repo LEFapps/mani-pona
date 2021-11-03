@@ -16,6 +16,19 @@ function ledger (ledgers, fingerprint) {
     async recent () {
       return ledgers.recent(fingerprint)
     },
+    /**
+    * Check if the amount is available on this ledger, using a projected balance (on the specified datetime).
+    * Returns true or false.
+    */
+    async checkAvailable (amount, date) {
+      return ledgers.checkAvailable(fingerprint, amount, date)
+    },
+    /**
+     * Get the projected balance for this ledger.
+     */
+    async available (now = new Date()) {
+      return ledgers.available(fingerprint, now)
+    },
     async entry (entry, required = false) {
       return ledgers.entry(fingerprint, entry, required)
     },

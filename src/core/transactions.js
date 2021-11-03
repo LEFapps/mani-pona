@@ -12,9 +12,10 @@ const log = getLogger('core:transactions')
  */
 export default (ledgers, fingerprint) => {
   const ledger = Ledger(ledgers, fingerprint)
-  const { current, pending, recent, short } = ledger
+  const { available, current, pending, recent, short } = ledger
   return {
     fingerprint,
+    available,
     current,
     pending,
     recent,

@@ -216,7 +216,7 @@ function redeem ({ balance, date, remainder = 0 }, { income, buffer, demurrage }
     remainder = scope % cutoff
     log('Remainder after income: %d (%d MOD %d)', remainder, scope, cutoff)
   }
-  return { balance, date: now, remainder, demurrageTaken, incomeGranted }
+  return { balance, date: now, remainder, demurrage: new Mani(demurrageTaken), income: new Mani(incomeGranted) }
 }
 
 export {

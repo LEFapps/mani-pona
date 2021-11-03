@@ -31,7 +31,10 @@ export default function (ledgers, userpool) {
         )
       }
       log.debug('Setting account type to %s for user %s', type, Username)
-      userpool.changeAttributes(Username, { 'custom:type': type })
+      await userpool.changeAttributes(Username, { 'custom:type': type })
+      const user = await userpool.findUser(Username)
+      await ledgers.addAccountType(user.ledger, type)
+      return `User ${Username} set to type ${type}`
     },
     async disableAccount (Username) {
       return userpool.disableAccount(Username)

@@ -21,6 +21,20 @@ const SYSTEM_CHALLENGE = gql`
     }
   }
 `
+const AVAILABLE = gql`
+  query ledger($id: String!) {
+    ledger(id: $id) {
+      transactions {
+        available {
+          balance
+          date
+          income
+          demurrage
+        }
+      }
+    }
+  }
+`
 const CURRENT = gql`
   query ledger($id: String!) {
     ledger(id: $id) {
@@ -269,6 +283,7 @@ const INIT = gql`
 export {
   REGISTER,
   SYSTEM_CHALLENGE,
+  AVAILABLE,
   CURRENT,
   RECENT,
   PENDING,
