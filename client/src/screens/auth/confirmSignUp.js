@@ -21,6 +21,7 @@ export default function confirmSignUp (props = {}) {
 
   const notification = useNotifications()
 
+  const [isBusy, setBusy] = useState()
   const [state, setState] = useState({
     email: username || '',
     verificationCode: ''
@@ -58,6 +59,7 @@ export default function confirmSignUp (props = {}) {
     if (emailError || verificationCodeError) {
       setErrors({ email: emailError, verificationCode: verificationCodeError })
     } else {
+      setBusy(true)
       try {
         await Auth.confirmSignUp(state.email, state.verificationCode)
 
@@ -76,7 +78,9 @@ export default function confirmSignUp (props = {}) {
           message: 'Je verificatie is gelukt, je kan je nu aanmelden.',
           title: 'Verificatie gelukt'
         })
+        setBusy(false)
       } catch (e) {
+        setBusy(false)
         console.error('confirmSignup', e)
         notification.add({
           type: 'warning',
@@ -125,7 +129,7 @@ export default function confirmSignUp (props = {}) {
               </Text>
             )}
 
-            <Button text='Verifiëren' onPress={() => onSubmit()} />
+            <Button text={isBusy ? '• • •' : 'Verifiëren'} onPress={onSubmit} />
 
             <AccountsList onSelect={selectAccount} />
 

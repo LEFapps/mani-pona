@@ -38,7 +38,7 @@ const navScreens = {
   LoREco: {
     component: ({ Nav }) => (
       <Nav.Screen
-        key='LoREco'
+        key='Startscherm'
         name='Startscherm'
         component={QrStack}
         options={{
@@ -229,7 +229,9 @@ export default function drawerNavigator (props) {
         <NavigationContainer>
           <Nav.Navigator
             barStyle={{ backgroundColor: colors.DarkerBlue }}
-            initialRouteName={hasPending ? 'Openstaande betalingen' : 'LoREco'}
+            initialRouteName={
+              hasPending ? 'Openstaande betalingen' : 'Startscherm'
+            }
           >
             {availableScreens.map(screen =>
               navScreens[screen].component({ Nav })

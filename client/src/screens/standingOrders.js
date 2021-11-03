@@ -80,7 +80,7 @@ export default function StandingOrder ({ navigation }) {
                           .confirm(challenge)
                           .then(confirm => {
                             // console.log('CONFIRM', confirm)
-                            navigation.navigate('LoREco')
+                            navigation.navigate('Startscherm')
                           })
                           .catch(e => {
                             console.error('transaction/confirm', e)
@@ -99,7 +99,7 @@ export default function StandingOrder ({ navigation }) {
                           .cancel(challenge)
                           .then(cancel => {
                             // console.log('CANCEL', cancel)
-                            navigation.navigate('LoREco')
+                            navigation.navigate('Startscherm')
                           })
                           .catch(e => {
                             console.error('transaction/cancel', e)

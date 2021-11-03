@@ -88,7 +88,7 @@ export default function Predictions () {
         <View style={{ flexDirection: 'column' }}>
           <Text style={globalStyles.property}>Huidige rekeningstand</Text>
           <Text style={globalStyles.date}>
-            {new Date(date).toLocaleString()}
+            {new Date(date).toLocaleString('nl-BE')}
           </Text>
         </View>
         <Text style={globalStyles.price}>{balance && balance.format()}</Text>

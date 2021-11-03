@@ -53,6 +53,7 @@ export default function verifyContact ({ authState, authData, onStateChange }) {
         }
       )
     } catch (e) {
+      setBusy(false)
       console.log('Unable to refresh Token', e)
     }
   }

@@ -52,7 +52,7 @@ export default function Home ({ navigation }) {
   const createChallenge = async () => {
     setError([])
     const { destination, amount, message, prepaid } = getData
-    maniClient.transactions
+    await maniClient.transactions
       .challenge(
         destination,
         MANI(Math.abs(parseFloat(amount.replace(',', '.'))) * getSign)
@@ -78,7 +78,12 @@ export default function Home ({ navigation }) {
         })
       })
       .then(create => {
-        if (create) navigation.navigate('AccountBalance')
+        if (create) {
+          if (create.entry === 'current') navigation.navigate('AccountBalance')
+          else if (create.entry === 'pending')
+            navigation.navigate('Openstaande betalingen')
+          else navigation.navigate('AccountBalance')
+        }
       })
       .catch(e => {
         console.error('transactions/create (after)', e)
@@ -88,6 +93,7 @@ export default function Home ({ navigation }) {
           message: e && e.message
         })
       })
+    reset()
   }
 
   return (

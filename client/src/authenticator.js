@@ -36,11 +36,3 @@ export default ({ authState, authData: user, onStateChange, keyValue }) => {
     </UserContext.Provider>
   )
 }
-
-const styles = {
-  container: {
-    flex: 1,
-    width: '100%',
-    backgroundColor: '#2B8AA0'
-  }
-}

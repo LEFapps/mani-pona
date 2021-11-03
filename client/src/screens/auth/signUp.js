@@ -33,6 +33,7 @@ export default function signUp (props) {
     companyTaxNumber: ''
   }
 
+  const [isBusy, setBusy] = useState(false)
   const [state, setState] = useState(defaultState)
   const [errors, setErrors] = useState(defaultState)
   const notification = useNotifications()
@@ -47,6 +48,7 @@ export default function signUp (props) {
   }
 
   async function onSubmit () {
+    if (isBusy) return
     const emailError = validateEmail(state.email)
     const passwordError =
       validatePassword(state.password) ||
@@ -92,7 +94,7 @@ export default function signUp (props) {
         companyTaxNumber: taxError
       })
     } else {
-      setState(defaultState)
+      setBusy(true)
       try {
         await resetClient()
         const { userConfirmed } = await Auth.signUp({
@@ -127,7 +129,10 @@ export default function signUp (props) {
               'Je registratie is gelukt, verifieer je e-mailadres nu met de code die je ontvangen hebt via e-mail.'
           })
         }
+        setState(defaultState)
+        setBusy(false)
       } catch (error) {
+        setBusy(false)
         console.error('signUp', error)
         notification.add({
           type: 'danger',
@@ -377,7 +382,10 @@ export default function signUp (props) {
               <Text style={globalStyles.errorText}>{errors.privacy}</Text>
             )}
 
-            <Button text='Registreren' onPress={() => onSubmit()} />
+            <Button
+              text={isBusy ? '• • •' : 'Registreren'}
+              onPress={onSubmit}
+            />
           </View>
           <AccountsList onSelect={selectAccount} />
         </View>

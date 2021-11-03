@@ -8,6 +8,7 @@ import {
   ScrollView
 } from 'react-native'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
+import get from 'lodash/get'
 
 import Card from '../../shared/card'
 import universalAlert from '../../shared/alert'
@@ -17,25 +18,45 @@ import { globalStyles } from '../../styles/global'
 import { DarkSpinner } from '../../shared/loader'
 import { useNotifications } from '../../shared/notifications'
 
-const EditIcon = props => (
-  <MaterialCommunityIcons
-    name={'pencil-circle'}
-    size={16}
-    style={{ marginHorizontal: 8, alignSelf: 'center' }}
-    {...props}
-  />
-)
+const exportables = {
+  ledgers: {
+    title: 'Exporteer rekeningen',
+    method: 'admin.exportLedgers',
+    file: 'loreco-rekeningen',
+    type: 'text/csv'
+  },
+  ledgerTransactions: {
+    title: 'Exporteer transacties',
+    method: 'transactions.export',
+    file: 'loreco-transacties-ledger',
+    type: 'text/csv'
+  }
+}
 
-export const Download = ({ navigation, route }) => {
+export const Exportable = ({ exportable, args = [], ...props }) => {
   const { maniClient } = global
+
   const notification = useNotifications()
   const [isBusy, setBusy] = useState(false)
 
-  const dl = async (method, file, key = true) => {
-    setBusy(key)
-    method()
+  const exporter = exportables[exportable]
+  if (!exporter) return null
+  const { title, method, file, type } = exporter
+  const onPress = async () => {
+    setBusy(true)
+    const fx = get(maniClient, method)
+    if (!fx) {
+      notification.add({
+        type: 'warning',
+        title: 'Export niet gevonden',
+        message: `De exportmethode “${method}” is niet gedefinieerd.`
+      })
+      setBusy(false)
+      return
+    }
+    fx(...args)
       .then(data => {
-        downloader(data, ...file)
+        downloader(data, props.filename || file, type)
         setBusy(false)
       })
       .catch(e => {
@@ -49,50 +70,38 @@ export const Download = ({ navigation, route }) => {
       })
   }
 
-  const exportables = [
-    {
-      key: 'exportLedgers',
-      title: 'Rekeningen',
-      onPress: () =>
-        dl(
-          maniClient.admin.exportLedgers,
-          ['loreco-rekeningen', 'text/csv'],
-          'exportLedgers'
-        )
-    }
-  ]
+  return (
+    <TouchableOpacity onPress={isBusy ? undefined : onPress}>
+      <Card>
+        <View style={{ flexDirection: 'column' }}>
+          {props.title ? (
+            props.title
+          ) : (
+            <Text style={globalStyles.property}>{title}</Text>
+          )}
+        </View>
+        <Text style={globalStyles.price}>
+          {isBusy ? (
+            <DarkSpinner size={20} />
+          ) : (
+            <MaterialCommunityIcons name={'database-export'} size={20} />
+          )}
+        </Text>
+      </Card>
+    </TouchableOpacity>
+  )
+}
 
+export const Downloads = ({ navigation, route }) => {
   return (
     <ScrollView style={globalStyles.main}>
       <FlatList
-        keyExtractor={({ key }) => key}
-        data={exportables}
-        renderItem={({ item }) => {
-          const { title, onPress, key } = item || {}
-          return (
-            <TouchableOpacity onPress={isBusy ? undefined : onPress}>
-              <Card>
-                <View style={{ flexDirection: 'column' }}>
-                  <Text style={globalStyles.property}>{title}</Text>
-                </View>
-                <Text style={globalStyles.price}>
-                  {isBusy === key ? (
-                    <DarkSpinner size={20} />
-                  ) : (
-                    <MaterialCommunityIcons
-                      name={'database-export'}
-                      size={20}
-                      // style={{ marginHorizontal: 8, alignSelf: 'center' }}
-                    />
-                  )}
-                </Text>
-              </Card>
-            </TouchableOpacity>
-          )
-        }}
+        keyExtractor={key => key}
+        data={Object.keys(exportables)}
+        renderItem={({ item }) => <Exportable key={item} exportable={item} />}
       />
     </ScrollView>
   )
 }
 
-export default Download
+export default Downloads

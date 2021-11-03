@@ -25,6 +25,7 @@ export default function SignIn (props = {}) {
   })
   const notification = useNotifications()
 
+  const [isBusy, setBusy] = useState(false)
   const [user, setUser] = useState('')
   const [storageKey, setStorageKey] = useState(key || '')
   const [showPrompt, setPrompt] = useState(!!prompt)
@@ -65,16 +66,14 @@ export default function SignIn (props = {}) {
   }
 
   async function onSubmit () {
+    if (isBusy) return
     const emailError = validateEmail(state.email)
     const passwordError = validatePasswordLogIn(state.password)
 
     if (emailError || passwordError) {
       setErrors({ email: emailError, password: passwordError })
     } else {
-      setState({
-        email: '',
-        password: ''
-      })
+      setBusy(true)
       try {
         const user = await Auth.signIn({
           username: state.email,
@@ -114,7 +113,13 @@ export default function SignIn (props = {}) {
             })
           }
         }
+        setState({
+          email: '',
+          password: ''
+        })
+        setBusy(false)
       } catch ({ code, message }) {
+        setBusy(false)
         console.error('signIn', message)
         notification.add({
           title: 'Aanmelden mislukt',
@@ -164,7 +169,10 @@ export default function SignIn (props = {}) {
                 <Text style={globalStyles.errorText}>{errors.password}</Text>
               )}
 
-              <Button text='Bevestigen' onPress={() => onSubmit()} />
+              <Button
+                text={isBusy ? '• • •' : 'Bevestigen'}
+                onPress={onSubmit}
+              />
             </View>
           )}
 
