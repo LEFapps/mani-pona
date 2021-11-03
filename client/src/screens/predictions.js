@@ -31,14 +31,14 @@ export default function Predictions () {
   const isFocused = useIsFocused()
 
   const [params, setParams] = useState({})
-  const [current, setCurrent] = useState({})
+  const [available, setAvailable] = useState({})
 
   const [predictions, setPredictions] = useState([])
   const [isReady, setReady] = useState()
 
   const start = new Date().getMonth() + 1
   const startYear = new Date().getFullYear()
-  const { date, balance } = current
+  const { date, balance } = available
   const { demurrage } = params || {}
   const buffer = !!params.buffer ? mani(params.buffer) : mani(0)
   const income = !!params.income ? mani(params.income) : mani(0)
@@ -46,10 +46,10 @@ export default function Predictions () {
   useEffect(() => {
     const loadParams = async () => {
       await maniClient.transactions
-        .current()
-        .then(setCurrent)
+        .available()
+        .then(setAvailable)
         .catch(e => {
-          console.error('loadData/current', e)
+          console.error('loadData/available', e)
           e && Alert.alert(e.message)
         })
       await maniClient.system
