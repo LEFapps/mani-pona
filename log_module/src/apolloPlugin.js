@@ -34,10 +34,16 @@ const apolloLoggerPlugin = (function () {
           }
         },
         async didEncounterErrors ({ source, errors }) {
-          log.error('error after query, source: %s - error %j', source, errors)
+          log.error('While executing query:\n %s', source)
+          errors.forEach((err) => {
+            log.error(err.message)
+            if (err.stack) {
+              log.error(err.stack)
+            }
+          })
         },
         async willSendResponse (requestContext) {
-          log.debug('response sent %s', requestContext.response)
+          log.debug('Query response\n%j', requestContext.response)
         }
       }
     }
