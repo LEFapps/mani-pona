@@ -1,6 +1,5 @@
 import assert from 'assert'
 import sha1 from 'sha1'
-import { mapValues } from 'lodash'
 // import log from 'loglevel'
 import { KeyWrapper, Verifier } from '../../client/shared/crypto'
 import {
@@ -378,7 +377,6 @@ export {
   getNextTargets,
   addAmount,
   addDI,
-  getParameters,
   getPayloadSources,
   getPayloadTargets,
   getPendingSources,

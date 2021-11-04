@@ -1,5 +1,5 @@
 import { getSources, getPayloads, getNextTargets, addAmount, addDI,
-  getParameters, getPayloadSources, getPayloadTargets, getPendingTargets, getPendingSources,
+  getPayloadSources, getPayloadTargets, getPendingTargets, getPendingSources,
   addSignatures, addSystemSignatures, saveResults } from './util'
 
 /**
