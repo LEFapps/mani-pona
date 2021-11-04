@@ -48,17 +48,18 @@ const table = function (db, options = {}) {
   }
   const scanAll = async (query) => t.scanAll(query)
   const queryAll = async (query) => t.queryAll(query)
+  function attributes (attributes) {
+    return table(db, TableName, { AttributesToGet: attributes, ...options })
+  }
   return {
     getItem,
     queryItems,
     scanAll,
     queryAll,
+    attributes,
     async putItem (input) {
       const Item = tools.toDb(input)
       return t.put({ Item })
-    },
-    attributes (attributes) {
-      return table(db, TableName, { AttributesToGet: attributes, ...options })
     },
     transaction () {
       const TransactItems = []
@@ -66,6 +67,7 @@ const table = function (db, options = {}) {
         getItem,
         scanAll,
         queryAll,
+        attributes,
         putItem (input) {
           TransactItems.push({
             Put: {
@@ -93,7 +95,6 @@ const table = function (db, options = {}) {
             }
           })
         },
-        attributes () {}, // we ignore this as we don't expect transactional gets
         items () {
           return TransactItems
         },

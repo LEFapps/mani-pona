@@ -1,4 +1,4 @@
-import { getSources, getPayloads, getNextTargets, addAmount, addDI,
+import { getSources, getPayloads, getNextTargets, addAmount,
   getPayloadSources, getPayloadTargets, getPendingTargets, getPendingSources,
   addSignatures, addSystemSignatures, saveResults } from './util'
 

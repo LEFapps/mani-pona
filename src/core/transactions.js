@@ -23,9 +23,12 @@ export default (ledgers, fingerprint) => {
       if (destination === 'system') { throw new Error('Nice try.') }
       return StateMachine(ledgers)
         .getSources({ ledger: fingerprint, destination })
-        .then(t => t.addParameters())
         .then(t => t.addAmount(amount))
         .then(t => t.getPrimaryEntry().challenge)
+        .catch(err => {
+          log.error('%s\n%s', err.message, err.stack)
+          throw new Error('Unable to create challenge.')
+        })
     },
     async create (proof, message = '-', prepaid = false) {
       const { from: { ledger: from }, to: { ledger: to } } = destructure(proof.payload)

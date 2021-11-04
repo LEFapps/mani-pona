@@ -221,9 +221,9 @@ function redeem ({ balance, date, remainder = 0 }, { income, buffer, demurrage }
 
 const DEFAULT_BALANCE = {
   balance: new Mani(0),
-  remainder: new Mani(0),
   demurrage: new Mani(0),
-  income: new Mani(0)
+  income: new Mani(0),
+  remainder: 0
 }
 
 export {

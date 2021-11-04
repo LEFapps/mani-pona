@@ -43,18 +43,21 @@ function ledgers (table, prefix = '') {
     return item
   }
   async function getParameters (fingerprint) {
+    let accountType = 'default'
     const settings = await table
       .attributes(['ledger', 'accountType'])
-      .getItem({ ledger: fingerprint, entry: 'pk' }, `Unknown ledger ${fingerprint}`)
-    if (!settings.accountType) {
-      log.warn('Ledger %s has no account type, falling back to default', fingerprint)
+      .getItem({ ledger: fingerprint, entry: 'pk' })
+    if (settings && settings.accountType) {
+      accountType = settings.accountType
+    } else {
+      log.warn('Ledger %s doesnt exist yet or has no account type, falling back to default', fingerprint)
     }
-    const accountType = settings.accountType ? settings.accountType : 'default'
     const parameters = getAccountTypesMap()[accountType]
     if (!parameters) throw new Error(`No parameters found for type ${accountType}`)
     return parameters
   }
   async function available (fingerprint, now = new Date()) {
+    log.debug('Checking available balance on %s', fingerprint)
     const parameters = await getParameters(fingerprint)
     const current = await entry(fingerprint, '/current')
     if (current) {

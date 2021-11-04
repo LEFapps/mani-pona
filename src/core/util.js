@@ -131,35 +131,6 @@ async function addAmount (ledgers, { targets: { ledger, destination } }, amount)
   return { ledger, destination }
 }
 /**
- * @Deprecated
- * Add Demmurage and Income, optionally using a buffer.
- */
-function addDI ({ targets: { ledger, destination } }, { demurrage, income, buffer }) {
-  ledger.demurrage = ledger.balance.subtract(buffer).multiply(demurrage / 100)
-  ledger.income = income
-  ledger.amount = ledger.income.subtract(ledger.demurrage)
-  ledger.balance = ledger.balance.subtract(ledger.demurrage).add(ledger.income)
-  ledger.challenge = payload({
-    date: ledger.date,
-    from: ledger,
-    to: destination,
-    amount: ledger.amount
-  })
-  destination.demurrage = ledger.demurrage.multiply(-1)
-  destination.income = ledger.income.multiply(-1)
-  destination.amount = destination.income.subtract(destination.demurrage)
-  destination.balance = destination.balance
-    .subtract(destination.demurrage)
-    .add(destination.income)
-  destination.challenge = payload({
-    date: ledger.date,
-    from: destination,
-    to: ledger,
-    amount: destination.amount
-  })
-  return { ledger, destination }
-}
-/**
  * Construct targets from payloads, double-check if matches with source.
  * Used in: create new ledger, sign transaction (initial)
  */
@@ -376,7 +347,6 @@ export {
   getPayloads,
   getNextTargets,
   addAmount,
-  addDI,
   getPayloadSources,
   getPayloadTargets,
   getPendingSources,
