@@ -16,6 +16,39 @@ import FlatButton from '../shared/buttons/historyButton'
 import { useNotifications } from '../shared/notifications'
 import { globalStyles } from '../styles/global'
 
+const TransactionListItem = ({
+  destination,
+  date,
+  amount,
+  income,
+  demurrage
+}) => {
+  return (
+    <Card>
+      <View style={{ flexDirection: 'column' }}>
+        <Contact style={globalStyles.property} ledger={destination} />
+        <Text style={globalStyles.date}>
+          {new Date(date).toLocaleDateString('nl-BE')}
+        </Text>
+        <Text style={globalStyles.date}>
+          {new Date(date).toLocaleTimeString('nl-BE')}
+        </Text>
+      </View>
+      <View style={{ flexDirection: 'column' }}>
+        <Text style={globalStyles.price}>{amount.format()}</Text>
+        <Text style={globalStyles.date}>
+          {income && !income.zero() && `inkomen: ${income.format()}`}
+        </Text>
+        <Text style={globalStyles.date}>
+          {demurrage &&
+            !demurrage.zero() &&
+            `gemeenschapsbijdrage: ${demurrage.format()}`}
+        </Text>
+      </View>
+    </Card>
+  )
+}
+
 export default function TransactionHitstory ({ navigation }) {
   const { maniClient } = global
 
@@ -86,26 +119,15 @@ export default function TransactionHitstory ({ navigation }) {
               `${ledger}-${destination}-${date}`
             }
             data={transactionsToShow}
-            renderItem={({ item }) => (
+            renderItem={({ item: transaction }) => (
               <TouchableOpacity
                 onPress={() =>
                   navigation.navigate('TransactionDetail', {
-                    transaction: item
+                    transaction
                   })
                 }
               >
-                <Card>
-                  <View style={{ flexDirection: 'column' }}>
-                    <Contact
-                      style={globalStyles.property}
-                      ledger={item.destination}
-                    />
-                    <Text style={globalStyles.date}>
-                      {new Date(item.date).toLocaleString('nl-BE')}
-                    </Text>
-                  </View>
-                  <Text style={globalStyles.price}>{item.amount.format()}</Text>
-                </Card>
+                <TransactionListItem {...transaction} />
               </TouchableOpacity>
             )}
           />

@@ -18,7 +18,7 @@ export default function AccountBalance ({ navigation }) {
   const isFocused = useIsFocused()
 
   const [params, setParams] = useState({})
-  const [current, setCurrent] = useState({})
+  const [available, setAvailable] = useState({})
   const [ready, setReady] = useState(false)
   const { maniClient } = global
 
@@ -34,14 +34,14 @@ export default function AccountBalance ({ navigation }) {
       .find(maniClient.id)
       .then(async found => {
         await maniClient.transactions
-          .current()
-          .then(setCurrent)
+          .available()
+          .then(setAvailable)
           .catch(e => {
-            console.error('loadData/current', e)
+            console.error('loadData/available', e)
             notification.add({
               type: 'warning',
               message: e && e.message,
-              title: 'loadData/current'
+              title: 'loadData/available'
             })
           })
         await maniClient.system
@@ -81,7 +81,7 @@ export default function AccountBalance ({ navigation }) {
         <View style={styles.part}>
           <Text style={styles.title}>Huidige rekeningstand</Text>
           <Text style={styles.amount}>
-            {!!current.balance && current.balance.format()}
+            {!!available.balance && available.balance.format()}
           </Text>
         </View>
 
@@ -96,11 +96,11 @@ export default function AccountBalance ({ navigation }) {
           />
         </View>
         <View style={styles.part}>
-          {!!current.date && (
+          {!!available.date && (
             <Card>
               <Text style={globalStyles.property}>Laatste wijziging</Text>
               <Text style={globalStyles.price}>
-                {new Date(current.date).toLocaleString('nl-BE')}
+                {new Date(available.date).toLocaleString('nl-BE')}
               </Text>
             </Card>
           )}

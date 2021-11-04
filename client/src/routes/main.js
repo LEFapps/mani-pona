@@ -196,12 +196,12 @@ export default function drawerNavigator (props) {
     maniClient.transactions
       .pending()
       .then(setPending)
-      .catch(({ message }) => {
-        console.error('main/pending', message)
+      .catch(e => {
+        console.error('main/pending', e)
         notification.add({
           type: 'warning',
           title: 'Transacties ophalen mislukt',
-          message
+          message: e && e.message
         })
         setPending(undefined)
       })

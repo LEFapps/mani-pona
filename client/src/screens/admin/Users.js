@@ -58,7 +58,7 @@ export const Users = ({ navigation, route }) => {
               user.buffer = mani(buffer)
 
               maniClient.admin
-                .current(user.ledger)
+                .available(user.ledger)
                 .then(({ balance }) => {
                   user.balance = balance
                   maniClient.admin
@@ -73,7 +73,7 @@ export const Users = ({ navigation, route }) => {
                     })
                 })
                 .catch(e => {
-                  console.error('findUser/current', e)
+                  console.error('findUser/available', e)
                 })
             })
             .catch(e => {
