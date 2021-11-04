@@ -88,20 +88,28 @@ async function getNextTargets (table, { sources }) {
     }
   })
 }
+
 /**
  * Add amount to targets.
  */
-function addAmount ({ targets: { ledger, destination } }, amount) {
+async function addAmount (ledgers, { targets: { ledger, destination } }, amount) {
   ledger.amount = amount
-  ledger.balance = ledger.balance.add(amount)
   ledger.challenge = payload({
     date: ledger.date,
     from: ledger,
     to: destination,
     amount
   })
-  // TODO: rewrite
-  if (ledger.ledger !== 'system' && ledger.balance.value < 0) { throw new Error(`Amount not available on ${ledger.ledger}`) }
+  if (ledger.ledger === 'system') {
+    ledger.balance = ledger.balance.add(amount)
+  } else {
+    const { balance, income, demurrage, remainder } = await ledgers.available(ledger.ledger)
+    ledger.balance = balance.add(amount)
+    ledger.income = income
+    ledger.demurrage = demurrage
+    ledger.remainder = remainder
+    if (ledger.balance.value < 0) { throw new Error(`Amount not available on ${ledger.ledger}`) }
+  }
   const complement = amount.multiply(-1)
   destination.amount = complement
   destination.balance = destination.balance.add(complement)
@@ -111,14 +119,20 @@ function addAmount ({ targets: { ledger, destination } }, amount) {
     to: ledger,
     amount: complement
   })
-  if (destination.ledger !== 'system' && destination.balance.value < 0) {
-    throw new Error(
-      `Amount ${complement.format()} not available on ${destination.ledger}`
-    )
+  if (destination.ledger === 'system') {
+    destination.balance = destination.balance.add(amount)
+  } else {
+    const { balance, income, demurrage, remainder } = await ledgers.available(destination.ledger)
+    destination.balance = balance.add(amount)
+    destination.income = income
+    destination.demurrage = demurrage
+    destination.remainder = remainder
+    if (destination.balance.value < 0) { throw new Error(`Amount not available on ${ledger.ledger}`) }
   }
   return { ledger, destination }
 }
 /**
+ * @Deprecated
  * Add Demmurage and Income, optionally using a buffer.
  */
 function addDI ({ targets: { ledger, destination } }, { demurrage, income, buffer }) {
@@ -150,8 +164,8 @@ function addDI ({ targets: { ledger, destination } }, { demurrage, income, buffe
  * Construct targets from payloads, double-check if matches with source.
  * Used in: create new ledger, sign transaction (initial)
  */
-function getPayloadTargets ({ payloads, sources }) {
-  return mapValues(payloads, (payload, role, payloads) => {
+async function getPayloadTargets (ledgers, { payloads, sources }) {
+  return mapValuesAsync(payloads, async (payload, role, payloads) => {
     const {
       date,
       from: { ledger, sequence, uid },
@@ -159,9 +173,12 @@ function getPayloadTargets ({ payloads, sources }) {
       challenge,
       amount
     } = payload
-    const { sequence: sourceSequence, next, balance } = sources[role]
+    const { sequence: sourceSequence, next } = sources[role]
     assert(sequence === sourceSequence + 1, 'Matching sequence')
     assert(uid === next, 'Matching next uid')
+    const { balance, income, demurrage, remainder } = await ledgers.available(ledger)
+    // TODO: we could recheck here if non-system ledgers don't end up below zero
+    // however, it would difficult to get a valid challenge under those conditions
     return {
       ledger,
       entry: 'pending',
@@ -171,6 +188,9 @@ function getPayloadTargets ({ payloads, sources }) {
       destination,
       amount,
       balance: balance.add(amount),
+      income,
+      demurrage,
+      remainder,
       challenge
     }
   })
@@ -358,6 +378,7 @@ export {
   getNextTargets,
   addAmount,
   addDI,
+  getParameters,
   getPayloadSources,
   getPayloadTargets,
   getPendingSources,

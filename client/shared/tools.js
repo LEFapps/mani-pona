@@ -219,6 +219,13 @@ function redeem ({ balance, date, remainder = 0 }, { income, buffer, demurrage }
   return { balance, date: now, remainder, demurrage: new Mani(demurrageTaken), income: new Mani(incomeGranted) }
 }
 
+const DEFAULT_BALANCE = {
+  balance: new Mani(0),
+  remainder: new Mani(0),
+  demurrage: new Mani(0),
+  income: new Mani(0)
+}
+
 export {
   pad,
   other,
@@ -237,7 +244,8 @@ export {
   sortBy,
   flip,
   fixedEncodeURIComponent,
-  redeem
+  redeem,
+  DEFAULT_BALANCE
 }
 
 const tools = {

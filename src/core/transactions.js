@@ -2,7 +2,6 @@ import StateMachine from './statemachine'
 import Ledger from '../dynamodb/ledger'
 import { flip, destructure, toCSV } from './util'
 import { strict as assert } from 'assert'
-// import { mani as Ledgers } from './ledgers'
 
 import { getLogger } from 'server-log'
 const log = getLogger('core:transactions')
@@ -24,6 +23,7 @@ export default (ledgers, fingerprint) => {
       if (destination === 'system') { throw new Error('Nice try.') }
       return StateMachine(ledgers)
         .getSources({ ledger: fingerprint, destination })
+        .then(t => t.addParameters())
         .then(t => t.addAmount(amount))
         .then(t => t.getPrimaryEntry().challenge)
     },

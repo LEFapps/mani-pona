@@ -1,7 +1,7 @@
 import assert from 'assert'
 import { getLogger } from 'server-log'
 import { KeyWrapper } from '../../client/shared/crypto'
-import { redeem } from '../../client/shared/tools'
+import { redeem, DEFAULT_BALANCE } from '../../client/shared/tools'
 import { getAccountTypesMap } from '../cognito/util'
 const log = getLogger('dynamodb:ledgers')
 
@@ -17,6 +17,7 @@ const SHORT_ATTRIBUTES = [
   'uid',
   'income',
   'demurrage',
+  'remainder',
   'challenge',
   'message'
 ]
@@ -55,9 +56,14 @@ function ledgers (table, prefix = '') {
   }
   async function available (fingerprint, now = new Date()) {
     const parameters = await getParameters(fingerprint)
-    const current = await entry(fingerprint, '/current', true)
-    log.debug('Ledger has parameters\n%j\nand current transaction\n%j', parameters, current)
-    return redeem(current, parameters, { now })
+    const current = await entry(fingerprint, '/current')
+    if (current) {
+      log.debug('Ledger has parameters\n%j\nand current transaction\n%j', parameters, current)
+      return redeem(current, parameters, { now })
+    } else {
+      log.debug('Ledger %s has no current transaction (in the process of being created?), returning default balance', fingerprint)
+      return DEFAULT_BALANCE
+    }
   }
   return {
     entry,
@@ -123,7 +129,7 @@ function ledgers (table, prefix = '') {
       log.debug('Checking availability of %s on ledger %s on date %s', amount, fingerprint, date)
       const result = await available(fingerprint, date)
       log.debug('Virtual balance of ledger %s:\n%j', fingerprint, result)
-      return result.balance.add(amount).value > 0 // would the supplied amount drop the (virtual) balance below zero?
+      return result.balance.add(amount).value > 0 // would the supplied amount keep the (virtual) balance below zero?
     },
     shortAttributes () {
       return SHORT_ATTRIBUTES

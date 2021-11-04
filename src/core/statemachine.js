@@ -1,9 +1,11 @@
 import { getSources, getPayloads, getNextTargets, addAmount, addDI,
-  getPayloadSources, getPayloadTargets, getPendingTargets, getPendingSources,
+  getParameters, getPayloadSources, getPayloadTargets, getPendingTargets, getPendingSources,
   addSignatures, addSystemSignatures, saveResults } from './util'
 
 /**
  * This is the way.
+ *
+ * Basically this code is to ensure that any manipulations on the ledger(s) are done in the right sequence.
  *
  * (table is actually a core/ledgers object)
  */
@@ -38,8 +40,8 @@ const StateMachine = (table) => {
   async function Targets (context) {
     if (context.payloads) {
       return {
-        continuePayload () {
-          context.targets = getPayloadTargets(context)
+        async continuePayload () {
+          context.targets = await getPayloadTargets(table, context)
           return Continue(context)
         }
       }
@@ -47,12 +49,7 @@ const StateMachine = (table) => {
       context.targets = await getNextTargets(table, context)
       return {
         async addAmount (amount) {
-          context.targets = addAmount(context, amount)
-          return Continue(context)
-        },
-        // @Deprecated:
-        addDI (DI) {
-          context.targets = addDI(context, DI)
+          context.targets = await addAmount(table, context, amount)
           return Continue(context)
         }
       }
