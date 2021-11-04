@@ -37,7 +37,7 @@ export const resetClient = async (options = {}) => {
 }
 
 const App = () => {
-  const [state, setState] = useState()
+  const [AuthState, setAuthState] = useState() // optional authstate logger
 
   const Container = ({ children }) => (
     <View style={globalStyles.container}>{children}</View>
@@ -45,7 +45,11 @@ const App = () => {
 
   return (
     <NotificationProvider>
-      <Authenticator container={Container} hideDefault onStateChange={setState}>
+      <Authenticator
+        container={Container}
+        hideDefault
+        onStateChange={setAuthState}
+      >
         <SignIn override={'SignIn'} />
         <SignUp override={'SignUp'} />
         <ConfirmSignUp override={'confirmSignUp'} />

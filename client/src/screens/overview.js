@@ -8,12 +8,14 @@ import mani from '../../shared/mani'
 import { UserContext } from '../authenticator'
 import Predictions from '../screens/predictions'
 import { useNotifications } from '../shared/notifications'
+import { useIsFocused } from '@react-navigation/core'
 
 const { DarkerBlue, CurrencyColor } = colors
 
 export default function AccountBalance ({ navigation }) {
   const user = useContext(UserContext)
   const notification = useNotifications()
+  const isFocused = useIsFocused()
 
   const [params, setParams] = useState({})
   const [current, setCurrent] = useState({})
@@ -24,7 +26,7 @@ export default function AccountBalance ({ navigation }) {
 
   useEffect(() => {
     loadData()
-  }, [])
+  }, [isFocused])
 
   // TODO: cleanup
   async function loadData () {

@@ -44,12 +44,6 @@ export const adminScreens = [
     component: Prepaid,
     options: { title: 'Offline betalingen' },
     icon: 'credit-card-outline'
-  },
-  {
-    name: 'exports',
-    component: Exports,
-    options: { title: 'Exports' },
-    icon: 'database-export'
   }
 ]
 

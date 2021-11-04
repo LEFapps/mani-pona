@@ -24,7 +24,7 @@ export default function TransactionHitstory ({ route }) {
       <Card>
         <Text style={globalStyles.property}>Datum:</Text>
         <Text style={globalStyles.price}>
-          {new Date(transaction.date).toLocaleString()}
+          {new Date(transaction.date).toLocaleString('nl-BE')}
         </Text>
       </Card>
     </ScrollView>
