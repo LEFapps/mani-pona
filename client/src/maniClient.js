@@ -154,9 +154,13 @@ const ManiClient = async ({
       return fromDb(recent)
     },
     async available () {
-      const available = await query(AVAILABLE, 'ledger.transactions.available', {
-        id
-      })
+      const available = await query(
+        AVAILABLE,
+        'ledger.transactions.available',
+        {
+          id
+        }
+      )
       return fromDb(available)
     },
     async current () {
@@ -286,6 +290,16 @@ const ManiClient = async ({
     },
     async exportLedgers () {
       return query(EXPORT_LEDGERS, 'admin.exportLedgers')
+    },
+    async available (ledger) {
+      const available = await query(
+        AVAILABLE,
+        'ledger.transactions.available',
+        {
+          id: ledger
+        }
+      )
+      return fromDb(available)
     },
     async current (ledger) {
       const current = await query(CURRENT, 'ledger.transactions.current', {
