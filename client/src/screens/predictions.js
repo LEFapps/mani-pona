@@ -106,7 +106,7 @@ export default function Predictions () {
               <Text style={globalStyles.date}>
                 {!income.zero() && `inkomen: ${income.format()}`}
                 {!income.zero() && !!demurrage && '|'}
-                {!!demurrage && `demurrage ${demurrage} %`}
+                {!!demurrage && `gemeenchapsbijdrage ${demurrage} %`}
               </Text>
             </View>
             <Text style={globalStyles.price}>{value.format()}</Text>

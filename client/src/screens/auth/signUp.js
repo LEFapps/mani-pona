@@ -105,7 +105,7 @@ export default function signUp (props) {
             'custom:alias': state.alias,
             email: state.email,
             'custom:privacy': !!state.privacy ? '1' : '0',
-            'custom:address': state.address || '',
+            address: state.address || '',
             'custom:zip': state.zip || '',
             'custom:city': state.city || '',
             'custom:phone': state.phone || '',
@@ -131,9 +131,9 @@ export default function signUp (props) {
         }
         setState(defaultState)
         setBusy(false)
-      } catch (error) {
+      } catch (e) {
         setBusy(false)
-        console.error('signUp', error)
+        console.error('signUp', e)
         notification.add({
           type: 'danger',
           title: 'Registratie mislukt',

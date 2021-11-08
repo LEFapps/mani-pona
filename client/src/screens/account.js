@@ -37,8 +37,13 @@ export default function Home () {
       if (clearKeys) await maniClient.cleanup()
       await resetClient()
       await Auth.signOut({ global: true })
-    } catch ({ message }) {
-      notification.add({ message, title: 'Afmelden mislukt', type: 'warning' })
+    } catch (e) {
+      console.error('signOut', e)
+      notification.add({
+        message: e && e.message,
+        title: 'Afmelden mislukt',
+        type: 'warning'
+      })
     }
   }
 
