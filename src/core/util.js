@@ -122,7 +122,7 @@ async function addAmount (ledgers, { targets: { ledger, destination } }, amount)
     destination.balance = destination.balance.add(amount)
   } else {
     const { balance, income, demurrage, remainder } = await ledgers.available(destination.ledger)
-    destination.balance = balance.add(amount)
+    destination.balance = balance.add(complement)
     destination.income = income
     destination.demurrage = demurrage
     destination.remainder = remainder
