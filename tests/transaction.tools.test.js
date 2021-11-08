@@ -69,7 +69,7 @@ describe('Transaction tools', () => {
     })
     expect(
       destructure(
-        `/2021-01-28T00:00:00.000Z/from/ledger1/000000000013/nextuida/to/ledger2/000000000024/nextuidb/-7,35 ɱ`
+        `/2021-01-28T00:00:00.000Z/from/ledger1/000000000013/nextuida/to/ledger2/000000000024/nextuidb/-10.758,35 ɱ`
       )
     ).toEqual({
       date,
@@ -83,7 +83,25 @@ describe('Transaction tools', () => {
         sequence: 24,
         uid: 'nextuidb'
       },
-      amount: mani(-7.35)
+      amount: mani(-10758.35)
+    })
+    expect(
+      destructure(
+        `/2021-01-28T00:00:00.000Z/from/ledger1/000000000013/nextuida/to/ledger2/000000000024/nextuidb/5,43 ɱ`
+      )
+    ).toEqual({
+      date,
+      from: {
+        ledger: 'ledger1',
+        sequence: 13,
+        uid: 'nextuida'
+      },
+      to: {
+        ledger: 'ledger2',
+        sequence: 24,
+        uid: 'nextuidb'
+      },
+      amount: mani(5.43)
     })
   })
 

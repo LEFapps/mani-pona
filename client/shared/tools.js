@@ -34,7 +34,7 @@ function destructurePath (path) {
 }
 function destructure (payload, flip = false) {
   const full =
-    '^/(?<date>[^/]+)/from(?<from>.+)(?=/to)/to(?<to>.+)(?=/)/(?<amount>[-0-9,ɱ ]+)'
+    '^/(?<date>[^/]+)/from(?<from>.+)(?=/to)/to(?<to>.+)(?=/)/(?<amount>[-0-9.,ɱ ]+)'
   let match = new RegExp(full).exec(payload)
   if (match) {
     let { date, from, to, amount } = match.groups

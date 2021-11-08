@@ -6,6 +6,11 @@ describe('currency formatting', () => {
     expect(mani(123.45).format()).toBe('123,45 ɱ')
   })
 
+  it('should correctly parse a mani string representation', () => {
+    expect(mani('12.345,67 ɱ')).toEqual(mani(12345.67))
+    expect(mani('10.000,00 ɱ')).toEqual(mani(10000))
+  })
+
   it('should be able to compare different entries', () => {
     expect(mani(0).equals(0)).toBe(true)
     expect(mani(0).equals(1)).toBe(false)
