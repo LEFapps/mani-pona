@@ -6,6 +6,7 @@ import {
   FlatList,
   TouchableOpacity
 } from 'react-native'
+import { MaterialCommunityIcons } from '@expo/vector-icons'
 
 import { sortBy } from '../../shared/tools'
 
@@ -15,6 +16,7 @@ import Card from '../shared/card'
 import FlatButton from '../shared/buttons/historyButton'
 import { useNotifications } from '../shared/notifications'
 import { globalStyles } from '../styles/global'
+import { colors } from '../helpers/helper'
 
 const TransactionListItem = ({
   destination,
@@ -27,23 +29,23 @@ const TransactionListItem = ({
     <Card>
       <View style={{ flexDirection: 'column' }}>
         <Contact style={globalStyles.property} ledger={destination} />
-        <Text style={globalStyles.date}>
-          {new Date(date).toLocaleDateString('nl-BE')}
-        </Text>
-        <Text style={globalStyles.date}>
-          {new Date(date).toLocaleTimeString('nl-BE')}
-        </Text>
+        <View style={{ marginTop: 8 }}>
+          <Text style={globalStyles.date}>
+            {new Date(date).toLocaleString('nl-BE')}
+          </Text>
+        </View>
       </View>
-      <View style={{ flexDirection: 'column' }}>
+      <View style={{ flexDirection: 'column', textAlign: 'right' }}>
         <Text style={globalStyles.price}>{amount.format()}</Text>
-        <Text style={globalStyles.date}>
-          {income && !income.zero() && `inkomen: ${income.format()}`}
-        </Text>
-        <Text style={globalStyles.date}>
-          {demurrage &&
-            !demurrage.zero() &&
-            `gemeenschapsbijdrage: ${demurrage.format()}`}
-        </Text>
+        <View style={{ marginTop: 8 }}>
+          {((income && !income.zero()) || (demurrage && !demurrage.zero())) && (
+            <MaterialCommunityIcons
+              name='crown'
+              size='20'
+              color={colors.CurrencyColor}
+            />
+          )}
+        </View>
       </View>
     </Card>
   )

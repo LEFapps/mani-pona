@@ -81,6 +81,7 @@ export const globalStyles = StyleSheet.create({
     fontWeight: 'bold',
     color: CurrencyColor,
     textAlignVertical: 'center',
+    textAlign: 'right',
     fontSize: 16
   },
   splash: {
