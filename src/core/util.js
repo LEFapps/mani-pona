@@ -212,59 +212,44 @@ async function getPendingSources (table, { targets }) {
   })
 }
 
-function addSignature (
-  { ledger, destination },
-  { signature, counterSignature }
-) {
-  ledger.signature = signature
-  ledger.next = sha1(signature)
-  destination.counterSignature = counterSignature
-  return { ledger, destination }
+async function signTransaction (transaction, ledger, keys) {
+  if (transaction.ledger === ledger) {
+    transaction.signature = await keys.privateKey.sign(transaction.challenge)
+    transaction.next = sha1(transaction.signature)
+    log.debug('Added automatic signature and next token to transaction for %s', ledger)
+  }
+  if (transaction.destination === ledger) {
+    transaction.counterSignature = await keys.privateKey.sign(transaction.challenge)
+    log.debug('Added automatic counter-signature to transaction for %s', ledger)
+  }
+  return transaction
 }
 
-async function addSystemSignatures (table, { sources, targets }, keys) {
-  // autosigning system side
+async function autoSign (table, { sources, targets }, ledger, keys) {
+  // autosigning targets with stored (or recently created) keys
   // happens during system init, UBI and creation of new ledger
-  log.info(`Autosigning system (only during init)`)
+  log.info('Autosigning with %s', ledger)
   assert(
-    targets.destination.ledger === 'system' &&
-      targets.ledger.destination === 'system',
-    'System destination'
+    targets.destination.ledger === ledger ||
+      targets.ledger.destination === ledger,
+    'Autosigning ledger does not match target(s)'
   )
   if (!keys) {
     keys = KeyWrapper(
-      await table.keys('system', true)
+      await table.keys(ledger, true)
     )
+    if (!keys.privateKey) {
+      throw new Error(`No private key found on ${ledger}`)
+    }
   }
   log.debug('Signing targets %j', targets)
-  log.debug('with keys %j', keys)
-  // log(JSON.stringify(targets, null, 2))
-  targets.destination.signature = await keys.privateKey.sign(
-    targets.destination.challenge
-  )
-  const next = sha1(targets.destination.signature)
-  targets.destination.next = next
-  if (targets.ledger.ledger === 'system') {
-    // system init
-    assert(
-      targets.destination.challenge === targets.ledger.challenge,
-      'Oroborous system init'
-    )
-    const signature = targets.destination.signature
-    targets.ledger.signature = signature
-    targets.ledger.counterSignature = signature
-    targets.ledger.next = next
-    targets.destination.counterSignature = signature
-  } else {
-    targets.ledger.counterSignature = await keys.privateKey.sign(
-      targets.ledger.challenge
-    )
-  }
+  targets.ledger = await signTransaction(targets.ledger, ledger, keys)
+  targets.destination = await signTransaction(targets.destination, ledger, keys)
   return targets
 }
+
 /**
- * Add signatures, autosigning system entries.
- * This automatically saves entries.
+ * Verify and add signatures.
  */
 async function addSignatures (
   table,
@@ -272,7 +257,7 @@ async function addSignatures (
   { ledger, signature, counterSignature, publicKeyArmored }
 ) {
   if (ledger) {
-    assert(ledger === targets.ledger.ledger, 'Target ledger')
+    assert(ledger === targets.ledger.ledger, 'Target ledger does not match')
     if (!publicKeyArmored) {
       ;({ publicKeyArmored } = await table.keys(ledger, true))
       if (!publicKeyArmored) throw new Error(`Missing PK:  ${ledger}`)
@@ -280,7 +265,9 @@ async function addSignatures (
     const verifier = Verifier(publicKeyArmored)
     await verifier.verify(targets.ledger.challenge, signature) // throws error if wrong
     await verifier.verify(targets.destination.challenge, counterSignature) // throws error if wrong
-    targets = addSignature(targets, { signature, counterSignature })
+    targets.ledger.signature = signature
+    targets.ledger.next = sha1(signature)
+    targets.destination.counterSignature = counterSignature
   }
   return targets
 }
@@ -309,20 +296,16 @@ function transition (table, { source, target, message }) {
  * Save the targets, transitioning entry states where relevant.
  */
 function saveResults (table, { sources, targets, message }) {
-  if (sources.ledger.ledger !== 'system') {
-    // only happens during system init
-    transition(table, { source: sources.ledger, target: targets.ledger, message })
-  } else {
-    assert(
-      targets.destination.challenge === targets.ledger.challenge,
-      'Oroborous system init'
-    )
+  transition(table, { source: sources.ledger, target: targets.ledger, message })
+  // unless the transaction is an oroborous, we also save the destination
+  // note that this automatically means that the amount must be 0
+  if (targets.destination.challenge !== targets.ledger.challenge) {
+    transition(table, {
+      source: sources.destination,
+      target: targets.destination,
+      message
+    })
   }
-  transition(table, {
-    source: sources.destination,
-    target: targets.destination,
-    message
-  })
 }
 /**
  * Convert items (Objects) to one big CSV string.
@@ -352,7 +335,7 @@ export {
   getPendingSources,
   getPendingTargets,
   addSignatures,
-  addSystemSignatures,
+  autoSign,
   saveResults,
   flip,
   destructure,
