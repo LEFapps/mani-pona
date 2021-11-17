@@ -113,8 +113,8 @@ export default (ledgers, fingerprint) => {
           )
         }
         const transaction = ledgers.transaction()
-        transaction.deletePending(fingerprint)
-        transaction.deletePending(pending.destination)
+        await transaction.deletePending(fingerprint)
+        await transaction.deletePending(pending.destination)
         await transaction.execute()
         return 'Pending transaction successfully cancelled.'
       } else {
