@@ -100,6 +100,7 @@ export default function (ledgers, userpool) {
           publicKeyArmored,
           privateKeyArmored,
           alias: 'Prepaid card',
+          accountType: 'prepaid',
           challenge
         })
         await transaction.execute()

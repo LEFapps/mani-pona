@@ -95,7 +95,7 @@ functions:
       LOG_PREFIX: sumsy
       USER_POOL:
         Ref: CognitoUserPool
-      ACCOUNT_TYPES: ${env:ACCOUNT_TYPES, '[{"type":"default","income":0,"buffer":0,"demurrage":2.5},{"type":"verified","income":0,"buffer":5,"demurrage":2.5},{"type":"guaranteed_income","income":16,"buffer":5,"demurrage":2.5},{"type":"professional","income":0,"buffer":5,"demurrage":0.5},{"type":"demo","income":1000,"buffer":0,"demurrage":20}]'}
+      ACCOUNT_TYPES: ${env:ACCOUNT_TYPES, '[{"type":"default","income":0,"buffer":0,"demurrage":2.5},{"type":"prepaid","income":0,"buffer":0,"demurrage":0.0},{"type":"verified","income":0,"buffer":5,"demurrage":2.5},{"type":"guaranteed_income","income":16,"buffer":5,"demurrage":2.5},{"type":"professional","income":0,"buffer":5,"demurrage":0.5},{"type":"demo","income":1000,"buffer":0,"demurrage":20}]'}
 
 resources:
   - ${file(resources/dynamo.yml)}
