@@ -106,7 +106,7 @@ export default (ledgers, fingerprint) => {
         if (pending.destination === 'system') {
           throw new Error('System transactions cannot be cancelled.')
         }
-        const destination = await ledgers.pendingEntry(pending.destination)
+        const destination = await ledgers.pending(pending.destination)
         if (!destination) {
           throw new Error(
             'No matching transaction found on destination ledger, please contact system administrators.'
