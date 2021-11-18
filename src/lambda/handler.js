@@ -18,7 +18,7 @@ const systemInit = process.env.AUTO_SYSTEM_INIT === 'true'
 
 function contextProcessor (event) {
   const { headers } = event
-  log.debug('Context Event: %j', event)
+  log.debug('Context Event:\n%j', event)
   // fake the cognito interface if offline
   let claims = offline
     ? JSON.parse(headers['x-claims'] || process.env.CLAIMS)
@@ -29,15 +29,16 @@ function contextProcessor (event) {
     verified: claims.email_verified,
     admin: claims['custom:administrator'],
     username: claims.sub,
-    claims
+    claims,
+    origin: headers['Origin']
   }
 }
 
 const offlineOptions = offline
   ? {
-      endpoint: 'http://localhost:8000',
-      httpOptions: { agent: new http.Agent({ keepAlive: true }) }
-    }
+    endpoint: 'http://localhost:8000',
+    httpOptions: { agent: new http.Agent({ keepAlive: true }) }
+  }
   : {}
 
 const core = Core(
