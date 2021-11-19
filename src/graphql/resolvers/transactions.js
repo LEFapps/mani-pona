@@ -1,5 +1,5 @@
 import { ForbiddenError } from 'apollo-server'
-import { isEmpty } from 'lodash'
+import { isEmpty, shuffle } from 'lodash'
 import { getLogger } from 'server-log'
 const log = getLogger('graphql:transactions')
 
@@ -17,6 +17,41 @@ export default {
         throw new ForbiddenError(err)
       }
       return core.mani(id)
+    },
+    notifications: (_vars, _args, _context) => {
+      const notifications = [
+        {
+          title: 'Hello World',
+          message: 'This is a sample notification',
+          type: 'info'
+        },
+        {
+          title: 'Oopsie Daisy',
+          message: 'This is not so good, is it?',
+          type: 'warning'
+        },
+        {
+          title: 'Really bad eggs',
+          message: 'Run for you life while you still can!',
+          type: 'danger'
+        },
+        {
+          title: 'Hip hoi',
+          message: 'Ik heb een tante in marokko en die komt!',
+          type: 'success'
+        },
+        {
+          title: 'Nieuwe betaling',
+          message: 'Je hebt een nieuwe betalingsaanvraag.',
+          type: 'info',
+          redirect: 'pending'
+        }
+      ]
+      // TODO:
+      // - list records from ledger with 'aknowledged: false'
+      // - set 'aknowledged: true'
+      // - determine type, based on entry key ???
+      return shuffle(notifications).slice(0, Math.floor(Math.random() * 3))
     }
   },
   TransactionQuery: {
