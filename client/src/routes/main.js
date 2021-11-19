@@ -5,7 +5,9 @@ import { View, Text } from 'react-native'
 import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons'
 
 import { UserContext } from '../authenticator'
+import { Notifier } from '../shared/notifier'
 import { useNotifications } from '../shared/notifications'
+import { navigationRef } from '../helpers/navigator'
 
 import AdminStack from './stacks/adminStack'
 import AccountStack from '../routes/stacks/accountStack'
@@ -226,7 +228,8 @@ export default function drawerNavigator (props) {
           </Text>
         </View>
       ) : (
-        <NavigationContainer>
+        <NavigationContainer ref={navigationRef}>
+          <Notifier />
           <Nav.Navigator
             barStyle={{ backgroundColor: colors.DarkerBlue }}
             initialRouteName={
