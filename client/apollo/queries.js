@@ -14,6 +14,18 @@ const REGISTER = gql`
     }
   }
 `
+const NOTIFIERS = gql`
+  query notifiers($id: String!) {
+    ledger(id: $id) {
+      notifications {
+        redirect
+        title
+        message
+        type
+      }
+    }
+  }
+`
 const SYSTEM_CHALLENGE = gql`
   query {
     system {
@@ -282,6 +294,7 @@ const INIT = gql`
 
 export {
   REGISTER,
+  NOTIFIERS,
   SYSTEM_CHALLENGE,
   AVAILABLE,
   CURRENT,
