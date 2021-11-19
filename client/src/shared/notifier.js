@@ -24,7 +24,6 @@ export const Notifier = () => {
   })
   useEffect(() => {
     if (!loading && data && data.ledger.notifications) {
-      console.log(data.ledger.notifications.length)
       data.ledger.notifications.forEach(({ redirect, ...notification }, i) => {
         const buttons = [
           {

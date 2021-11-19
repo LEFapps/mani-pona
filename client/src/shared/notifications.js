@@ -97,7 +97,6 @@ export const NotificationProvider = ({ children }) => {
 
   const add = n => {
     const notification = { ...n, id: hash() }
-    console.log('nId', notification.id)
     setNotifications([...notificationsRef.current, notification])
   }
 
