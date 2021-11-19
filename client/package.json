@@ -42,6 +42,7 @@
     "react-dom": "16.13.1",
     "react-native": "^0.63.4",
     "react-native-dialog": "^6.1.2",
+    "react-native-elements": "^3.4.2",
     "react-native-gesture-handler": "^1.10.3",
     "react-native-keyboard-aware-scroll-view": "^0.9.3",
     "react-native-pager-view": "^5.4.1",

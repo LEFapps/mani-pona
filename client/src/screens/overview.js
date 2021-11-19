@@ -9,6 +9,7 @@ import { UserContext } from '../authenticator'
 import Predictions from '../screens/predictions'
 import { useNotifications } from '../shared/notifications'
 import { useIsFocused } from '@react-navigation/core'
+import { HelpTip } from '../shared/helptip'
 
 const { DarkerBlue, CurrencyColor } = colors
 
@@ -106,19 +107,38 @@ export default function AccountBalance ({ navigation }) {
           )}
           {!mani(income).zero() && (
             <Card>
-              <Text style={globalStyles.property}>Inkomen</Text>
+              <View style={{ flexDirection: 'row' }}>
+                <Text style={globalStyles.property}>Inkomen</Text>
+                <HelpTip>
+                  <Text>
+                    Dit bedrag wordt maandelijks bij uw rekeningstand geteld.
+                  </Text>
+                </HelpTip>
+              </View>
               <Text style={globalStyles.price}>{income}</Text>
             </Card>
           )}
           {!mani(buffer).zero() && (
             <Card>
-              <Text style={globalStyles.property}>Vrije buffer</Text>
+              <View style={{ flexDirection: 'row' }}>
+                <Text style={globalStyles.property}>Vrije buffer</Text>
+                <HelpTip>
+                  <Text>
+                    Op dit bedrag wordt geen gemeenschapsbijdrage berekend.
+                  </Text>
+                </HelpTip>
+              </View>
               <Text style={globalStyles.price}>{buffer}</Text>
             </Card>
           )}
           {!!demurrage && (
             <Card>
-              <Text style={globalStyles.property}>Gemeenschapsbijdrage</Text>
+              <View style={{ flexDirection: 'row' }}>
+                <Text style={globalStyles.property}>Gemeenschapsbijdrage</Text>
+                <HelpTip>
+                  <Text>Dit bedrag wordt van uw rekeningstand afgenomen.</Text>
+                </HelpTip>
+              </View>
               <Text style={globalStyles.price}>{demurrage} %</Text>
             </Card>
           )}
