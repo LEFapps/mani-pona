@@ -13,14 +13,13 @@ const convertNotification = ({ entry, value }) => {
         title: 'Betaling afgerond',
         message: 'De betaling is afgerond. De munten werden uitgewisseld.',
         type: 'success',
-        redirect: 'Startscherm'
+        redirect: ['Startscherm', { screen: 'AccountBalance' }]
       },
       cancel: {
         title: 'Betaling geannuleerd',
         message:
           'De betaling is afgebroken. Er werden geen munten uitgewisseld.',
-        type: 'warning',
-        redirect: 'Startscherm'
+        type: 'warning'
       }
     },
     pending: {
@@ -28,14 +27,14 @@ const convertNotification = ({ entry, value }) => {
         title: 'Betalingsverzoek',
         message: 'Er werd een betalingsverzoek gemaakt.',
         type: 'info',
-        redirect: 'Openstaande betalingen'
+        redirect: ['Openstaande betalingen']
       },
       forceSystemPayment: {
         title: 'Betalingsverzoek',
         message:
           'Er werd een betalingsverzoek gemaakt door het systeem. Je moet dit eerst accepteren voor je munten kan uitwisselen.',
         type: 'info',
-        redirect: 'Openstaande betalingen'
+        redirect: ['Openstaande betalingen']
       }
     }
   }
@@ -64,7 +63,7 @@ export const Notifier = () => {
           buttons.push({ label: 'Ok' })
           if (redirect) {
             buttons.push({
-              onPress: () => navigate(redirect),
+              onPress: () => navigate(...redirect),
               label: 'Bekijken'
             })
           }
