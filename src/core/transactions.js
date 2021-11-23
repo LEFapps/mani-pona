@@ -51,6 +51,7 @@ export default (ledgers, fingerprint) => {
           .then(t => t.continuePayload())
           .then(t => t.addSignatures({ ledger: fingerprint, ...proof }))
           .then(t => t.addMessage(message))
+          .then(t => t.addNotification('create'))
           .then(t => t.save())
         await transaction.execute()
         if (prepaid) {
@@ -91,6 +92,7 @@ export default (ledgers, fingerprint) => {
         .getPayloads(proof.payload)
         .continuePending()
         .then(t => t.addSignatures({ ledger: fingerprint, ...proof }))
+        .then(t => t.addNotification('confirm'))
         .then(t => {
           next = t.getPrimaryEntry().next
           log.debug('Primary entry: %j', t.getPrimaryEntry())
@@ -115,6 +117,7 @@ export default (ledgers, fingerprint) => {
         const transaction = ledgers.transaction()
         await transaction.deletePending(fingerprint)
         await transaction.deletePending(pending.destination)
+        // TODO: execute stateMachine's addNotification('cancel') on both /current entries
         await transaction.execute()
         return 'Pending transaction successfully cancelled.'
       } else {

@@ -135,6 +135,7 @@ export default function (ledgers, userpool) {
           .then(t => t.continuePayload())
           .then(t => t.addSystemSignatures())
           .then(t => t.addSignatures({ ledger, ...registration }))
+          // .then(t => t.addNotification()) // optional
           .then(t => t.save())
         transaction.putKey({
           ledger,
@@ -184,6 +185,7 @@ export default function (ledgers, userpool) {
         .getSources({ ledger, destination: 'system' })
         .then(t => t.addAmount(amount))
         .then(t => t.addSystemSignatures())
+        .then(t => t.addNotification('forceSystemPayment'))
         .then(t => t.save())
         .catch(err => log.error('Forced system payment failed\n%s', err))
       await transaction.execute()
