@@ -19,39 +19,23 @@ export default {
       return core.mani(id)
     },
     notifications: (_vars, _args, _context) => {
+      // TODO:
+      // - scan entries from ledger with a 'notify' attribute
+      // - remove 'notify' attribute
+      // - return 'entry' and 'notify' attribute values (see example in array below)
+
       const notifications = [
         {
-          title: 'Hello World',
-          message: 'This is a sample notification',
-          type: 'info'
+          entry: 'pending',
+          value: shuffle(['create', 'forceSystemPayment'])[0]
         },
         {
-          title: 'Oopsie Daisy',
-          message: 'This is not so good, is it?',
-          type: 'warning'
-        },
-        {
-          title: 'Really bad eggs',
-          message: 'Run for you life while you still can!',
-          type: 'danger'
-        },
-        {
-          title: 'Hip hoi',
-          message: 'Ik heb een tante in marokko en die komt!',
-          type: 'success'
-        },
-        {
-          title: 'Nieuwe betaling',
-          message: 'Je hebt een nieuwe betalingsaanvraag.',
-          type: 'info',
-          redirect: 'pending'
+          entry: '/current',
+          value: shuffle(['cancel', 'confirm'])[0]
         }
       ]
-      // TODO:
-      // - list records from ledger with 'aknowledged: false'
-      // - set 'aknowledged: true'
-      // - determine type, based on entry key ???
-      return shuffle(notifications).slice(0, Math.floor(Math.random() * 3))
+      // return notifications // for testing
+      return []
     }
   },
   TransactionQuery: {

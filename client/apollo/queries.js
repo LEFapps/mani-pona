@@ -18,10 +18,8 @@ const NOTIFIERS = gql`
   query notifiers($id: String!) {
     ledger(id: $id) {
       notifications {
-        redirect
-        title
-        message
-        type
+        entry
+        value
       }
     }
   }

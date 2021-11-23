@@ -6,13 +6,45 @@ import { navigate } from '../helpers/navigator'
 import { NOTIFIERS } from '../../apollo/queries'
 import { NotificationContext } from './notifications'
 
-const mapNav = entry => {
-  const screens = {
-    current: 'Startscherm',
-    pending: 'Openstaande betalingen',
-    recent: 'Transacties'
+const convertNotification = ({ entry, value }) => {
+  const notifications = {
+    '/current': {
+      confirm: {
+        title: 'Betaling afgerond',
+        message: 'De betaling is afgerond. De munten werden uitgewisseld.',
+        type: 'success',
+        redirect: 'Startscherm'
+      },
+      cancel: {
+        title: 'Betaling geannuleerd',
+        message:
+          'De betaling is afgebroken. Er werden geen munten uitgewisseld.',
+        type: 'warning',
+        redirect: 'Startscherm'
+      }
+    },
+    pending: {
+      create: {
+        title: 'Betalingsverzoek',
+        message: 'Er werd een betalingsverzoek gemaakt.',
+        type: 'info',
+        redirect: 'Openstaande betalingen'
+      },
+      forceSystemPayment: {
+        title: 'Betalingsverzoek',
+        message:
+          'Er werd een betalingsverzoek gemaakt door het systeem. Je moet dit eerst accepteren voor je munten kan uitwisselen.',
+        type: 'info',
+        redirect: 'Openstaande betalingen'
+      }
+    }
   }
-  return screens[entry] || 'Startscherm'
+  const defaultNotification = {
+    title: entry || 'Melding',
+    message: value || 'Er gebeurde iets, maar ik weet niet wat.',
+    type: 'info'
+  }
+  return (notifications[entry] && notifications[entry][value]) || false
 }
 
 export const Notifier = () => {
@@ -24,16 +56,21 @@ export const Notifier = () => {
   })
   useEffect(() => {
     if (!loading && data && data.ledger.notifications) {
-      data.ledger.notifications.forEach(({ redirect, ...notification }, i) => {
-        const buttons = [
-          {
-            onPress: () => redirect && navigate(mapNav(redirect)),
-            label: redirect ? 'Bekijken' : 'Ok'
+      data.ledger.notifications
+        .map(convertNotification)
+        .filter(n => n)
+        .forEach(({ redirect, ...notification }, i) => {
+          const buttons = []
+          buttons.push({ label: 'Ok' })
+          if (redirect) {
+            buttons.push({
+              onPress: () => navigate(redirect),
+              label: 'Bekijken'
+            })
           }
-        ]
-        // timeout is needed here for state to update inbetween
-        setTimeout(() => add({ ...notification, buttons }), 100 * i)
-      })
+          // timeout is needed here for state to update inbetween
+          setTimeout(() => add({ ...notification, buttons }), 100 * i)
+        })
     }
   }, [loading, data])
   return null

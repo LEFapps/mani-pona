@@ -37,10 +37,8 @@ export default gql`
   }
 
   type Notification {
-    type: String!
-    title: String
-    message: String!
-    redirect: String
+    entry: String!
+    value: String!
   }
 
   type LedgerQuery {

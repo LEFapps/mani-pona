@@ -153,6 +153,7 @@ const style = StyleSheet.create({
     marginTop: 8,
     alignSelf: 'flex-end',
     display: 'flex',
+    flexDirection: 'row',
     justifyContent: 'flex-end'
   },
   button: {
