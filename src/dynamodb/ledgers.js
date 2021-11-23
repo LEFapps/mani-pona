@@ -49,10 +49,10 @@ function ledgers (table, prefix = '') {
       FilterExpression: 'attribute_exists(notify) AND notify <> :null',
       ExpressionAttributeValues: { ':null': null, ':fingerprint': fingerprint }
     })
-    return entries.map(({ entry, notify }) => ({
-      entry,
-      value: notify || entry
-    }))
+    return entries.map(({ notify, ...record }) => {
+      table.putItem(record)
+      return !!notify && { entry: record.entry, value: notify }
+    })
   }
   async function getParameters (fingerprint) {
     let accountType = 'default'

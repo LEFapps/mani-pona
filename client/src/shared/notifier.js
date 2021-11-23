@@ -6,6 +6,8 @@ import { navigate } from '../helpers/navigator'
 import { NOTIFIERS } from '../../apollo/queries'
 import { NotificationContext } from './notifications'
 
+const pollInterval = 2000 // 2 sec // maybe make dynamic upon activity in the app???
+
 const convertNotification = ({ entry, value }) => {
   const notifications = {
     '/current': {
@@ -19,7 +21,8 @@ const convertNotification = ({ entry, value }) => {
         title: 'Betaling geannuleerd',
         message:
           'De betaling is afgebroken. Er werden geen munten uitgewisseld.',
-        type: 'warning'
+        type: 'warning',
+        redirect: ['Startscherm', { screen: 'AccountBalance' }]
       }
     },
     pending: {
@@ -51,7 +54,7 @@ export const Notifier = () => {
   const { add } = useContext(NotificationContext)
   const { loading, error, data } = useQuery(NOTIFIERS, {
     variables: { id: maniClient.id },
-    pollInterval: 5000
+    pollInterval
   })
   useEffect(() => {
     if (!loading && data && data.ledger.notifications) {

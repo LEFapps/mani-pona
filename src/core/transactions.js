@@ -119,6 +119,16 @@ export default (ledgers, fingerprint) => {
         await transaction.deletePending(fingerprint)
         await transaction.deletePending(pending.destination)
         // TODO: execute stateMachine's addNotification('cancel') on both /current entries
+
+        await transaction.putEntry({
+          ...(await transaction.current(fingerprint)),
+          notify: 'cancel'
+        })
+        await transaction.putEntry({
+          ...(await transaction.current(pending.destination)),
+          notify: 'cancel'
+        })
+
         await transaction.execute()
         return 'Pending transaction successfully cancelled.'
       } else {

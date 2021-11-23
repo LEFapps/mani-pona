@@ -30,7 +30,7 @@ import { colors } from '../helpers/helper'
  *
  */
 
-const timeout = 5000 // 5 sec
+const visible = 8000 // 8 sec
 
 export const NotificationContext = createContext({
   add: () => {}
@@ -50,7 +50,7 @@ export const Notification = ({
 }) => {
   useEffect(() => {
     if (!buttons.length) {
-      setTimeout(() => onHide(id), timeout)
+      setTimeout(() => onHide(id), visible)
     }
   }, [id])
   const titleStyle = StyleSheet.compose(style.title, style[type] || style.info)
