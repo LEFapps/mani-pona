@@ -19,7 +19,8 @@ const SHORT_ATTRIBUTES = [
   'demurrage',
   'remainder',
   'challenge',
-  'message'
+  'message',
+  'notify'
 ]
 /**
  * Specialized functions to strictly work with ledgers. Continues building on table.
@@ -41,6 +42,17 @@ function ledgers (table, prefix = '') {
       item.ledger = item.ledger.substring(skip) // strip the prefix
     }
     return item
+  }
+  async function notifications (fingerprint) {
+    const entries = await table.attributes(['entry', 'notify']).queryAll({
+      KeyConditionExpression: 'ledger = :fingerprint',
+      FilterExpression: 'attribute_exists(notify) AND notify <> :null',
+      ExpressionAttributeValues: { ':null': null, ':fingerprint': fingerprint }
+    })
+    return entries.map(({ entry, notify }) => ({
+      entry,
+      value: notify || entry
+    }))
   }
   async function getParameters (fingerprint) {
     let accountType = 'default'
@@ -70,6 +82,7 @@ function ledgers (table, prefix = '') {
   }
   return {
     entry,
+    notifications,
     getParameters,
     available,
     async current (fingerprint, required = false) {

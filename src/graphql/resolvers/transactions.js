@@ -18,24 +18,9 @@ export default {
       }
       return core.mani(id)
     },
-    notifications: (_vars, _args, _context) => {
-      // TODO:
-      // - scan entries from ledger with a 'notify' attribute
-      // - remove 'notify' attribute
-      // - return 'entry' and 'notify' attribute values (see example in array below)
-
-      const notifications = [
-        {
-          entry: 'pending',
-          value: shuffle(['create', 'forceSystemPayment'])[0]
-        },
-        {
-          entry: '/current',
-          value: shuffle(['cancel', 'confirm'])[0]
-        }
-      ]
-      // return notifications // for testing
-      return []
+    notifications: (id, _args, { core }) => {
+      // TODO: remove 'notify' attribute upon retrieval
+      return core.mani(id).notifications()
     }
   },
   TransactionQuery: {

@@ -7,6 +7,9 @@ const log = getLogger('dynamodb:ledger')
 function ledger (ledgers, fingerprint) {
   return {
     fingerprint,
+    async notifications () {
+      return ledgers.notifications(fingerprint)
+    },
     async current (required = false) {
       return ledgers.current(fingerprint, required)
     },

@@ -11,7 +11,7 @@ const log = getLogger('core:transactions')
  */
 export default (ledgers, fingerprint) => {
   const ledger = Ledger(ledgers, fingerprint)
-  const { available, current, pending, recent, short } = ledger
+  const { available, current, pending, recent, short, notifications } = ledger
   return {
     fingerprint,
     available,
@@ -19,6 +19,7 @@ export default (ledgers, fingerprint) => {
     pending,
     recent,
     short,
+    notifications,
     async challenge (destination, amount) {
       if (destination === 'system') { throw new Error('Nice try.') }
       return StateMachine(ledgers)
