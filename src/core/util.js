@@ -177,12 +177,12 @@ async function getPendingTargets (table, { payloads }) {
       amount
     } = payload
     if (ledger === 'system') {
-      const matching = await table.entry(ledger, `/${date.toISOString()}/${sequence}/${uid}`) // already made permanent
+      const matching = await table.entry(ledger, sortKey({ date, sequence, uid })) // already made permanent
       if (matching) return matching
       const current = await table.current(ledger)
       if (current) {
-        assert(date.getTime() === current.date.getTime(), 'Matching dates')
-        assert(amount.equals(current.amount), 'Matching amounts')
+        assert(date.getTime() === current.date.getTime(), `Dates do not match: ${date.toISOString()} vs ${current.date.toISOString()}`)
+        assert(amount.equals(current.amount), `Amounts do not match: ${amount.format()} vs ${current.amount.format()}`)
         return current
       }
       throw new Error(`Matching system entry not found`)
