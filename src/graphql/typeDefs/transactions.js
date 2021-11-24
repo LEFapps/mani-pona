@@ -37,13 +37,12 @@ export default gql`
   }
 
   type Notification {
-    entry: String!
     value: String!
   }
 
   type LedgerQuery {
     transactions: TransactionQuery
-    notifications: [Notification]
+    notifications: Notification
     # to add: issuedBuffers, standingOrders, contacts, demurageHistory
   }
 

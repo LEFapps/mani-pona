@@ -43,16 +43,12 @@ function ledgers (table, prefix = '') {
     }
     return item
   }
-  async function notifications (fingerprint) {
-    const entries = await table.attributes(['entry', 'notify']).queryAll({
-      KeyConditionExpression: 'ledger = :fingerprint',
-      FilterExpression: 'attribute_exists(notify) AND notify <> :null',
-      ExpressionAttributeValues: { ':null': null, ':fingerprint': fingerprint }
-    })
-    return entries.map(({ notify, ...record }) => {
-      table.putItem(record)
-      return !!notify && { entry: record.entry, value: notify }
-    })
+  async function notifications (ledger) {
+    const item = table
+      .attributes(['value'])
+      .getItem({ ledger, entry: 'notification' })
+    table.deleteItem({ ledger, entry: 'notification' })
+    return item
   }
   async function getParameters (fingerprint) {
     let accountType = 'default'

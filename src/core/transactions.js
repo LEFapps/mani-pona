@@ -52,8 +52,12 @@ export default (ledgers, fingerprint) => {
           .then(t => t.continuePayload())
           .then(t => t.addSignatures({ ledger: fingerprint, ...proof }))
           .then(t => t.addMessage(message))
-          .then(t => t.addNotification('create'))
           .then(t => t.save())
+        await transaction.putEntry({
+          ledger: to,
+          entry: 'notification',
+          value: 'create'
+        })
         await transaction.execute()
         if (prepaid) {
           log.info('Autosigning transaction on prepaid account:\n%s', proof.payload)
@@ -93,13 +97,23 @@ export default (ledgers, fingerprint) => {
         .getPayloads(proof.payload)
         .continuePending()
         .then(t => t.addSignatures({ ledger: fingerprint, ...proof }))
-        .then(t => t.addNotification('confirm'))
         .then(t => {
           next = t.getPrimaryEntry().next
           log.debug('Primary entry: %j', t.getPrimaryEntry())
           return t
         })
         .then(t => t.save())
+      const { from, to } = destructure(proof.payload)
+      await transaction.putEntry({
+        ledger: from.ledger,
+        entry: 'notification',
+        value: 'confirm'
+      })
+      await transaction.putEntry({
+        ledger: to.ledger,
+        entry: 'notification',
+        value: 'confirm'
+      })
       await transaction.execute()
       return next
     },
@@ -118,15 +132,16 @@ export default (ledgers, fingerprint) => {
         const transaction = ledgers.transaction()
         await transaction.deletePending(fingerprint)
         await transaction.deletePending(pending.destination)
-        // TODO: execute stateMachine's addNotification('cancel') on both /current entries
 
         await transaction.putEntry({
-          ...(await transaction.current(fingerprint)),
-          notify: 'cancel'
+          ledger: fingerprint,
+          entry: 'notification',
+          value: 'cancel'
         })
         await transaction.putEntry({
-          ...(await transaction.current(pending.destination)),
-          notify: 'cancel'
+          ledger: pending.destination,
+          entry: 'notification',
+          value: 'cancel'
         })
 
         await transaction.execute()

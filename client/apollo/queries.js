@@ -18,7 +18,6 @@ const NOTIFIERS = gql`
   query notifiers($id: String!) {
     ledger(id: $id) {
       notifications {
-        entry
         value
       }
     }
