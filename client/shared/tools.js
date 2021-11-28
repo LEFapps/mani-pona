@@ -208,13 +208,22 @@ function redeem ({ balance, date, remainder = 0 }, { income, buffer, demurrage }
   }
   // step 2: add income, if available
   if (!income.zero()) {
+    // how many months have passed since the last transaction?
+    const monthsPassed = now.getYear() * 12 + now.getMonth() - (date.getYear() * 12 + date.getMonth())
+    incomeGranted = income.value * monthsPassed
+    /** this is the original, fractional version
     const scope = income.intValue * interval + remainder
     log('Income scope %d', scope)
     incomeGranted = Math.floor(scope / cutoff) / 100 // renormalize
+    */
     log('Income: %d', incomeGranted)
     balance = balance.add(incomeGranted)
+    /**
+     * Only necessary in a fractional version,
+     * otherwise there aren't any rounding issues to worry about
     remainder = scope % cutoff
     log('Remainder after income: %d (%d MOD %d)', remainder, scope, cutoff)
+    */
   }
   return { balance, date: now, remainder, demurrage: new Mani(demurrageTaken), income: new Mani(incomeGranted) }
 }

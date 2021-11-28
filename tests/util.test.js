@@ -73,22 +73,39 @@ describe('Tools', () => {
       demurrage: mani(10),
       income: mani(0)
     })
-    // One month income and demurrage
+    // Two months of income
     expect(redeem({
       balance: mani(200),
-      date: lastMonth,
+      date: new Date('2021-11-28T16:42:49.000Z'),
       remainder: 0
     }, {
       income: mani(5),
       buffer: mani(100),
-      demurrage: 1.0
-    }, { now })).toEqual({
-      balance: mani(204),
-      date: now,
+      demurrage: 0.0
+    }, { now: new Date('2022-01-03T18:31:21.000Z') })).toEqual({
+      balance: mani(210),
+      date: new Date('2022-01-03T18:31:21.000Z'),
       remainder: 0,
-      demurrage: mani(1),
-      income: mani(5)
+      demurrage: mani(0),
+      income: mani(10)
     })
+    // No income if the month is not passed yet
+    expect(redeem({
+      balance: mani(200),
+      date: new Date('2021-11-01T16:42:49.000Z'),
+      remainder: 0
+    }, {
+      income: mani(5),
+      buffer: mani(100),
+      demurrage: 0.0
+    }, { now: new Date('2021-11-28T16:42:49.000Z') })).toEqual({
+      balance: mani(200),
+      date: new Date('2021-11-28T16:42:49.000Z'),
+      remainder: 0,
+      demurrage: mani(0),
+      income: mani(0)
+    })
+    /**
     // fractional income
     let transaction = {
       balance: mani(1.5),
@@ -111,5 +128,6 @@ describe('Tools', () => {
       demurrage: mani(0),
       income: mani(0.04)
     })
+    */
   })
 })
