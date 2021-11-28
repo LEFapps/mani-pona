@@ -11,7 +11,7 @@ const log = getLogger('core:transactions')
  */
 export default (ledgers, fingerprint) => {
   const ledger = Ledger(ledgers, fingerprint)
-  const { available, current, pending, recent, short } = ledger
+  const { available, current, pending, recent, short, notifications } = ledger
   return {
     fingerprint,
     available,
@@ -19,6 +19,7 @@ export default (ledgers, fingerprint) => {
     pending,
     recent,
     short,
+    notifications,
     async challenge (destination, amount) {
       if (destination === 'system') { throw new Error('Nice try.') }
       return StateMachine(ledgers)
@@ -52,6 +53,11 @@ export default (ledgers, fingerprint) => {
           .then(t => t.addSignatures({ ledger: fingerprint, ...proof }))
           .then(t => t.addMessage(message))
           .then(t => t.save())
+        await transaction.putEntry({
+          ledger: to,
+          entry: 'notification',
+          value: 'create'
+        })
         await transaction.execute()
         if (prepaid) {
           log.info('Autosigning transaction on prepaid account:\n%s', proof.payload)
@@ -97,6 +103,17 @@ export default (ledgers, fingerprint) => {
           return t
         })
         .then(t => t.save())
+      const { from, to } = destructure(proof.payload)
+      await transaction.putEntry({
+        ledger: from.ledger,
+        entry: 'notification',
+        value: 'confirm'
+      })
+      await transaction.putEntry({
+        ledger: to.ledger,
+        entry: 'notification',
+        value: 'confirm'
+      })
       await transaction.execute()
       return next
     },
@@ -106,15 +123,27 @@ export default (ledgers, fingerprint) => {
         if (pending.destination === 'system') {
           throw new Error('System transactions cannot be cancelled.')
         }
-        const destination = await ledgers.pendingEntry(pending.destination)
+        const destination = await ledgers.pending(pending.destination)
         if (!destination) {
           throw new Error(
             'No matching transaction found on destination ledger, please contact system administrators.'
           )
         }
         const transaction = ledgers.transaction()
-        transaction.deletePending(fingerprint)
-        transaction.deletePending(pending.destination)
+        await transaction.deletePending(fingerprint)
+        await transaction.deletePending(pending.destination)
+
+        await transaction.putEntry({
+          ledger: fingerprint,
+          entry: 'notification',
+          value: 'cancel'
+        })
+        await transaction.putEntry({
+          ledger: pending.destination,
+          entry: 'notification',
+          value: 'cancel'
+        })
+
         await transaction.execute()
         return 'Pending transaction successfully cancelled.'
       } else {

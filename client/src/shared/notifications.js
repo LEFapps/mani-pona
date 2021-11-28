@@ -7,6 +7,8 @@ import React, {
 } from 'react'
 import { View, Text, StyleSheet } from 'react-native'
 import { TouchableOpacity } from 'react-native-web'
+import { hash } from '../../shared/crypto'
+
 import { colors } from '../helpers/helper'
 
 /**
@@ -28,7 +30,7 @@ import { colors } from '../helpers/helper'
  *
  */
 
-const timeout = 5000 // 5 sec
+const visible = 8000 // 8 sec
 
 export const NotificationContext = createContext({
   add: () => {}
@@ -48,7 +50,7 @@ export const Notification = ({
 }) => {
   useEffect(() => {
     if (!buttons.length) {
-      setTimeout(() => onHide(id), timeout)
+      setTimeout(() => onHide(id), visible)
     }
   }, [id])
   const titleStyle = StyleSheet.compose(style.title, style[type] || style.info)
@@ -67,7 +69,9 @@ export const Notification = ({
               }}
               style={style.button}
             >
-              <Text>{label || text}</Text>
+              <Text style={StyleSheet.compose(style.buttonText, style[type])}>
+                {label || text}
+              </Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -92,8 +96,8 @@ export const NotificationProvider = ({ children }) => {
   notificationsRef.current = notifications
 
   const add = n => {
-    const notification = { ...n, id: Date.now() }
-    setNotifications([...notifications, notification])
+    const notification = { ...n, id: hash() }
+    setNotifications([...notificationsRef.current, notification])
   }
 
   const removeNotification = key => {
@@ -122,7 +126,7 @@ const style = StyleSheet.create({
     right: 16,
     zIndex: 666,
     display: 'flex',
-    flexDirection: 'column-reverse'
+    flexDirection: 'column'
   },
   alert: {
     marginTop: 16,
@@ -147,13 +151,17 @@ const style = StyleSheet.create({
   },
   buttons: {
     marginTop: 8,
+    alignSelf: 'flex-end',
     display: 'flex',
+    flexDirection: 'row',
     justifyContent: 'flex-end'
   },
   button: {
     flex: '0 0 auto',
     marginLeft: 8,
-    padding: 4,
+    padding: 4
+  },
+  buttonText: {
     color: colors.LoREcoBlue,
     textTransform: 'upperCase',
     fontWeight: 'bold'

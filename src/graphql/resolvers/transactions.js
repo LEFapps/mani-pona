@@ -1,5 +1,5 @@
 import { ForbiddenError } from 'apollo-server'
-import { isEmpty } from 'lodash'
+import { isEmpty, shuffle } from 'lodash'
 import { getLogger } from 'server-log'
 const log = getLogger('graphql:transactions')
 
@@ -17,6 +17,10 @@ export default {
         throw new ForbiddenError(err)
       }
       return core.mani(id)
+    },
+    notifications: (id, _args, { core }) => {
+      // TODO: remove 'notify' attribute upon retrieval
+      return core.mani(id).notifications()
     }
   },
   TransactionQuery: {

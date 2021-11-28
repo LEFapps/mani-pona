@@ -72,6 +72,10 @@ const StateMachine = (table) => {
         context.message = message
         return Continue(context)
       },
+      async addNotification (notificationSource) {
+        context.notify = notificationSource || context.entry
+        return Continue(context)
+      },
       async save () {
         saveResults(table, context)
       }

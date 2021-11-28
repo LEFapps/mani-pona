@@ -74,7 +74,7 @@ export default function Receive () {
       ) : (
         <View style={styles.cont}>
           <View>
-            <Text style={globalStyles.label}>Bedrag (optioneel)</Text>
+            <Text style={globalStyles.label}>Bedrag</Text>
             <TextInput
               style={globalStyles.input}
               placeholder='0,00'

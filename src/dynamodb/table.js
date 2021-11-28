@@ -1,7 +1,15 @@
 import { getLogger } from 'server-log'
 import tools from '../../client/shared/tools'
 const log = getLogger('dynamodb:table')
-const methods = ['get', 'put', 'query', 'update', 'queryAll', 'scanAll']
+const methods = [
+  'get',
+  'put',
+  'delete',
+  'query',
+  'update',
+  'queryAll',
+  'scanAll'
+]
 
 /**
  * This helps significantly reduce the amount of DynamoDB code duplication. Essentially, it reuses the TableName and automatically constructs typical DynamoDB commands from input parameters and regular methods.
@@ -14,20 +22,17 @@ const table = function (db, options = {}) {
   if (!TableName) {
     throw new Error('Please set ENV variable DYN_TABLE.')
   }
-  const t = methods.reduce(
-    (table, method) => {
-      table[method] = async param => {
-        const arg = {
-          TableName,
-          ...param,
-          ...options
-        }
-        return db[method](arg)
+  const t = methods.reduce((table, method) => {
+    table[method] = async param => {
+      const arg = {
+        TableName,
+        ...param,
+        ...options
       }
-      return table
-    },
-    {}
-  )
+      return db[method](arg)
+    }
+    return table
+  }, {})
   async function getItem (Key, errorMsg) {
     log.debug('Getting item: \n%j', Key)
     try {
@@ -46,8 +51,8 @@ const table = function (db, options = {}) {
     const items = (await t.query(query)).Items
     return tools.fromDb(items)
   }
-  const scanAll = async (query) => t.scanAll(query)
-  const queryAll = async (query) => t.queryAll(query)
+  const scanAll = async query => t.scanAll(query)
+  const queryAll = async query => t.queryAll(query)
   function attributes (attributes) {
     return table(db, TableName, { AttributesToGet: attributes, ...options })
   }
@@ -57,6 +62,9 @@ const table = function (db, options = {}) {
     scanAll,
     queryAll,
     attributes,
+    async deleteItem (Key) {
+      return t.delete({ Key })
+    },
     async putItem (input) {
       const Item = tools.toDb(input)
       return t.put({ Item })

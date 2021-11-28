@@ -87,7 +87,8 @@ export default function (ledgers, userpool) {
           ledger,
           publicKeyArmored: keys.publicKeyArmored,
           privateKeyArmored: keys.privateKeyArmored,
-          alias: 'Prepaid card'
+          alias: 'Prepaid card',
+          accountType: 'prepaid'
         })
         await transaction.execute()
         log.info('Registered prepaid ledger %s in database', ledger)
@@ -127,6 +128,11 @@ export default function (ledgers, userpool) {
           publicKeyArmored,
           alias,
           challenge: payload
+        })
+        await transaction.putEntry({
+          ledger,
+          entry: 'notification',
+          value: 'register'
         })
         await transaction.execute()
         log.info('Registered ledger %s in database', ledger)
@@ -172,6 +178,11 @@ export default function (ledgers, userpool) {
         .then(t => t.autoSign('system'))
         .then(t => t.save())
         .catch(err => log.error('Forced system payment failed\n%s', err))
+      await transaction.putEntry({
+        ledger,
+        entry: 'notification',
+        value: 'forceSystemPayment'
+      })
       await transaction.execute()
       return `Success`
     },

@@ -19,7 +19,8 @@ const SHORT_ATTRIBUTES = [
   'demurrage',
   'remainder',
   'challenge',
-  'message'
+  'message',
+  'notify'
 ]
 /**
  * Specialized functions to strictly work with ledgers. Continues building on table.
@@ -40,6 +41,13 @@ function ledgers (table, prefix = '') {
     if (item) {
       item.ledger = item.ledger.substring(skip) // strip the prefix
     }
+    return item
+  }
+  async function notifications (ledger) {
+    const item = table
+      .attributes(['value'])
+      .getItem({ ledger, entry: 'notification' })
+    table.deleteItem({ ledger, entry: 'notification' })
     return item
   }
   async function getParameters (fingerprint) {
@@ -70,6 +78,7 @@ function ledgers (table, prefix = '') {
   }
   return {
     entry,
+    notifications,
     getParameters,
     available,
     async current (fingerprint, required = false) {

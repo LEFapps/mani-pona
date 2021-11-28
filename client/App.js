@@ -19,6 +19,7 @@ import * as Localization from 'expo-localization'
 import i18n from 'i18n-js'
 import './src/helpers/i18n'
 import { NotificationProvider } from './src/shared/notifications'
+import { ApolloProvider } from '@apollo/client'
 
 Amplify.configure(config)
 Analytics.configure({ disabled: true })
@@ -45,17 +46,19 @@ const App = () => {
 
   return (
     <NotificationProvider>
-      <Authenticator
-        container={Container}
-        hideDefault
-        onStateChange={setAuthState}
-      >
-        <SignIn override={'SignIn'} />
-        <SignUp override={'SignUp'} />
-        <ConfirmSignUp override={'confirmSignUp'} />
-        <VerifyContact override={'verifyContact'} />
-        <Loreco />
-      </Authenticator>
+      <ApolloProvider client={graphqlClient}>
+        <Authenticator
+          container={Container}
+          hideDefault
+          onStateChange={setAuthState}
+        >
+          <SignIn override={'SignIn'} />
+          <SignUp override={'SignUp'} />
+          <ConfirmSignUp override={'confirmSignUp'} />
+          <VerifyContact override={'verifyContact'} />
+          <Loreco />
+        </Authenticator>
+      </ApolloProvider>
     </NotificationProvider>
   )
 }

@@ -74,7 +74,13 @@ async function getNextTargets (table, { sources }) {
     if (source.ledger !== 'system') {
       // the system ledger never has pending items
       const pending = await table.pending(source.ledger)
-      if (pending) { throw new Error(`Ledger ${source.ledger} already has a pending entry: ${JSON.stringify(pending)}`) }
+      if (pending) {
+        throw new Error(
+          `Ledger ${
+            source.ledger
+          } already has a pending entry: ${JSON.stringify(pending)}`
+        )
+      }
     }
     return {
       ...next(source),
@@ -91,7 +97,11 @@ async function getNextTargets (table, { sources }) {
 /**
  * Add amount to targets.
  */
-async function addAmount (ledgers, { targets: { ledger, destination } }, amount) {
+async function addAmount (
+  ledgers,
+  { targets: { ledger, destination } },
+  amount
+) {
   ledger.amount = amount
   ledger.challenge = payload({
     date: ledger.date,
@@ -102,12 +112,16 @@ async function addAmount (ledgers, { targets: { ledger, destination } }, amount)
   if (ledger.ledger === 'system') {
     ledger.balance = ledger.balance.add(amount)
   } else {
-    const { balance, income, demurrage, remainder } = await ledgers.available(ledger.ledger)
+    const { balance, income, demurrage, remainder } = await ledgers.available(
+      ledger.ledger
+    )
     ledger.balance = balance.add(amount)
     ledger.income = income
     ledger.demurrage = demurrage
     ledger.remainder = remainder
-    if (ledger.balance.value < 0) { throw new Error(`Amount not available on ${ledger.ledger}`) }
+    if (ledger.balance.value < 0) {
+      throw new Error(`Amount not available on ${ledger.ledger}`)
+    }
   }
   const complement = amount.multiply(-1)
   destination.amount = complement
@@ -121,12 +135,16 @@ async function addAmount (ledgers, { targets: { ledger, destination } }, amount)
   if (destination.ledger === 'system') {
     destination.balance = destination.balance.add(amount)
   } else {
-    const { balance, income, demurrage, remainder } = await ledgers.available(destination.ledger)
+    const { balance, income, demurrage, remainder } = await ledgers.available(
+      destination.ledger
+    )
     destination.balance = balance.add(complement)
     destination.income = income
     destination.demurrage = demurrage
     destination.remainder = remainder
-    if (destination.balance.value < 0) { throw new Error(`Amount not available on ${ledger.ledger}`) }
+    if (destination.balance.value < 0) {
+      throw new Error(`Amount not available on ${ledger.ledger}`)
+    }
   }
   return { ledger, destination }
 }
@@ -146,7 +164,9 @@ async function getPayloadTargets (ledgers, { payloads, sources }) {
     const { sequence: sourceSequence, next } = sources[role]
     assert(sequence === sourceSequence + 1, 'Matching sequence')
     assert(uid === next, 'Matching next uid')
-    const { balance, income, demurrage, remainder } = await ledgers.available(ledger)
+    const { balance, income, demurrage, remainder } = await ledgers.available(
+      ledger
+    )
     // TODO: we could recheck here if non-system ledgers don't end up below zero
     // however, it would difficult to get a valid challenge under those conditions
     return {
@@ -177,12 +197,21 @@ async function getPendingTargets (table, { payloads }) {
       amount
     } = payload
     if (ledger === 'system') {
-      const matching = await table.entry(ledger, sortKey({ date, sequence, uid })) // already made permanent
+      const matching = await table.entry(
+        ledger,
+        sortKey({ date, sequence, uid })
+      ) // already made permanent
       if (matching) return matching
       const current = await table.current(ledger)
       if (current) {
-        assert(date.getTime() === current.date.getTime(), `Dates do not match: ${date.toISOString()} vs ${current.date.toISOString()}`)
-        assert(amount.equals(current.amount), `Amounts do not match: ${amount.format()} vs ${current.amount.format()}`)
+        assert(
+          date.getTime() === current.date.getTime(),
+          `Dates do not match: ${date.toISOString()} vs ${current.date.toISOString()}`
+        )
+        assert(
+          amount.equals(current.amount),
+          `Amounts do not match: ${amount.format()} vs ${current.amount.format()}`
+        )
         return current
       }
       throw new Error(`Matching system entry not found`)
@@ -313,7 +342,7 @@ function saveResults (table, { sources, targets, message }) {
 function toCSV (attributes, items) {
   const output = []
   output.push(attributes.join(';'))
-  items.forEach((item) => {
+  items.forEach(item => {
     const values = attributes.reduce((acc, att) => {
       log.debug('Getting %s from %j', att, item)
       let value = item[att] || ''
