@@ -86,7 +86,9 @@ export const Prepaid = ({ navigation, route }) => {
       renderToString(svgComp).slice(4)
     downloader(
       string,
-      `Prepaid (${mani(amount).format()}) ${ledger} `,
+      `Prepaid (${mani(amount)
+        .format()
+        .replace('ɱ', '₭')}) ${ledger} `,
       'image/svg+xml'
     )
   }

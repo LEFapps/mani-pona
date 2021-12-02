@@ -20,18 +20,24 @@ export default function TransactionHitstory ({ route }) {
       </Card>
       <Card>
         <Text style={globalStyles.property}>Bedrag:</Text>
-        <Text style={globalStyles.price}>{amount.format()}</Text>
+        <Text style={globalStyles.price}>
+          {amount.format().replace('ɱ', '₭')}
+        </Text>
       </Card>
       {income && !income.zero() && (
         <Card>
           <Text style={globalStyles.property}>Inkomen:</Text>
-          <Text style={globalStyles.price}>{income.format()}</Text>
+          <Text style={globalStyles.price}>
+            {income.format().replace('ɱ', '₭')}
+          </Text>
         </Card>
       )}
       {demurrage && !demurrage.zero() && (
         <Card>
           <Text style={globalStyles.property}>Gemeenschapsbijdrage:</Text>
-          <Text style={globalStyles.price}>{demurrage.format()}</Text>
+          <Text style={globalStyles.price}>
+            {demurrage.format().replace('ɱ', '₭')}
+          </Text>
         </Card>
       )}
       <Card>

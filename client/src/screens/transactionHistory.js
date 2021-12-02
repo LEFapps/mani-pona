@@ -36,7 +36,9 @@ const TransactionListItem = ({
         </View>
       </View>
       <View style={{ flexDirection: 'column', textAlign: 'right' }}>
-        <Text style={globalStyles.price}>{amount.format()}</Text>
+        <Text style={globalStyles.price}>
+          {amount.format().replace('ɱ', '₭')}
+        </Text>
         <View style={{ marginTop: 8 }}>
           {((income && !income.zero()) || (demurrage && !demurrage.zero())) && (
             <MaterialCommunityIcons

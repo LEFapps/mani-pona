@@ -16,5 +16,9 @@ export const Contact = ({ ledger, ...props }) => {
         })
   })
 
-  return <Text {...props}>{ledger === 'system' ? 'System' : getAlias}</Text>
+  return (
+    <Text {...props}>
+      {ledger === 'system' ? 'Systeembeheerder' : getAlias}
+    </Text>
+  )
 }

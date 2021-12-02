@@ -24,7 +24,11 @@ export default function TransactionFromContact ({ route, navigation }) {
       .then(notification => {
         Alert.alert(
           notification.message,
-          notification.message + ': ' + MANI(notification.amount).format()
+          notification.message +
+            ': ' +
+            MANI(notification.amount)
+              .format()
+              .replace('ɱ', '₭')
         )
         actions.resetForm()
         // notification of success
@@ -41,7 +45,9 @@ export default function TransactionFromContact ({ route, navigation }) {
       Alert.alert(
         'Transactie Bevestigen',
         'Er zal ' +
-          MANI(values.amount).format() +
+          MANI(values.amount)
+            .format()
+            .replace('ɱ', '₭') +
           ' van uw rekening gaan, Bent u zeker?',
         [
           {

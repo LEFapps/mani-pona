@@ -46,7 +46,7 @@ export default function Home () {
               {new Date(item.date).toLocaleDateString()}
             </Text>
             <Text style={globalStyles.price}>
-              {item.demurrage && item.demurrage.format()}
+              {item.demurrage && item.demurrage.format().replace('ɱ', '₭')}
             </Text>
           </Card>
         )}
