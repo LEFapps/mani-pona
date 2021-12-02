@@ -1,9 +1,10 @@
 export const colors = {
-  LoREcoBlue: '#7ac3f1',
-  // Added Klavers' colors to DarkerBlue and TransparentBlue, previously:
+  // Added Klavers' colors to LoREcoBlue, DarkerBlue and TransparentBlue, previously:
+  // LoREcoBlue: '#7ac3f1',
   // DarkerBlue: '#2B8AA0',
   // TransparentBlue: 'rgba(43, 138, 160, 0.6)',
   // TransparentBlueCard: 'rgba(43, 138, 160, 0.3)',
+  LoREcoBlue: '#00a3e4',
   DarkerBlue: '#00a3e4',
   TransparentBlue: 'rgba(174, 205, 203, 0.6)',
   TransparentBlueCard: 'rgba(174, 205, 203, 0.3',
