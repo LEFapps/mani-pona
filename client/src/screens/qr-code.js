@@ -17,7 +17,7 @@ import { fixedEncodeURIComponent } from '../../shared/tools'
 export default function Receive () {
   const { maniClient } = global
 
-  const [getAmount, setAmount] = useState('0')
+  const [getAmount, setAmount] = useState('')
   const [getMsg, setMsg] = useState('')
   const [getSign, setSign] = useState(100)
   const [getConfirm, setConfirm] = useState(false)
