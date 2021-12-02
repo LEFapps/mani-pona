@@ -91,7 +91,9 @@ export default function Predictions () {
             {new Date(date).toLocaleString('nl-BE')}
           </Text>
         </View>
-        <Text style={globalStyles.price}>{balance && balance.format()}</Text>
+        <Text style={globalStyles.price}>
+          {balance && balance.format().replace('ɱ', '₭')}
+        </Text>
       </Card>
       <View style={{ marginTop: 16 }}>
         <Text style={globalStyles.text}>Voorspelde rekeningstand voor …</Text>
@@ -104,12 +106,15 @@ export default function Predictions () {
                 {month} {startYear + (i >= 12 - start ? 1 : 0)}
               </Text>
               <Text style={globalStyles.date}>
-                {!income.zero() && `inkomen: ${income.format()}`}
+                {!income.zero() &&
+                  `inkomen: ${income.format().replace('ɱ', '₭')}`}
                 {!income.zero() && !!demurrage && '|'}
                 {!!demurrage && `gemeenschapsbijdrage ${demurrage} %`}
               </Text>
             </View>
-            <Text style={globalStyles.price}>{value.format()}</Text>
+            <Text style={globalStyles.price}>
+              {value.format().replace('ɱ', '₭')}
+            </Text>
           </Card>
         ))}
     </ScrollView>

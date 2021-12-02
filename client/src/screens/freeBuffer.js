@@ -48,7 +48,9 @@ export default function FreeBuffer ({ navigation }) {
         <View style={globalStyles.amountHeader}>
           <Text style={globalStyles.property}>Beschikbare vrije buffer:</Text>
           <Text style={globalStyles.price}>
-            {mani(ManiClient.balance).format()}
+            {mani(ManiClient.balance)
+              .format()
+              .replace('ɱ', '₭')}
           </Text>
         </View>
         <IconButton
@@ -78,7 +80,9 @@ export default function FreeBuffer ({ navigation }) {
                     {getContact(item.contactId)}
                   </Text>
                   <Text style={globalStyles.cardValueText}>
-                    {mani(item.amount).format()}
+                    {mani(item.amount)
+                      .format()
+                      .replace('ɱ', '₭')}
                   </Text>
                   <Text style={globalStyles.cardValueText}>
                     {new Date(item.endDate).toLocaleDateString()}

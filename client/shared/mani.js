@@ -15,7 +15,7 @@ const wrap = value => {
 class Mani {
   constructor (value) {
     this.m = currency(value, {
-      symbol: '₭', // new symbol for Klavers' custom style
+      symbol: 'ɱ',
       decimal: ',',
       separator: '.',
       increment: 0.05,

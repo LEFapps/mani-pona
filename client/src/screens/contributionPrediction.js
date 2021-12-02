@@ -37,7 +37,10 @@ export default function ContributionPrediction ({ route }) {
       <View style={globalStyles.amountHeader}>
         <Text style={globalStyles.property}>Totaal voorspelde bijdrage:</Text>
         <Text style={globalStyles.price}>
-          {available.balance.multiply(demurrage / 100).format()}
+          {available.balance
+            .multiply(demurrage / 100)
+            .format()
+            .replace('ɱ', '₭')}
         </Text>
       </View>
 

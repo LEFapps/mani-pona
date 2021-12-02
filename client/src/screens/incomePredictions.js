@@ -36,7 +36,9 @@ export default function incomePrediction ({ route }) {
     <ScrollView style={globalStyles.main}>
       <View style={globalStyles.amountHeader}>
         <Text style={globalStyles.property}>Voorspelling huidige maand:</Text>
-        <Text style={globalStyles.price}>{income.format()}</Text>
+        <Text style={globalStyles.price}>
+          {income.format().replace('ɱ', '₭')}
+        </Text>
       </View>
       {/*<Text style={globalStyles.label}>Selecteer maand</Text>
       <View>

@@ -81,7 +81,8 @@ export default function AccountBalance ({ navigation }) {
         <View style={styles.part}>
           <Text style={styles.title}>Huidige rekeningstand</Text>
           <Text style={styles.amount}>
-            {!!available.balance && available.balance.format()}
+            {!!available.balance &&
+              available.balance.format().replace('ɱ', '₭')}
           </Text>
         </View>
 

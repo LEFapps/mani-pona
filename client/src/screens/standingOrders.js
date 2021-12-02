@@ -133,7 +133,7 @@ export default function StandingOrder ({ navigation }) {
                       ledger={destination.toString()}
                     />
                     <Text style={globalStyles.cardValueText}>
-                      {amount.format()}
+                      {amount.format().replace('ɱ', '₭')}
                     </Text>
                     <Text style={globalStyles.cardValueText}>
                       {new Date(challenge.endDate || date).toLocaleDateString()}
