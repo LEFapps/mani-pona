@@ -10,7 +10,7 @@ import Header from '../../shared/header'
 const AuthStack = createStackNavigator()
 
 const screenOptions = {
-  headerStyle: { backgroundColor: '#2B8AA0' },
+  headerStyle: { backgroundColor: '#00a3e4' },
   headerTintColor: '#fff',
   headerTitleStyle: { fontWeight: 'bold' },
   headerTitleAlign: 'center'

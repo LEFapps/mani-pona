@@ -14,7 +14,8 @@ import {
 const AdminStack = createStackNavigator()
 
 const headerOptions = {
-  headerStyle: { backgroundColor: '#2B8AA0' },
+  headerStyle: { backgroundColor: '#00a3e4' }, // Klavers' custom style
+  // headerStyle: { backgroundColor: '#2B8AA0' },
   headerTintColor: '#fff',
   headerTitleStyle: { fontWeight: 'bold' },
   headerTitleAlign: 'center'
