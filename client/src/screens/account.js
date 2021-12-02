@@ -29,10 +29,11 @@ export default function Home () {
   }
 
   async function signOut (clearKeys = false) {
-    const proceed = confirm(
-      'Bent u zeker dat u wil afmelden? Denk eraan om uw sleutels te exporteren als u op een ander toestel wil aanmelden!'
-    )
-    if (!proceed) return
+    // Client opted out of this extra notification
+    // const proceed = confirm(
+    //   'Bent u zeker dat u wil afmelden? Denk eraan om uw sleutels te exporteren als u op een ander toestel wil aanmelden!'
+    // )
+    // if (!proceed) return
     try {
       if (clearKeys) await maniClient.cleanup()
       await resetClient()
