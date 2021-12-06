@@ -197,6 +197,10 @@ export default function signUp (props) {
             )}
 
             <Text style={globalStyles.label}>Wachtwoord *</Text>
+            <Text style={globalStyles.helpText}>
+              Uw wachtwoord moet minstens 8 tekens bevatten, waarvan 1 cijfer, 1
+              hoofdletter, 1 kleine letter en 1 speciaal karakter
+            </Text>
             <TextInput
               secureTextEntry={true}
               style={globalStyles.input}

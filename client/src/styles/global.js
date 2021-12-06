@@ -62,6 +62,10 @@ export const globalStyles = StyleSheet.create({
     fontSize: 22,
     color: DarkerBlue
   },
+  helpText: {
+    fontSize: 10,
+    color: DarkerBlue
+  },
 
   input: {
     borderWidth: 1.5,
