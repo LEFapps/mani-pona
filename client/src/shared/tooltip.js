@@ -6,12 +6,12 @@ import { Popable } from 'react-native-popable'
 export default function Tooltip (props) {
   return (
     <Popable
-      style={{ width: 400 }}
+      style={{ minWidth: 400 }}
       content={
         <Text
           style={{
             color: 'white',
-            margin: 2
+            margin: 10
           }}
         >
           {props.content}

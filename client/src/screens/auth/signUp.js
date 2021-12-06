@@ -199,11 +199,14 @@ export default function signUp (props) {
               <Text style={globalStyles.errorText}>{errors.email}</Text>
             )}
 
-            <Text style={globalStyles.label}>Wachtwoord *</Text>
-            <Text style={globalStyles.helpText}>
-              Uw wachtwoord moet minstens 8 tekens bevatten, waarvan 1 cijfer, 1
-              hoofdletter, 1 kleine letter en 1 speciaal karakter
+            <Text>
+              <Text style={globalStyles.label}>Wachtwoord *</Text>
+              <Tooltip
+                content='Uw wachtwoord moet minstens 8 tekens bevatten, waarvan 1 cijfer, 1
+              hoofdletter, 1 kleine letter en 1 speciaal karakter'
+              />
             </Text>
+
             <View style={{ flexDirection: 'row' }}>
               <TextInput
                 secureTextEntry={!passwordDisplay ? true : false}
@@ -245,7 +248,7 @@ export default function signUp (props) {
 
             <Text>
               <Text style={globalStyles.label}>Account Type * </Text>
-              <Tooltip content='Maak als handelaar, bedrijf, vereniging of organisatie dit soort account aan om van de speciale voorwaarden te kunnen genieten.' />
+              <Tooltip content='Maak als handelaar, bedrijf, vereniging of organisatie een professioneel account aan om van de speciale voorwaarden te kunnen genieten.' />
             </Text>
             <FlatButton options={accountTypes} />
 

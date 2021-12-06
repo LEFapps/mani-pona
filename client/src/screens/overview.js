@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react'
 import { View, Text, StyleSheet, ScrollView } from 'react-native'
 import CustomButton from '../shared/buttons/button'
+import Tooltip from '../shared/tooltip'
 import { globalStyles } from '../styles/global.js'
 import Card from '../shared/card'
 import { colors } from '../helpers/helper'
@@ -107,7 +108,10 @@ export default function AccountBalance ({ navigation }) {
           )}
           {!mani(income).zero() && (
             <Card>
-              <Text style={globalStyles.property}>Inkomen</Text>
+              <Text>
+                <Text style={globalStyles.property}>Gegarandeerd Inkomen</Text>
+                <Tooltip content='Je ontvangt elke maand, zonder dat je hier iets voor moet doen, zoveel Klavers op jouw rekening om uit te geven aan wat en wie jij dat wil.' />
+              </Text>
               <Text style={globalStyles.price}>{income}</Text>
             </Card>
           )}
@@ -119,7 +123,10 @@ export default function AccountBalance ({ navigation }) {
           )}
           {!!demurrage && (
             <Card>
-              <Text style={globalStyles.property}>Gemeenschapsbijdrage</Text>
+              <Text>
+                <Text style={globalStyles.property}>Gemeenschapsbijdrage</Text>
+                <Tooltip content='Je draagt elke maand bij om een project dat iets positiefs wil doen in Lichtervelde te ondersteunen. Je kan zelf mee beslissen welk project gekozen wordt. Meer hierover en over het project dat momenteel ondersteund wordt op Klaverslichtervelde.be.' />
+              </Text>
               <Text style={globalStyles.price}>{demurrage} %</Text>
             </Card>
           )}
