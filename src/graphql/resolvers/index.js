@@ -4,6 +4,7 @@ import Currency from '../scalars/currency'
 import StringBoolean from '../scalars/StringBoolean'
 import system from './system'
 import transactions from './transactions'
+import mollie from './mollie'
 
 export default merge(
   {
@@ -17,5 +18,6 @@ export default merge(
     }
   },
   system,
-  transactions
+  transactions,
+  mollie
 )

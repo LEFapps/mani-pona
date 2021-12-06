@@ -1,13 +1,13 @@
-import { ApolloServer } from 'apollo-server-lambda'
 import { ApolloServerPluginLandingPageGraphQLPlayground } from 'apollo-server-core'
+import { ApolloServer } from 'apollo-server-lambda'
 import { DynamoPlus } from 'dynamo-plus'
 import http from 'http'
-import Core from '../core/index'
-import typeDefs from '../graphql/typeDefs/index'
-import resolvers from '../graphql/resolvers/index'
-import { CognitoUserPool } from '../cognito/userpool'
-import { OfflineUserPool } from './offlineuserpool'
 import { apolloLogPlugin, getLogger } from 'server-log'
+import { CognitoUserPool } from '../cognito/userpool'
+import Core from '../core/index'
+import resolvers from '../graphql/resolvers/index'
+import typeDefs from '../graphql/typeDefs/index'
+import { OfflineUserPool } from './offlineuserpool'
 
 const log = getLogger('lambda:handler')
 
@@ -24,6 +24,7 @@ function contextProcessor (event) {
     ? JSON.parse(headers['x-claims'] || process.env.CLAIMS)
     : event.requestContext.authorizer.jwt.claims
   log.debug('User claims: %j', claims)
+  log.debug('Headers: %j', headers)
   return {
     ledger: claims['custom:ledger'],
     verified: claims.email_verified,
@@ -36,9 +37,9 @@ function contextProcessor (event) {
 
 const offlineOptions = offline
   ? {
-    endpoint: 'http://localhost:8000',
-    httpOptions: { agent: new http.Agent({ keepAlive: true }) }
-  }
+      endpoint: 'http://localhost:8000',
+      httpOptions: { agent: new http.Agent({ keepAlive: true }) }
+    }
   : {}
 
 const core = Core(
