@@ -4,6 +4,7 @@ import Auth from '@aws-amplify/auth'
 
 import { globalStyles } from '../../styles/global.js'
 import Button from '../../shared/buttons/button'
+import IconButton from '../../shared/buttons/iconButton'
 import FlatButton from '../../shared/buttons/historyButton.js'
 import {
   validateEmail,
@@ -36,6 +37,7 @@ export default function signUp (props) {
   const [isBusy, setBusy] = useState(false)
   const [state, setState] = useState(defaultState)
   const [errors, setErrors] = useState(defaultState)
+  const [passwordDisplay, setPasswordDisplay] = useState(false)
   const notification = useNotifications()
 
   const selectAccount = (username, key) => {
@@ -201,16 +203,24 @@ export default function signUp (props) {
               Uw wachtwoord moet minstens 8 tekens bevatten, waarvan 1 cijfer, 1
               hoofdletter, 1 kleine letter en 1 speciaal karakter
             </Text>
-            <TextInput
-              secureTextEntry={true}
-              style={globalStyles.input}
-              placeholder='Wachtwoord'
-              onChangeText={password => {
-                setState({ ...state, password: password })
-                setErrors({ ...errors, password: '' })
-              }}
-              value={state.password}
-            />
+            <View style={{ flexDirection: 'row' }}>
+              <TextInput
+                secureTextEntry={!passwordDisplay ? true : false}
+                style={globalStyles.inputPassword}
+                placeholder='Wachtwoord'
+                onChangeText={password => {
+                  setState({ ...state, password: password })
+                  setErrors({ ...errors, password: '' })
+                }}
+                value={state.password}
+              />
+              <IconButton
+                iconName='eye'
+                fromAltSet={true}
+                iconColor='white'
+                onPress={() => setPasswordDisplay(!passwordDisplay)}
+              />
+            </View>
 
             {!!errors.password && (
               <Text style={globalStyles.errorText}>{errors.password}</Text>
@@ -218,8 +228,8 @@ export default function signUp (props) {
 
             <Text style={globalStyles.label}>Herhaal wachtwoord *</Text>
             <TextInput
-              secureTextEntry={true}
-              style={globalStyles.input}
+              secureTextEntry={!passwordDisplay ? true : false}
+              style={globalStyles.inputPassword}
               placeholder='Herhaal wachtwoord'
               onChangeText={password2 => {
                 setState({ ...state, password2 })

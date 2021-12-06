@@ -75,6 +75,15 @@ export const globalStyles = StyleSheet.create({
     fontSize: 18,
     borderRadius: 5
   },
+  inputPassword: {
+    borderWidth: 1.5,
+    borderColor: DarkerBlue,
+    padding: 5,
+    marginVertical: 5,
+    fontSize: 18,
+    borderRadius: 5,
+    flex: 5
+  },
 
   property: {
     fontWeight: 'bold',
