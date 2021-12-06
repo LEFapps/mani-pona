@@ -46,6 +46,7 @@
     "react-native-keyboard-aware-scroll-view": "^0.9.3",
     "react-native-pager-view": "^5.4.1",
     "react-native-paper": "^4.9.2",
+    "react-native-popable": "^0.4.3",
     "react-native-qrcode-svg": "^6.0.6",
     "react-native-reanimated": "^2.2.2",
     "react-native-safe-area-context": "3.1.4",

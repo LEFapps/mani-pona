@@ -6,6 +6,7 @@ import { globalStyles } from '../../styles/global.js'
 import Button from '../../shared/buttons/button'
 import IconButton from '../../shared/buttons/iconButton'
 import FlatButton from '../../shared/buttons/historyButton.js'
+import Tooltip from '../../shared/tooltip'
 import {
   validateEmail,
   validatePassword,
@@ -242,7 +243,10 @@ export default function signUp (props) {
               <Text style={globalStyles.errorText}>{errors.password2}</Text>
             )}
 
-            <Text style={globalStyles.label}>Account Type *</Text>
+            <Text>
+              <Text style={globalStyles.label}>Account Type * </Text>
+              <Tooltip content='Maak als handelaar, bedrijf, vereniging of organisatie dit soort account aan om van de speciale voorwaarden te kunnen genieten.' />
+            </Text>
             <FlatButton options={accountTypes} />
 
             <Text style={globalStyles.label}>
