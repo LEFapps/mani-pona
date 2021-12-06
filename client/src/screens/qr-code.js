@@ -69,7 +69,7 @@ export default function Receive () {
           <Text style={globalStyles.bigText}>
             Toon deze QR-Code om een transactie te starten.
           </Text>
-          <Button text='Nieuw' onPress={reset} />
+          <Button text='Terug' onPress={reset} />
         </View>
       ) : (
         <View style={styles.cont}>

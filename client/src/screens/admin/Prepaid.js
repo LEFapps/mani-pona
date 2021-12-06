@@ -102,7 +102,7 @@ export const Prepaid = ({ navigation, route }) => {
             Bewaar en print deze QR-code om offline te betalen.
           </Text>
           <FlatButton text='Bewaren' onPress={dl} />
-          <FlatButton text='Nieuw' onPress={reset} />
+          <FlatButton text='Terug' onPress={reset} />
         </View>
       ) : (
         <View>
