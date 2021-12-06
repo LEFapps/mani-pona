@@ -281,6 +281,14 @@ const EXPORT_LEDGERS = gql`
   }
 `
 
+const MOLLIE = gql`
+  mutation startPayment($amount: String!, $ledger: String!) {
+    mollie {
+      startPayment(amount: $amount, ledger: $ledger)
+    }
+  }
+`
+
 const INIT = gql`
   mutation init {
     admin {
@@ -313,6 +321,7 @@ export {
   JUBILEE,
   EXPORT_LEDGERS,
   INIT,
+  MOLLIE,
   SYSTEM_PARAMETERS,
   TIME
 }

@@ -6,7 +6,8 @@ import Card from '../shared/card'
 import { colors } from '../helpers/helper'
 import mani from '../../shared/mani'
 import { UserContext } from '../authenticator'
-import Predictions from '../screens/predictions'
+import Predictions from './predictions'
+import Euros from './euros'
 import { useNotifications } from '../shared/notifications'
 import { useIsFocused } from '@react-navigation/core'
 
@@ -83,6 +84,7 @@ export default function AccountBalance ({ navigation }) {
           <Text style={styles.amount}>
             {!!available.balance && available.balance.format()}
           </Text>
+          <Euros style={styles.euro} />
         </View>
 
         <View style={styles.part}>
@@ -160,5 +162,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     paddingVertical: 20,
     color: CurrencyColor
+  },
+  euro: {
+    position: 'absolute',
+    right: 0,
+    bottom: 0
   }
 })
