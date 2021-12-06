@@ -12,10 +12,28 @@ let cameraLoaded = 'false'
 
 export default function Cam (props) {
   const [hasPermission, setHasPermission] = useState(null)
-  const [selfie, setSelfie] = useState(false)
+  const [camIndex, setCamIndex] = useState(0)
+  const [availableCameras, setAvailableCameras] = useState([])
+  const maxIndex = availableCameras.length - 1
 
   useEffect(() => {
     cameraLoaded = 'true'
+  })
+
+  useEffect(() => {
+    if (navigator) {
+      navigator.mediaDevices
+        .enumerateDevices()
+        .then(devices => {
+          const videoSelect = []
+          devices.forEach(device => {
+            if (device.kind === 'videoinput') videoSelect.push(device)
+          })
+          return videoSelect
+        })
+        .then(setAvailableCameras)
+        .catch(console.error)
+    }
   })
 
   const handleBarCodeScanned = barcode => {
@@ -31,34 +49,42 @@ export default function Cam (props) {
 
   if (hasPermission === false) return <Text>No access to camera</Text>
 
+  const getCamId = () => availableCameras[Math.min(maxIndex, camIndex)].deviceId
+
   return (
     <View>
-      <View style={{ position: 'absolute', bottom: 8, right: 8, zIndex: 80 }}>
-        <IconButton
-          onPress={() => setSelfie(!selfie)}
-          iconName={'switch-camera'}
-          iconColor={'#FFF'}
-        />
-      </View>
-      <View style={globalStyles.screen}>
-        <View style={globalStyles.camPlace}>
-          <QrScanner
-            onLoad={props.onInit}
-            facingMode={selfie ? 'front' : 'rear'}
-            delay={100}
-            onError={handleBarCodeError}
-            onScan={handleBarCodeScanned}
-            style={cameraStyle}
-            key={cameraLoaded}
-          >
-            <Text>Requesting for camera permission</Text>
-          </QrScanner>
+      {availableCameras.length > 1 && (
+        <View style={{ position: 'absolute', bottom: 8, right: 8, zIndex: 80 }}>
+          <IconButton
+            onPress={() =>
+              setCamIndex(camIndex + 1 > maxIndex ? 0 : camIndex + 1)
+            }
+            iconName={'switch-camera'}
+            iconColor={'#FFF'}
+          />
         </View>
+      )}
+      {!!availableCameras.length && (
+        <View style={globalStyles.screen}>
+          <View style={globalStyles.camPlace}>
+            <QrScanner
+              chooseDeviceId={getCamId}
+              onLoad={props.onInit}
+              delay={100}
+              onError={handleBarCodeError}
+              onScan={handleBarCodeScanned}
+              style={cameraStyle}
+              key={cameraLoaded && getCamId()}
+            >
+              <Text>Requesting for camera permission</Text>
+            </QrScanner>
+          </View>
 
-        <View style={globalStyles.qrTextContainer}>
-          <Text style={globalStyles.qrText}>{props.text}</Text>
+          <View style={globalStyles.qrTextContainer}>
+            <Text style={globalStyles.qrText}>{props.text}</Text>
+          </View>
         </View>
-      </View>
+      )}
     </View>
   )
 }
