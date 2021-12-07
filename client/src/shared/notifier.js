@@ -6,7 +6,8 @@ import { navigate } from '../helpers/navigator'
 import { NOTIFIERS } from '../../apollo/queries'
 import { NotificationContext } from './notifications'
 
-const pollInterval = 2000 // 2 sec // maybe make dynamic upon activity in the app???
+const pollInterval =
+  window.location.hostname.indexOf('localhost') >= 0 ? 20000 : 2000 // 2 sec // maybe make dynamic upon activity in the app???
 
 const convertNotification = value => {
   const notifications = {
