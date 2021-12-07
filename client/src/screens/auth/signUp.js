@@ -137,9 +137,13 @@ export default function signUp (props) {
       } catch (e) {
         setBusy(false)
         console.error('signUp', e)
+        let customMessage = ''
+        if (e.code === 'UsernameExistsException')
+          customMessage =
+            ': Er bestaat al een account met het opgegeven e-mail adres'
         notification.add({
           type: 'danger',
-          title: 'Registratie mislukt',
+          title: `Registratie mislukt ${customMessage}`,
           message: e && e.message
         })
       }
