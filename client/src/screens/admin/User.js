@@ -145,6 +145,7 @@ const balance = ({ visible, user, onClose }) => {
       <TextInput
         onChangeText={a => setAmount(a.replace(',', '.'))}
         value={amount || 0}
+        style={globalStyles.input}
       />
       <CustomButton
         onPress={action}
