@@ -121,8 +121,12 @@ export default function SignIn (props = {}) {
       } catch ({ code, message }) {
         setBusy(false)
         console.error('signIn', message)
+        let customMessage = null
+        if (code === 'NotAuthorizedException')
+          customMessage =
+            'Uw rekening is geblokkeerd, voor vragen en deblokkering gelieve contact op te nemen met jonas.van.lancker@howest.be'
         notification.add({
-          title: 'Aanmelden mislukt',
+          title: customMessage || 'Aanmelden mislukt',
           message,
           type: 'danger'
         })
