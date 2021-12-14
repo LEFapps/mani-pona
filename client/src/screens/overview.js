@@ -112,13 +112,13 @@ export default function AccountBalance ({ navigation }) {
                 <Text style={globalStyles.property}>Gegarandeerd Inkomen</Text>
                 <Tooltip content='Je ontvangt elke maand, zonder dat je hier iets voor moet doen, zoveel Klavers op jouw rekening om uit te geven aan wat en wie jij dat wil.' />
               </Text>
-              <Text style={globalStyles.price}>{income}</Text>
+              <Text style={globalStyles.price}>{income.replace('ɱ', '₭')}</Text>
             </Card>
           )}
           {!mani(buffer).zero() && (
             <Card>
               <Text style={globalStyles.property}>Vrije buffer</Text>
-              <Text style={globalStyles.price}>{buffer}</Text>
+              <Text style={globalStyles.price}>{buffer.replace('ɱ', '₭')}</Text>
             </Card>
           )}
           {!!demurrage && (
