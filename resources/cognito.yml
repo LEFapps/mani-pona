@@ -59,7 +59,7 @@ Resources:
           AttributeDataType: String
           Mutable: true
       EmailVerificationMessage: 'Gebruik volgende code om uw account te verifiëren: {####}'
-      EmailVerificationSubject: Welkom bij ${env:CLIENT}
+      EmailVerificationSubject: Welkom bij Klavers
       # LambdaConfig:
       #   PostConfirmation:
       #     Fn::GetAtt: ['SignupLambdaFunction', 'Arn']
