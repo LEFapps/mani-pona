@@ -14,6 +14,7 @@ export default function Home () {
   const notification = useNotifications()
   const [email, setEmail] = useState('')
   const [alias, setAlias] = useState('')
+  const [showInfo, setShowInfo] = useState(false)
 
   useEffect(() => {
     loadEmailFromUser()
@@ -67,6 +68,27 @@ export default function Home () {
         text='Afmelden en sleutels wissen'
         onPress={() => signOut(true)}
       /> */}
+      <Card />
+      <CustomButton
+        text='Rekening blokkeren'
+        onPress={() => setShowInfo(true)}
+      />
+      {showInfo && (
+        <View style={{ marginBottom: 10 }}>
+          <Card>
+            <Text style={globalStyles.cardValueText}>
+              Om je rekening te blokkeren moet je contact opnemen met een{' '}
+              <a
+                href={`mailto:jonas.van.lancker@howest.be?subject=Account%20blokkeren&body=De%20gebruiker%20met%20username:%20${alias ||
+                  '-'}%20en%20email:%20${email ||
+                  '-'}%20wenst%20dit%20account%20te%20blokkeren.`}
+              >
+                administrator
+              </a>
+            </Text>
+          </Card>
+        </View>
+      )}
     </ScrollView>
   )
 }
