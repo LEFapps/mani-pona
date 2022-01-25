@@ -11,6 +11,7 @@ import { navigationRef } from '../helpers/navigator'
 
 import AdminStack from './stacks/adminStack'
 import AccountStack from '../routes/stacks/accountStack'
+import HelpStack from '../routes/stacks/helpStack'
 import QrStack from '../routes/stacks/qrStack'
 import TransactionHistoryStack from '../routes/stacks/transactionHistoryStack'
 import ContributionHistoryStack from '../routes/stacks/contributionHistoryStack'
@@ -153,6 +154,24 @@ const navScreens = {
           tabBarIcon: ({ focused, color = 'white' }) => (
             <MaterialCommunityIcons
               name='account-circle'
+              color={color}
+              {...iconProps}
+            />
+          )
+        }}
+      />
+    )
+  },
+  Help: {
+    component: ({ Nav }) => (
+      <Nav.Screen
+        key='Help'
+        name='Help'
+        component={HelpStack}
+        options={{
+          tabBarIcon: ({ focused, color = 'white' }) => (
+            <MaterialCommunityIcons
+              name='help-circle'
               color={color}
               {...iconProps}
             />
