@@ -111,6 +111,9 @@ export default function StandingOrder ({ navigation }) {
                           })
                 }
               >
+                <Text style={globalStyles.bigText}>
+                  Deze betaling wacht nog op goedkeuring van de andere partij
+                </Text>
                 <View style={{ flexDirection: 'row' }}>
                   <View style={globalStyles.cardPropertys}>
                     <Text style={globalStyles.cardPropertyText}>
