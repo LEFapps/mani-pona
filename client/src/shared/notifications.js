@@ -83,17 +83,11 @@ export const Notification = ({
 export const Notifications = ({ notifications, onRemove }) => {
   return (
     <View style={style.alertContainer}>
-      {notifications.map(
-        ({ id, message, ...notification }) =>
-          message && (
-            <Notification
-              key={id}
-              id={id}
-              {...notification}
-              onHide={onRemove}
-            />
-          )
-      )}
+      {notifications
+        .filter(({ message }) => !!message)
+        .map(({ id, ...notification }) => (
+          <Notification key={id} id={id} {...notification} onHide={onRemove} />
+        ))}
     </View>
   )
 }

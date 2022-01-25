@@ -12,13 +12,14 @@ const pollInterval =
 const convertNotification = value => {
   const notifications = {
     create: {
-      title: 'Betalingsverzoek',
-      message: 'Er werd een betalingsverzoek gemaakt.',
+      title: 'Betalingsverzoek:',
+      message:
+        'Er werd een betalingsverzoek gemaakt. Je kan dit terugvinden in de lijst met openstaande betalingen',
       type: 'info',
       redirect: ['Openstaande betalingen']
     },
     forceSystemPayment: {
-      title: 'Betalingsverzoek',
+      title: 'Betalingsverzoek:',
       message:
         'Er werd een betalingsverzoek gemaakt door het systeem. Je moet dit eerst accepteren voor je munten kan uitwisselen.',
       type: 'info',
