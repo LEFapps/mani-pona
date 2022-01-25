@@ -78,6 +78,7 @@ export default function Home () {
           <Card>
             <Text style={globalStyles.cardValueText}>
               Om je rekening te blokkeren moet je contact opnemen met een{' '}
+              {/* TODO: placeholder contact info */}
               <a
                 href={`mailto:jonas.van.lancker@howest.be?subject=Account%20blokkeren&body=De%20gebruiker%20met%20username:%20${alias ||
                   '-'}%20en%20email:%20${email ||
