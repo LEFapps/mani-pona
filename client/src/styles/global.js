@@ -13,6 +13,12 @@ export const globalStyles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#333'
   },
+  subTitleText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: 'black',
+    marginTop: 5
+  },
   bigText: {
     fontSize: 22,
     color: DarkerBlue,

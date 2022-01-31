@@ -1,11 +1,23 @@
 import React, { useState } from 'react'
-import { TextInput, View, Text, ScrollView } from 'react-native'
+import { TextInput, View, Text, ScrollView, Image } from 'react-native'
 import Auth from '@aws-amplify/auth'
+import { MaterialCommunityIcons } from '@expo/vector-icons'
 
 import { globalStyles } from '../../styles/global.js'
 import Button from '../../shared/buttons/button'
 import { resetClient } from '../../../App'
 import { keyWarehouse } from '../../maniClient.js'
+
+const iconProps = {
+  size: 16,
+  style: { marginRight: 4, marginTop: 1 }
+}
+const Icon = ({ open }) => (
+  <MaterialCommunityIcons
+    name={open ? 'arrow-down' : 'arrow-right'}
+    {...iconProps}
+  />
+)
 
 export default function verifyContact ({ authState, authData, onStateChange }) {
   const { storageKey, keyValue, email, ...user } = authData || {}
@@ -17,6 +29,7 @@ export default function verifyContact ({ authState, authData, onStateChange }) {
   // const [pin, setPin] = useState('')
   // const [offline, setOffline] = useState(false)
   const [errors, setErrors] = useState([])
+  const [toggle, setToggle] = useState(null)
 
   const onSubmit = async () => {
     setBusy(true)
@@ -118,6 +131,206 @@ export default function verifyContact ({ authState, authData, onStateChange }) {
             onPress={onSubmit}
           />
         </View>
+        {/* HOWTO */}
+        <View style={globalStyles.main}>
+          <Text style={globalStyles.label}>Welkom bij Klavers</Text>
+          <Text style={globalStyles.subTitleText}>
+            Vul hierboven een alias in om aan de slag te gaan met jouw rekening.
+          </Text>
+        </View>
+        <View style={globalStyles.main}>
+          <Text style={globalStyles.paragraph}>
+            Let op! Je account is gekoppeld aan dit apparaat.
+          </Text>
+          <Text style={globalStyles.paragraph}>
+            Als je dit account ook op een apparaat wilt gebruiken moet je jouw
+            geheime sleutels op dat apparaat activeren.
+          </Text>
+          <Text style={globalStyles.paragraph}>
+            Bekijk hieronder de twee mogelijke opties om een account te
+            activeren op een nieuw apparaat.
+          </Text>
+          <Text style={globalStyles.paragraph}>
+            Je kan deze informatie na het openen van je rekening ook steeds
+            terugvinden op de helppagina.
+          </Text>
+        </View>
+        {/* HOWTO: QR */}
+        <View style={globalStyles.main}>
+          <Text
+            style={globalStyles.cardPropertyText}
+            onPress={() => setToggle(toggle !== 1 ? 1 : null)}
+          >
+            <Icon open={toggle === 1} />
+            Rekening overzetten op bijkomend apparaat via QR Code
+          </Text>
+        </View>
+        {toggle === 1 && (
+          <View style={globalStyles.main}>
+            <Text style={globalStyles.paragraph}>
+              Activeer je rekening door hierboven je alias in te geven. Voer
+              nadien deze stappen uit:
+            </Text>
+            <Text style={globalStyles.paragraph}>Op dit apparaat</Text>
+            <Text style={globalStyles.paragraph}>
+              - Klik op de knop om naar jouw account te gaan
+            </Text>
+            <Image
+              source={{
+                uri:
+                  'https://loreco-assets.s3.eu-west-1.amazonaws.com/faq/1.png'
+              }}
+              style={{ height: 60, width: 'auto' }}
+              resizeMode='contain'
+            />
+            <Text style={globalStyles.paragraph}>
+              - Klik op de knop 'Exporteer mijn sleutels'
+            </Text>
+            <Text style={globalStyles.paragraph}>
+              Je ziet nu een scherm met een QR-code, en een menu-balk met de
+              optie 'QR-Code 2', deze codes ga je inscannen op je nieuwe
+              apparaat.
+            </Text>
+            <Image
+              source={{
+                uri:
+                  'https://loreco-assets.s3.eu-west-1.amazonaws.com/faq/2.png'
+              }}
+              style={{ height: 200, width: 'auto' }}
+              resizeMode='contain'
+            />
+            <Text style={globalStyles.paragraph}>Op het nieuwe apparaat</Text>
+            <Text style={globalStyles.paragraph}>
+              - Klik op het startscherm op de optie 'Bestaand account
+              toevoegen.'
+            </Text>
+            <Image
+              source={{
+                uri:
+                  'https://loreco-assets.s3.eu-west-1.amazonaws.com/faq/4.png'
+              }}
+              style={{ height: 200, width: 'auto' }}
+              resizeMode='contain'
+            />
+            <Text style={globalStyles.paragraph}>
+              - Scan de eerste QR code, wanneer dit gelukt is zie je de knop
+              'Volgende stap'
+            </Text>
+            <Image
+              source={{
+                uri:
+                  'https://loreco-assets.s3.eu-west-1.amazonaws.com/faq/7.png'
+              }}
+              style={{ height: 200, width: 'auto' }}
+              resizeMode='contain'
+            />
+            <Text style={globalStyles.paragraph}>
+              - Navigeer op je ander apparaat naar het scherm met de tweede
+              code. Scan de tweede QR code.
+            </Text>
+            <Text style={globalStyles.paragraph}>
+              Wanneer dit gelukt is kan je je op dit apparaat aanmelden.
+            </Text>
+            <Image
+              source={{
+                uri:
+                  'https://loreco-assets.s3.eu-west-1.amazonaws.com/faq/8.png'
+              }}
+              style={{ height: 200, width: 'auto' }}
+              resizeMode='contain'
+            />
+          </View>
+        )}
+        {/* HOWTO: manual */}
+        <View style={globalStyles.main}>
+          <Text
+            style={globalStyles.cardPropertyText}
+            onPress={() => setToggle(toggle !== 2 ? 2 : null)}
+          >
+            <Icon open={toggle === 2} />
+            Rekening manueel overzetten op bijkomend apparaat
+          </Text>
+        </View>
+        {toggle === 2 && (
+          <View style={globalStyles.main}>
+            <Text style={globalStyles.paragraph}>
+              Activeer je rekening door hierboven je alias in te geven. Voer
+              nadien deze stappen uit:
+            </Text>
+            <Text style={globalStyles.paragraph}>Op dit apparaat:</Text>
+            <Text style={globalStyles.paragraph}>
+              - Klik op de knop om naar jouw account te gaan
+            </Text>
+            <Image
+              source={{
+                uri:
+                  'https://loreco-assets.s3.eu-west-1.amazonaws.com/faq/1.png'
+              }}
+              style={{ height: 60, width: 'auto' }}
+              resizeMode='contain'
+            />
+            <Text style={globalStyles.paragraph}>
+              - Klik op de knop 'Exporteer mijn sleutels'
+            </Text>
+
+            <Text style={globalStyles.paragraph}>
+              - Klik op de knop 'Kopiëren'
+            </Text>
+            <Image
+              source={{
+                uri:
+                  'https://loreco-assets.s3.eu-west-1.amazonaws.com/faq/3.png'
+              }}
+              style={{ height: 200, width: 'auto' }}
+              resizeMode='contain'
+            />
+            <Text style={globalStyles.paragraph}>
+              Je ziet nu een scherm met jouw unieke sleutel. Deze sleutel ga je
+              ingeven op je nieuwe apparaat.
+            </Text>
+            <Text style={globalStyles.paragraph}>
+              - Kopieer de sleutel zodat je deze gemakkelijk kunt ingeven op je
+              nieuwe apparaat, bijvoorbeeld door deze naar jezelf te mailen.
+            </Text>
+            <Text style={globalStyles.paragraph}>Op het nieuwe apparaat:</Text>
+            <Text style={globalStyles.paragraph}>
+              - Klik op het startscherm op de optie 'Bestaand account
+              toevoegen.'
+            </Text>
+            <Image
+              source={{
+                uri:
+                  'https://loreco-assets.s3.eu-west-1.amazonaws.com/faq/4.png'
+              }}
+              style={{ height: 200, width: 'auto' }}
+              resizeMode='contain'
+            />
+            <Text style={globalStyles.paragraph}>- Klik op 'Plakken'</Text>
+            <Image
+              source={{
+                uri:
+                  'https://loreco-assets.s3.eu-west-1.amazonaws.com/faq/6.png'
+              }}
+              style={{ height: 200, width: 'auto' }}
+              resizeMode='contain'
+            />
+            <Text>
+              Plak je geheime sleutel in het invulveld. Wanneer dit gelukt is
+              zie je de knop 'Volgende stap'
+            </Text>
+            <Text style={globalStyles.paragraph}>
+              Wanneer dit gelukt is kan je je op dit apparaat aanmelden.
+            </Text>
+            <Image
+              source={{
+                uri:
+                  'https://loreco-assets.s3.eu-west-1.amazonaws.com/faq/8.png'
+              }}
+              style={{ height: 200, width: 'auto' }}
+              resizeMode='contain'
+            />
+          </View>
+        )}
       </ScrollView>
     )
   }
