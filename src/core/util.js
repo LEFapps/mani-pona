@@ -13,6 +13,7 @@ import {
   payload
 } from '../../client/shared/tools'
 import { getLogger } from 'server-log'
+import identity from 'lodash/identity'
 
 const log = getLogger('core:util')
 /**
@@ -361,9 +362,9 @@ function saveResults (table, { sources, targets, message, notify }) {
 /**
  * Convert items (Objects) to one big CSV string.
  **/
-function toCSV (attributes, items) {
+function toCSV (attributes, items, translator = identity) {
   const output = []
-  output.push(attributes.join(';'))
+  output.push(attributes.map(translator).join(';'))
   items.forEach(item => {
     const values = attributes.reduce((acc, att) => {
       log.debug('Getting %s from %j', att, item)

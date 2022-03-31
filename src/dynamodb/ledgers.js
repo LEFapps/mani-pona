@@ -22,6 +22,17 @@ const SHORT_ATTRIBUTES = [
   'message',
   'notify'
 ]
+
+const EXPORT_ATTRIBUTES = [
+  'ledger',
+  'destination',
+  'amount',
+  'balance',
+  'date',
+  'sequence',
+  'income',
+  'demurrage'
+]
 /**
  * Specialized functions to strictly work with ledgers. Continues building on table.
  */
@@ -145,6 +156,9 @@ function ledgers (table, prefix = '') {
     },
     shortAttributes () {
       return SHORT_ATTRIBUTES
+    },
+    exportAttributes () {
+      return EXPORT_ATTRIBUTES
     },
     async exportLedger (fingerprint) {
       return table.attributes(SHORT_ATTRIBUTES).queryAll({

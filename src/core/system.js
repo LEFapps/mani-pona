@@ -3,6 +3,8 @@ import { KeyGenerator, Verifier, mani } from '../shared'
 import { getLogger } from 'server-log'
 import { flip, toCSV } from './util'
 
+import columns from '../../client/shared/columns.json'
+
 const PARAMETERS = { income: mani(100), demurrage: 5.0 }
 const log = getLogger('core:system')
 
@@ -254,12 +256,12 @@ export default function (ledgers, userpool) {
         ...results
       }
     },
-    async exportLedgers () {
+    async exportLedgers (lang = 'nl') {
       // note: at some point this will run into performance issues of course
       // we'd need to switch to e.g. an S3 based approach
-      const atts = ledgers.shortAttributes()
+      const atts = ledgers.exportAttributes()
       const items = await ledgers.exportAll()
-      return toCSV(atts, items)
+      return toCSV(atts, items, att => columns[lang][att] || att)
     }
   }
 }

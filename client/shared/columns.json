@@ -1,0 +1,12 @@
+{
+  "nl": {
+    "ledger": "Gebruiker",
+    "destination": "Tegenpartij",
+    "amount": "Bedrag",
+    "Balance": "Rekeningstand na transactie",
+    "date": "Datum en tijd van transactie",
+    "sequence": "Volgnummer",
+    "income": "Basisinkomen (op het moment van transactie)",
+    "demurrage": "Gemeenschapsbijdrage (op het moment van transactie)"
+  }
+}
