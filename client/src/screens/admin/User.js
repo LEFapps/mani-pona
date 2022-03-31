@@ -102,21 +102,29 @@ const type = ({ visible, user, onClose }) => {
 
 const pending = ({ visible, user, onClose }) => {
   const { maniClient } = global
+  const [hasChallenge, setChallenge] = useState()
+
+  useEffect(() => {
+    maniClient.transactions
+      .pending()
+      .then(pending => pending && setChallenge(pending.challenge))
+  })
 
   const action = () => {
     const confirmed = confirm(
       'Weet u zeker dat u deze transactie wil afbreken?'
     )
     if (!confirmed) return
-    maniClient.transactions.pending().then(({ challenge }) => {
-      maniClient.transactions
-        .cancel(challenge)
-        .then(() => onClose(true))
-        .catch(e => onClose(e && e.message))
-    })
+    maniClient.transactions
+      .cancel(hasChallenge)
+      .then(() => {
+        onClose(true)
+        setChallenge(false)
+      })
+      .catch(e => onClose(e && e.message))
   }
 
-  return (
+  return hasChallenge ? (
     <Container
       visible={visible}
       title={'Openstaande transactie van ' + user.alias + '…'}
@@ -128,7 +136,7 @@ const pending = ({ visible, user, onClose }) => {
         title={'Transactie afbreken'}
       />
     </Container>
-  )
+  ) : null
 }
 
 const balance = ({ visible, user, onClose }) => {
