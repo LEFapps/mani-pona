@@ -3,7 +3,7 @@
     "ledger": "Gebruiker",
     "destination": "Tegenpartij",
     "amount": "Bedrag",
-    "Balance": "Rekeningstand na transactie",
+    "balance": "Rekeningstand na transactie",
     "date": "Datum en tijd van transactie",
     "sequence": "Volgnummer",
     "income": "Basisinkomen (op het moment van transactie)",
