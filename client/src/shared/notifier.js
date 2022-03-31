@@ -29,7 +29,7 @@ const convertNotification = value => {
       title: 'Betaling afgerond',
       message: 'De betaling is afgerond. De munten werden uitgewisseld.',
       type: 'success',
-      redirect: ['Startscherm', { screen: 'AccountBalance' }]
+      override: ['Startscherm', { screen: 'AccountBalance' }]
     },
     cancel: {
       title: 'Betaling geannuleerd',
@@ -55,15 +55,15 @@ export const Notifier = () => {
       data.ledger.notifications &&
       data.ledger.notifications.value
     ) {
-      const { redirect, ...notification } = convertNotification(
+      const { override, redirect, ...notification } = convertNotification(
         data.ledger.notifications.value
       )
       const buttons = []
-      buttons.push({ label: 'Ok' })
-      if (redirect) {
+      if (!override) buttons.push({ label: 'Ok' })
+      if (override || redirect) {
         buttons.push({
-          onPress: () => navigate(...redirect),
-          label: 'Bekijken'
+          onPress: () => navigate(...(override || redirect)),
+          label: override ? 'Ok' : 'Bekijken'
         })
       }
       add({ ...notification, buttons })
