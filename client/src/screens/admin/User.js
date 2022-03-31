@@ -100,6 +100,37 @@ const type = ({ visible, user, onClose }) => {
   )
 }
 
+const pending = ({ visible, user, onClose }) => {
+  const { maniClient } = global
+
+  const action = () => {
+    const confirmed = confirm(
+      'Weet u zeker dat u deze transactie wil afbreken?'
+    )
+    if (!confirmed) return
+    maniClient.transactions.pending().then(({ challenge }) => {
+      maniClient.transactions
+        .cancel(challenge)
+        .then(() => onClose(true))
+        .catch(e => onClose(e && e.message))
+    })
+  }
+
+  return (
+    <Container
+      visible={visible}
+      title={'Openstaande transactie van ' + user.alias + '…'}
+      onCancel={onClose}
+    >
+      <CustomButton
+        onPress={action}
+        style={{ marginVertical: 12 }}
+        title={'Transactie afbreken'}
+      />
+    </Container>
+  )
+}
+
 const balance = ({ visible, user, onClose }) => {
   const { maniClient } = global
   const [amount, setAmount] = useState(0)
@@ -156,7 +187,7 @@ const balance = ({ visible, user, onClose }) => {
   )
 }
 
-export default { enabled, type, balance }
+export default { enabled, type, balance, pending }
 
 const styles = StyleSheet.create({
   modal: {
