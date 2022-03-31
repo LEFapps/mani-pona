@@ -80,26 +80,25 @@ export const ImportModal = ({ onValue, isOpen, setOpen }) => {
         }}
       >
         <Text style={globalStyles.text}>Plak hieronder jouw sleutels.</Text>
-        {modalStep ? (
+        {modalStep && (
           <CustomButton
             text={'Volgende stap ››'}
             style={{ marginTop: -10 }}
             onPress={modalStep}
           />
-        ) : (
-          <TextInput
-            onChangeText={data => setStep(() => () => onValue(data))}
-            // value={textData}
-            style={{
-              width: '100%',
-              height: '50vh',
-              marginTop: '16px',
-              marginBottom: '16px'
-            }}
-            placeholder={'Plak hier je persoonlijke sleutels'}
-            multiline
-          />
         )}
+        <TextInput
+          onChangeText={data => setStep(() => () => onValue(data))}
+          // value={textData}
+          style={{
+            width: '100%',
+            height: '50vh',
+            marginTop: '16px',
+            marginBottom: '16px'
+          }}
+          placeholder={'Plak hier je persoonlijke sleutels'}
+          multiline
+        />
       </View>
     )
   }
