@@ -20,7 +20,7 @@ import { useNotifications } from '../../shared/notifications'
 
 const exportables = {
   ledgers: {
-    title: 'Exporteer rekeningen',
+    title: 'Exporteer transactiedata',
     method: 'admin.exportLedgers',
     file: 'loreco-rekeningen',
     type: 'text/csv'

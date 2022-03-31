@@ -120,7 +120,7 @@ export const Users = ({ navigation, route }) => {
 
   return (
     <ScrollView style={globalStyles.main}>
-      <Text style={globalStyles.label}>Zoek een rekening</Text>
+      <Text style={globalStyles.label}>Zoek een gebruiker</Text>
       <TextInput
         style={globalStyles.input}
         placeholder='e-mailadres'

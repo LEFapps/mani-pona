@@ -39,7 +39,7 @@ const enabled = ({ visible, user, onClose }) => {
   return (
     <Container
       visible={visible}
-      title={user.enabled ? 'Rekening blokkeren' : 'Rekening activeren'}
+      title={user.enabled ? 'Gebruiker blokkeren' : 'Gebruiker activeren'}
       onCancel={onClose}
     >
       <CustomButton

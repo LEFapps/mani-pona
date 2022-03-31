@@ -37,7 +37,7 @@ export const adminScreens = [
   {
     name: 'users',
     component: Users,
-    options: { title: 'Rekeningen' },
+    options: { title: 'Gebruikers' },
     icon: 'account-group'
   },
   {
