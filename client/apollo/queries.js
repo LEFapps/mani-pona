@@ -281,6 +281,14 @@ const EXPORT_LEDGERS = gql`
   }
 `
 
+const EXPORT_ACCOUNTS = gql`
+  mutation export {
+    admin {
+      exportAccounts
+    }
+  }
+`
+
 const INIT = gql`
   mutation init {
     admin {
@@ -312,6 +320,7 @@ export {
   CREATE_PREPAID_LEDGER,
   JUBILEE,
   EXPORT_LEDGERS,
+  EXPORT_ACCOUNTS,
   INIT,
   SYSTEM_PARAMETERS,
   TIME

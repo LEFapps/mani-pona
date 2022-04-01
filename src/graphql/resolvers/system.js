@@ -73,6 +73,9 @@ export default {
     async exportLedgers (system) {
       return system.exportLedgers()
     },
+    async exportAccounts (system) {
+      return system.exportAccounts()
+    },
     async createPrepaidLedger (system, { amount }) {
       return system.createPrepaidLedger(amount)
     }

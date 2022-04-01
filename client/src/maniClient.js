@@ -27,6 +27,7 @@ import {
   CHANGE_ACCOUNT_TYPE,
   JUBILEE,
   EXPORT_LEDGERS,
+  EXPORT_ACCOUNTS,
   INIT,
   SYSTEM_PARAMETERS,
   TIME
@@ -290,6 +291,9 @@ const ManiClient = async ({
     },
     async exportLedgers () {
       return query(EXPORT_LEDGERS, 'admin.exportLedgers')
+    },
+    async exportAccounts () {
+      return query(EXPORT_ACCOUNTS, 'admin.exportAccounts')
     },
     async available (ledger) {
       const available = await query(

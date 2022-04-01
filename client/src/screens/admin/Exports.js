@@ -19,6 +19,12 @@ import { DarkSpinner } from '../../shared/loader'
 import { useNotifications } from '../../shared/notifications'
 
 const exportables = {
+  accounts: {
+    title: 'Exporteer gebruikers',
+    method: 'admin.exportAccounts',
+    file: 'loreco-accounts',
+    type: 'text/csv'
+  },
   ledgers: {
     title: 'Exporteer transactiedata',
     method: 'admin.exportLedgers',

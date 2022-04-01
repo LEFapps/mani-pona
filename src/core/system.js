@@ -262,6 +262,22 @@ export default function (ledgers, userpool) {
       const atts = ledgers.exportAttributes()
       const items = await ledgers.exportAll()
       return toCSV(atts, items, att => columns[lang][att] || att)
+    },
+    async exportAccounts (lang = 'nl') {
+      const { users } = await userpool.listJubileeUsers()
+      const atts = [
+        'alias',
+        'email',
+        'phone',
+        'address',
+        'zip',
+        'city',
+        'birthday',
+        'type',
+        'administrator',
+        'created'
+      ]
+      return toCSV(atts, users, att => columns[lang][att] || att)
     }
   }
 }

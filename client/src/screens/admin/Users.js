@@ -187,6 +187,7 @@ export const Users = ({ navigation, route }) => {
       )}
       <View style={{ marginTop: 32 }}>
         <Exportable exportable={'ledgers'} />
+        <Exportable exportable={'accounts'} />
       </View>
     </ScrollView>
   )
