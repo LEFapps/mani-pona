@@ -8,6 +8,7 @@ import { colors } from '../helpers/helper'
 import mani from '../../shared/mani'
 import { UserContext } from '../authenticator'
 import Predictions from '../screens/predictions'
+import Euros from '../screens/euros'
 import { useNotifications } from '../shared/notifications'
 import { useIsFocused } from '@react-navigation/core'
 
@@ -85,6 +86,7 @@ export default function AccountBalance ({ navigation }) {
             {!!available.balance &&
               available.balance.format().replace('ɱ', '₭')}
           </Text>
+          <Euros style={styles.euro} />
         </View>
 
         <View style={styles.part}>
@@ -168,5 +170,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     paddingVertical: 20,
     color: CurrencyColor
+  },
+  euro: {
+    position: 'absolute',
+    right: 0,
+    bottom: 0
   }
 })

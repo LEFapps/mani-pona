@@ -29,6 +29,7 @@ import {
   EXPORT_LEDGERS,
   EXPORT_ACCOUNTS,
   INIT,
+  STRIPE,
   SYSTEM_PARAMETERS,
   TIME
 } from '../apollo/queries'
@@ -322,6 +323,15 @@ const ManiClient = async ({
       return fromDb(pending)
     }
   }
+  const stripe = {
+    async startPayment (amount, ledger = id) {
+      const payment = await query(STRIPE, 'stripe.startPayment', {
+        amount,
+        ledger
+      })
+      return payment
+    }
+  }
   return {
     getTime: async () => query(TIME, 'time'),
     id,
@@ -330,6 +340,7 @@ const ManiClient = async ({
     transactions,
     system,
     admin,
+    stripe,
     importKeys: keyManager.setKeys,
     exposeKeys: keyManager.getKeys,
     cleanup: keyManager.clear

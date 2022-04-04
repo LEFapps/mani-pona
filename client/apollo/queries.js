@@ -297,6 +297,14 @@ const INIT = gql`
   }
 `
 
+const STRIPE = gql`
+  mutation startPayment($amount: String!, $ledger: String!) {
+    stripe {
+      startPayment(amount: $amount, ledger: $ledger)
+    }
+  }
+`
+
 export {
   REGISTER,
   NOTIFIERS,
@@ -322,6 +330,7 @@ export {
   EXPORT_LEDGERS,
   EXPORT_ACCOUNTS,
   INIT,
+  STRIPE,
   SYSTEM_PARAMETERS,
   TIME
 }
