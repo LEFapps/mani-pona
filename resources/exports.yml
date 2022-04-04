@@ -22,3 +22,5 @@ Outputs:
   ServiceEndpoint:
     Value:
       Fn::Sub: https://${HttpApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/${self:provider.stage}/graphql
+  StripeKey:
+    Value: ${env:STRIPE_PUBLIC_KEY}
