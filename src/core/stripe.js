@@ -1,5 +1,6 @@
-import assert from 'assert/strict'
 import Stripe from 'stripe'
+
+import { strict as assert } from 'assert'
 import { getLogger } from 'server-log'
 
 const log = getLogger('core:stripe')
