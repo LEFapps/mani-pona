@@ -2,7 +2,6 @@ import React, { useState } from 'react'
 import { View } from 'react-native'
 import { Authenticator } from 'aws-amplify-react-native'
 import { Amplify, Analytics } from 'aws-amplify'
-import { StripeProvider } from '@stripe/stripe-react-native'
 import log from 'loglevel'
 
 import SignIn from './src/screens/auth/signIn'
@@ -15,7 +14,6 @@ import graphqlClient from './apollo/client'
 import { globalStyles } from './src/styles/global'
 
 import config from './aws-config'
-import { StripeKey, ClientBucket } from './sls-output.json'
 
 import * as Localization from 'expo-localization'
 import i18n from 'i18n-js'
@@ -48,25 +46,19 @@ const App = () => {
 
   return (
     <NotificationProvider>
-      <StripeProvider
-        publishableKey={StripeKey}
-        // urlScheme='your-url-scheme' // required for 3D Secure and bank redirects
-        merchantIdentifier={'merchant.com.' + ClientBucket} // required for Apple Pay
-      >
-        <ApolloProvider client={graphqlClient}>
-          <Authenticator
-            container={Container}
-            hideDefault
-            onStateChange={setAuthState}
-          >
-            <SignIn override={'SignIn'} />
-            <SignUp override={'SignUp'} />
-            <ConfirmSignUp override={'confirmSignUp'} />
-            <VerifyContact override={'verifyContact'} />
-            <Loreco />
-          </Authenticator>
-        </ApolloProvider>
-      </StripeProvider>
+      <ApolloProvider client={graphqlClient}>
+        <Authenticator
+          container={Container}
+          hideDefault
+          onStateChange={setAuthState}
+        >
+          <SignIn override={'SignIn'} />
+          <SignUp override={'SignUp'} />
+          <ConfirmSignUp override={'confirmSignUp'} />
+          <VerifyContact override={'verifyContact'} />
+          <Loreco />
+        </Authenticator>
+      </ApolloProvider>
     </NotificationProvider>
   )
 }
