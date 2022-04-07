@@ -159,7 +159,7 @@ export default function (ledgers, userpool) {
       }
       return ledger
     },
-    async forceSystemPayment (ledger, amount) {
+    async forceSystemPayment (ledger, amount, message = '') {
       log.debug('Forcing system payment of %s on ledger %s', amount, ledger)
       const pending = await ledgers.pending(ledger)
       if (pending) {
@@ -176,6 +176,7 @@ export default function (ledgers, userpool) {
       await StateMachine(transaction)
         .getSources({ ledger, destination: 'system' })
         .then(t => t.addAmount(amount))
+        .then(t => t.addMessage(message))
         .then(t => t.autoSign('system'))
         .then(t => t.save())
         .catch(err => log.error('Forced system payment failed\n%s', err))

@@ -32,7 +32,7 @@ function contextProcessor (event) {
     admin: claims['custom:administrator'],
     username: claims.sub,
     claims,
-    origin: headers['Origin']
+    origin: headers['origin'] || headers['Origin']
   }
 }
 

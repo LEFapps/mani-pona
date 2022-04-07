@@ -52,7 +52,11 @@ export const Euros = ({ style }) => {
       <View style={style}>
         <IconButton iconName={'euro-symbol'} onPress={() => setOpen(!isOpen)} />
       </View>
-      <Container visible={!!isOpen} title={'Koop Klavers (₭)'}>
+      <Container
+        visible={!!isOpen}
+        title={'Koop Klavers (₭)'}
+        onCancel={() => setOpen(false)}
+      >
         <TextInput
           style={globalStyles.input}
           onChangeText={amountInput}

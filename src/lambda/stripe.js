@@ -13,7 +13,8 @@ const log = getLogger('lambda:stripe')
 
 export default ({ core }) => (request, context, callback) => {
   let event
-  const signature = request.headers['Stripe-Signature']
+  const signature =
+    request.headers['stripe-signature'] || request.headers['Stripe-Signature']
 
   const response = {
     statusCode: 200,
@@ -57,12 +58,12 @@ export default ({ core }) => (request, context, callback) => {
       console.log('Applying payment to ledger')
       log.info('Applying payment to ledger')
       if (payment_status === 'paid')
-        core.system().forceSystemPayment(ledger, amount)
+        core.system().forceSystemPayment(ledger, amount, 'Aankoop klavers')
       break
     case 'checkout.session.async_payment_succeeded':
       console.log('Applying payment to ledger')
       log.info('Applying payment to ledger')
-      core.system().forceSystemPayment(ledger, amount)
+      core.system().forceSystemPayment(ledger, amount, 'Aankoop klavers')
       break
     // ... handle other event types
     default:

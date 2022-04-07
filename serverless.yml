@@ -91,6 +91,9 @@ functions:
       LOG_PREFIX: sumsy
       USER_POOL:
         Ref: CognitoUserPool
+      ACCOUNT_TYPES: ${env:ACCOUNT_TYPES, '[{"type":"default","income":0,"buffer":0,"demurrage":2.5},{"type":"prepaid","income":0,"buffer":0,"demurrage":0.0},{"type":"verified","income":0,"buffer":5,"demurrage":2.5},{"type":"guaranteed_income","income":16,"buffer":5,"demurrage":2.5},{"type":"professional","income":0,"buffer":5,"demurrage":0.5},{"type":"demo","income":1000,"buffer":0,"demurrage":20}]'}
+      STRIPE_PRIVATE_KEY: ${env:STRIPE_PRIVATE_KEY}
+      STRIPE_WEBHOOK_SECRET: ${env:STRIPE_WEBHOOK_SECRET}
   graphql:
     handler: dist/server.graphqlHandler
     events:
@@ -116,6 +119,8 @@ functions:
       USER_POOL:
         Ref: CognitoUserPool
       ACCOUNT_TYPES: ${env:ACCOUNT_TYPES, '[{"type":"default","income":0,"buffer":0,"demurrage":2.5},{"type":"prepaid","income":0,"buffer":0,"demurrage":0.0},{"type":"verified","income":0,"buffer":5,"demurrage":2.5},{"type":"guaranteed_income","income":16,"buffer":5,"demurrage":2.5},{"type":"professional","income":0,"buffer":5,"demurrage":0.5},{"type":"demo","income":1000,"buffer":0,"demurrage":20}]'}
+      STRIPE_PRIVATE_KEY: ${env:STRIPE_PRIVATE_KEY}
+      STRIPE_PRICE_ID: ${env:STRIPE_PRICE_ID}
 
 resources:
   - ${file(resources/dynamo.yml)}

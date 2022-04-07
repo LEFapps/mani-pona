@@ -8,6 +8,7 @@ const log = getLogger('core:stripe')
 
 export default (ledgers, origin) => {
   const apiKey = process.env.STRIPE_PRIVATE_KEY
+  const price = process.env.STRIPE_PRICE_ID
   if (!apiKey) throw new Error('STRIPE_PRIVATE_KEY env variable is missing')
   const stripe = new Stripe(apiKey)
   return {
@@ -17,7 +18,7 @@ export default (ledgers, origin) => {
       assert(quantity > 0.0, 'Only positive amounts can be processed.')
       assert(quantity > 0.5, 'Only amounts above € 0.50 can be processed.')
       const session = await stripe.checkout.sessions.create({
-        line_items: [{ quantity, price: 'price_1Kl8mRHWUsq4Q0ptNhX1PiaT' }],
+        line_items: [{ quantity, price }],
         mode: 'payment',
         success_url: origin,
         cancel_url: origin,
@@ -29,13 +30,6 @@ export default (ledgers, origin) => {
       // transaction.challenge('system', mani(amount))
       log.debug('Stripe:sessions.create response %j', session)
       return session.url
-    },
-    async confirmPayment (amount, ledger) {
-      await transaction.putEntry({
-        ledger,
-        entry: 'notification',
-        value: 'stripeSuccess'
-      })
     }
   }
 }
