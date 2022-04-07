@@ -42,7 +42,9 @@ export const Euros = ({ style }) => {
   }
 
   const action = () => {
-    maniClient.stripe.startPayment(amount.toString()).then(console.log)
+    maniClient.stripe
+      .startPayment(amount.toString())
+      .then(redirect => (window.location.href = redirect))
   }
 
   return (

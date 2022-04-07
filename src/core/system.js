@@ -68,7 +68,6 @@ export default function (ledgers, userpool) {
         log.info('%s ledger keys and parameters stored', ledger)
       }
       await initPrimaryLedger('system')
-      await initPrimaryLedger('stripe')
       return `System was initialized.`
     },
     async createPrepaidLedger (amount) {

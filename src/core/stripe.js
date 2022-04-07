@@ -2,6 +2,7 @@ import Stripe from 'stripe'
 
 import { strict as assert } from 'assert'
 import { getLogger } from 'server-log'
+import mani from '../../client/shared/mani'
 
 const log = getLogger('core:stripe')
 
@@ -10,24 +11,31 @@ export default (ledgers, origin) => {
   if (!apiKey) throw new Error('STRIPE_PRIVATE_KEY env variable is missing')
   const stripe = new Stripe(apiKey)
   return {
-    async startPayment (amount, ledger) {
-      log.debug('Stripe ledger %j', ledger)
-      console.log('Stripe ledger', ledger)
-      const value = Number(amount)
-      assert(value > 0.0, 'Only positive amounts can be processed.')
-      assert(value > 0.5, 'Only amounts above € 0.50 can be processed.')
-      const paymentIntent = await stripe.paymentIntents.create({
-        amount: value * 100,
-        currency: 'eur',
-        description: 'Aankoop klavers LORECO',
-        automatic_payment_methods: {
-          enabled: true
-        },
-        // receipt_email: '',
-        metadata: { ledger }
+    async startPayment (amount, ledger, core) {
+      const transaction = core.mani(ledger)
+      const quantity = Number(amount)
+      assert(quantity > 0.0, 'Only positive amounts can be processed.')
+      assert(quantity > 0.5, 'Only amounts above € 0.50 can be processed.')
+      const session = await stripe.checkout.sessions.create({
+        line_items: [{ quantity, price: 'price_1Kl8mRHWUsq4Q0ptNhX1PiaT' }],
+        mode: 'payment',
+        success_url: origin,
+        cancel_url: origin,
+        // customer_email: '',
+        metadata: { ledger },
+        locale: 'nl'
       })
-      log.debug('Stripe response %j', paymentIntent)
-      return paymentIntent.client_secret
+      // challenging the system ledger is not possible, but pre-storing a reference to the payment should be helpful…
+      // transaction.challenge('system', mani(amount))
+      log.debug('Stripe:sessions.create response %j', session)
+      return session.url
+    },
+    async confirmPayment (amount, ledger) {
+      await transaction.putEntry({
+        ledger,
+        entry: 'notification',
+        value: 'stripeSuccess'
+      })
     }
   }
 }

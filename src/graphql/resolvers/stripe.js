@@ -11,13 +11,14 @@ export default {
     }
   },
   StripeQuery: {
+    // parent, arguments, context
     startPayment: (stripe, { amount, ledger: id }, { core, ledger, admin }) => {
-      if (id !== ledger && !admin) {
+      if (id !== ledger) {
         const err = `Illegal access attempt detected from ${ledger} on ${id}`
         log.error(err)
         throw new ForbiddenError(err)
       }
-      return stripe.startPayment(amount, ledger)
+      return stripe.startPayment(amount, ledger, core)
     }
   }
 }

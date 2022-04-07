@@ -9,6 +9,8 @@ import { CognitoUserPool } from '../cognito/userpool'
 import { OfflineUserPool } from './offlineuserpool'
 import { apolloLogPlugin, getLogger } from 'server-log'
 
+import stripeHandler from './stripe'
+
 const log = getLogger('lambda:handler')
 
 const debug = process.env.DEBUG === 'true'
@@ -81,3 +83,4 @@ async function debugHandler (event, context) {
 }
 
 exports.graphqlHandler = debug ? debugHandler : handler
+exports.stripeHandler = stripeHandler({ core })
