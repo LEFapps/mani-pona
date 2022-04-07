@@ -65,6 +65,7 @@
     "openpgp": "^5.0.0-6",
     "server-log": "file:./log_module",
     "serverless-dotenv-plugin": "^3.3.0",
-    "sha1": "^1.1.1"
+    "sha1": "^1.1.1",
+    "stripe": "^8.215.0"
   }
 }

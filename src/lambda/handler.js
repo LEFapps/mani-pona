@@ -9,6 +9,8 @@ import { CognitoUserPool } from '../cognito/userpool'
 import { OfflineUserPool } from './offlineuserpool'
 import { apolloLogPlugin, getLogger } from 'server-log'
 
+import stripeHandler from './stripe'
+
 const log = getLogger('lambda:handler')
 
 const debug = process.env.DEBUG === 'true'
@@ -18,7 +20,7 @@ const systemInit = process.env.AUTO_SYSTEM_INIT === 'true'
 
 function contextProcessor (event) {
   const { headers } = event
-  log.debug('Context Event: %j', event)
+  log.debug('Context Event: \n%j', event)
   // fake the cognito interface if offline
   let claims = offline
     ? JSON.parse(headers['x-claims'] || process.env.CLAIMS)
@@ -29,7 +31,8 @@ function contextProcessor (event) {
     verified: claims.email_verified,
     admin: claims['custom:administrator'],
     username: claims.sub,
-    claims
+    claims,
+    origin: headers['Origin']
   }
 }
 
@@ -80,3 +83,4 @@ async function debugHandler (event, context) {
 }
 
 exports.graphqlHandler = debug ? debugHandler : handler
+exports.stripeHandler = stripeHandler({ core })

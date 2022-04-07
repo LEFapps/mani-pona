@@ -1,6 +1,16 @@
-import { getSources, getPayloads, getNextTargets, addAmount,
-  getPayloadSources, getPayloadTargets, getPendingTargets, getPendingSources,
-  addSignatures, addSystemSignatures, saveResults } from './util'
+import {
+  getSources,
+  getPayloads,
+  getNextTargets,
+  addAmount,
+  getPayloadSources,
+  getPayloadTargets,
+  getPendingTargets,
+  getPendingSources,
+  addSignatures,
+  autoSign,
+  saveResults
+} from './util'
 
 /**
  * This is the way.
@@ -9,7 +19,7 @@ import { getSources, getPayloads, getNextTargets, addAmount,
  *
  * (table is actually a core/ledgers object)
  */
-const StateMachine = (table) => {
+const StateMachine = table => {
   const context = {}
   return {
     getPayloads (payload) {
@@ -60,8 +70,8 @@ const StateMachine = (table) => {
       getPrimaryEntry () {
         return context.targets.ledger
       },
-      async addSystemSignatures (keys) {
-        context.targets = await addSystemSignatures(table, context, keys)
+      async autoSign (ledger, keys) {
+        context.targets = await autoSign(table, context, ledger, keys)
         return Continue(context)
       },
       async addSignatures (signatures) {

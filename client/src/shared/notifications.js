@@ -20,7 +20,7 @@ import { colors } from '../helpers/helper'
  *
  * 2 use in component:
  * const notification = useNotifications()
- * notficiation.add({...props})
+ * notificiation.add({...props})
  *
  * props for add()
  * @param title (String)

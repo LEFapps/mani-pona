@@ -71,6 +71,26 @@ plugins:
   - serverless-stack-output
 
 functions:
+  stripe:
+    handler: dist/server.stripeHandler
+    events:
+      - httpApi:
+          path: /${self:provider.stage}/stripe
+          method: 'OPTIONS'
+      - httpApi:
+          path: /${self:provider.stage}/stripe
+          method: 'GET'
+      - httpApi:
+          path: /${self:provider.stage}/stripe
+          method: 'POST'
+    environment:
+      DYN_TABLE: ${self:custom.tableName}
+      DEBUG: ${self:custom.debug}
+      NODE_DEBUG: ${env:NODE_DEBUG, 'sumsy*'}
+      LOG_LEVEL: ${env:LOG_LEVEL, 'debug'}
+      LOG_PREFIX: sumsy
+      USER_POOL:
+        Ref: CognitoUserPool
   graphql:
     handler: dist/server.graphqlHandler
     events:

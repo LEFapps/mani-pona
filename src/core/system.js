@@ -5,14 +5,10 @@ import { flip, toCSV } from './util'
 
 import columns from '../../client/shared/columns.json'
 
-const PARAMETERS = { income: mani(100), demurrage: 5.0 }
 const log = getLogger('core:system')
 
 export default function (ledgers, userpool) {
   return {
-    async parameters () {
-      return PARAMETERS
-    },
     async findkey (fingerprint) {
       return ledgers.publicKey(fingerprint)
     },
@@ -45,29 +41,33 @@ export default function (ledgers, userpool) {
       return userpool.enableAccount(Username)
     },
     async init () {
-      log.info('System init requested')
-      let keys = await ledgers.keys('system')
-      log.info('Checking keys')
-      if (keys) {
-        log.debug('System already initialized %j', keys)
-        return 'System already initialized' // idempotency
+      async function initPrimaryLedger (ledger) {
+        let keys = await ledgers.keys(ledger)
+        log.info('Checking %s keys', ledger)
+        if (keys) {
+          log.debug('%s ledger is already initialized', ledger)
+          return
+        }
+        log.info('Generating %s keys', ledger)
+        // initializing fresh system:
+        keys = await KeyGenerator({}, log.info).generate()
+        log.info('%s keys generated', ledger)
+        const { publicKeyArmored, privateKeyArmored } = keys
+        const trans = ledgers.transaction()
+        trans.putKey({ ledger, publicKeyArmored, privateKeyArmored })
+        await StateMachine(trans)
+          .getSources({ ledger, destination: ledger })
+          .then(t => t.addAmount(mani(0)))
+          .then(t => t.autoSign(ledger, keys))
+          .then(t => t.save())
+          .catch(err =>
+            log.error('%s ledger initialization failed\n%j', ledger, err)
+          )
+        log.debug('Database update: %j', trans.items())
+        await trans.execute()
+        log.info('%s ledger keys and parameters stored', ledger)
       }
-      log.info('Generating system keys')
-      // initializing fresh system:
-      keys = await KeyGenerator({}, log.info).generate()
-      log.info('System keys generated')
-      const { publicKeyArmored, privateKeyArmored } = keys
-      const trans = ledgers.transaction()
-      trans.putKey({ ledger: 'system', publicKeyArmored, privateKeyArmored })
-      await StateMachine(trans)
-        .getSources({ ledger: 'system', destination: 'system' })
-        .then(t => t.addAmount(mani(0)))
-        .then(t => t.addSystemSignatures(keys))
-        .then(t => t.save())
-        .catch(err => log.error('System initialization failed\n%j', err))
-      log.debug('Database update: %j', trans.items())
-      log.info('System keys and parameters stored')
-      await trans.execute()
+      await initPrimaryLedger('system')
       return `System was initialized.`
     },
     async createPrepaidLedger (amount) {
@@ -75,35 +75,21 @@ export default function (ledgers, userpool) {
       // generate keys for new account
       const keys = await KeyGenerator({}, log.info).generate()
       const ledger = await keys.publicKey.fingerprint()
-      const { publicKeyArmored, privateKeyArmored } = keys
       log.info('Prepaid ledger keys generated, id %s', ledger)
       // prepare for initial transaction
-      const challenge = await StateMachine(ledgers)
-        .getSources({ ledger, destination: 'system' })
-        .then(t => t.addAmount(amount))
-        .then(t => t.getPrimaryEntry().challenge)
-        .catch(err => log.error('Creation of challenge failed %s\n%s', err, err.stack))
-      if (!challenge) { throw new Error('Challenge creation failed') }
-      log.info('Generated challenge for prepaid ledger: %s', challenge)
-      const signature = await keys.privateKey.sign(challenge)
-      const counterSignature = await keys.privateKey.sign(flip(challenge))
-      log.debug('Prepared initial transaction on prepaid ledger:\n%s\nsignature:\n%s\ncountersignature:\n%s', challenge, signature, counterSignature)
       try {
         const transaction = ledgers.transaction()
         await StateMachine(transaction)
-          .getPayloads(challenge)
           .getSources({ ledger, destination: 'system' })
-          .then(t => t.continuePayload())
-          .then(t => t.addSystemSignatures())
-          .then(t => t.addSignatures({ ledger, signature, counterSignature, publicKeyArmored }))
+          .then(t => t.addAmount(amount))
+          .then(t => t.autoSign('system'))
+          .then(t => t.autoSign(ledger, keys))
           .then(t => t.save())
         transaction.putKey({
           ledger,
-          publicKeyArmored,
-          privateKeyArmored,
-          alias: 'Prepaid card',
-          accountType: 'prepaid',
-          challenge
+          publicKeyArmored: keys.publicKeyArmored,
+          privateKeyArmored: keys.privateKeyArmored,
+          alias: 'Prepaid card'
         })
         await transaction.execute()
         log.info('Registered prepaid ledger %s in database', ledger)
@@ -135,7 +121,7 @@ export default function (ledgers, userpool) {
           .getPayloads(payload)
           .getSources({ ledger, destination: 'system' })
           .then(t => t.continuePayload())
-          .then(t => t.addSystemSignatures())
+          .then(t => t.autoSign('system'))
           .then(t => t.addSignatures({ ledger, ...registration }))
           .then(t => t.save())
         transaction.putKey({
@@ -190,7 +176,7 @@ export default function (ledgers, userpool) {
       await StateMachine(transaction)
         .getSources({ ledger, destination: 'system' })
         .then(t => t.addAmount(amount))
-        .then(t => t.addSystemSignatures())
+        .then(t => t.autoSign('system'))
         .then(t => t.save())
         .catch(err => log.error('Forced system payment failed\n%s', err))
       await transaction.putEntry({
@@ -200,61 +186,6 @@ export default function (ledgers, userpool) {
       })
       await transaction.execute()
       return `Success`
-    },
-    async jubilee (paginationToken) {
-      const results = {
-        ledgers: 0,
-        demurrage: mani(0),
-        income: mani(0)
-      }
-      // convert to a key-value(s) object for easy lookup
-      const types = userpool
-        .getAccountTypes()
-        .reduce((acc, { type, ...attr }) => {
-          acc[type] = attr
-          return acc
-        }, {})
-      async function applyJubilee (ledger, DI) {
-        log.debug('Applying jubilee to ledger %s', ledger)
-        const transaction = ledgers.transaction()
-        await StateMachine(transaction)
-          .getSources({ ledger, destination: 'system' })
-          .then(t => t.addDI(DI))
-          .then(t => {
-            const entry = t.getPrimaryEntry()
-            results.income = results.income.add(entry.income)
-            results.demurrage = results.demurrage.add(entry.demurrage)
-            results.ledgers++
-            return t
-          })
-          .then(t => t.addSystemSignatures())
-          .then(t => t.save())
-          .catch(log.error)
-        await transaction.execute()
-        log.debug('Jubilee succesfully applied to ledger %s', ledger)
-      }
-      const {
-        users,
-        paginationToken: nextToken
-      } = await userpool.listJubileeUsers(paginationToken)
-      for (let { ledger, type } of users) {
-        const DI = type ? types[type] : types['default']
-        if (!DI) {
-          log.error(
-            'SKIPPING JUBILEE: Unable to determine jubilee type %s for ledger %s',
-            type,
-            ledger
-          )
-        } else {
-          log.debug('Applying jubilee of type %s to ledger %s', type, ledger)
-          // these for loops allow await!
-          await applyJubilee(ledger, DI)
-        }
-      }
-      return {
-        paginationToken: nextToken,
-        ...results
-      }
     },
     async exportLedgers (lang = 'nl') {
       // note: at some point this will run into performance issues of course
