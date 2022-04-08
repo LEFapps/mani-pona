@@ -28,6 +28,12 @@
 - [Stack and Infrastructure](#stack-and-infrastructure)
   - [Serverless backend](#serverless-backend)
   - [Frontend](#frontend)
+- [Functionality](#functionality)
+  - [Account](#account)
+  - [Ledger](#ledger)
+  - [Transactions](#transactions)
+  - [Admin](#admin)
+  - [Various](#various)
 - [Data structure](#data-structure)
   - [Ledgers and Transactions](#ledgers-and-transactions)
   - [Users](#users)
@@ -57,6 +63,7 @@
     - [shared](#shared)
   - [Config](#config)
 - [Stripe](#stripe)
+
 ## About
 
 Loreco is an application supporting an alternative economic system. It allows users to maintain a ledger and carry out transactions using a digital currency (mani). The main features of Loreco are a __guaranteed basic income__, a system of __demurrage__, a unique __cryptographic__ system and user __security__ all outlined below.
@@ -278,6 +285,57 @@ The centralized implementation of SuMSy output is a __CloudStack Formation__ tha
 Loreco's frontend makes use of the [React Native framework](https://reactnative.dev/) in combination with [Expo](https://expo.io/). For the Authentication [AWS Amplify](https://docs.amplify.aws/) is used.
 
 It uses [Apollo](https://www.apollographql.com/) for creating GraphQL queries.
+
+## Functionality
+
+The core functionality of this application:
+
+### Account
+- The user can register an account
+- The user can log in
+- The user can log out
+- The user can log in across multiple devices using a public/private key combo that:
+  - can be exported/imported as text
+  - can be exported/imported as a QR code
+- The system differentiates between different types of ledger (e.g. professional, private) and automatically uses the relevant parameters for these different types
+
+### Ledger
+- The user can initialise a ledger (this happens in the final step of the registration process, a user can not have an account without also having a ledger)
+- The user can request that their ledger is blocked by an application admin
+- The user can see the balance of their ledger
+- The user can add mani to their ledger using a different form of currency (e.g. euros) using Stripe
+- The user can see ledger-related information, such as the timestamp of the latest change and the demurrage applicable to their ledger in percentage.
+- The ledger can receive a GI if applicable
+- The demurrage is automatically performed on a ledger at the correct time (see 'Key terms')
+
+### Transactions
+- The user can initialise a transaction and sign it using the QR code system
+- The user can scan an initialized transaction and sign it using the QR code system
+- The user can add a message to a transaction before signing it
+- The user can see a history of all transactions on their ledger
+- The user or an admin can cancel a pending transaction
+
+### Admin
+- The admin can set the system's parameters
+- The admin can see relevant user information
+- The admin can block a user's access to their ledger
+- The admin can export a ledger's transaction history
+- The admin can export all ledgers' transaction history
+- The admin can export all relevant information of all the application's users
+- The admin can initialise a prepaid account
+- The admin can enable an account
+- The admin can intervene in a user's pending transactions
+- The admin can approve a request for a ledger's type
+- The admin can assign a ledger's type
+- The admin can change a ledger's balance
+
+### Various
+- The user can request help from an admin
+- The user can view an FAQ page
+- The user sees relevant notifications when using the application
+- The user can see extra information on the use of the application through tooltips in relevant places
+- A user can make use of a prepaid card system for transactions
+- The user can use an in-app camera to scan QR-codes related to the application (transactions, accounts)
 
 ## Data structure
 
@@ -532,3 +590,5 @@ STRIPE_PRICE_ID=price_123ABC # pricing API ID
 #### 4 Deploy the app
 
 After deployment, the endpoint should be able to catch Stripe calls from the checkout page.
+
+
