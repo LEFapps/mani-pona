@@ -47,9 +47,16 @@
       - [styles/global.js](#stylesglobaljs)
       - [routes, stacks and screens](#routes-stacks-and-screens)
   - [Src](#src)
+    - [cognito](#cognito)
+    - [core](#core)
+      - []
+      - [statemachine.js, system.js and transactions.js](#statemachinejs-systemjs-and-transactionsjs)
+    - [dynamodb](#dynamodb)
+    - [graphql](#graphql)
+    - [lambda](#lambda)
+    - [shared](#shared)
   - [Config](#config)
-- [Functions](#functions)
-
+- [Stripe](#stripe)
 ## About
 
 Loreco is an application supporting an alternative economic system. It allows users to maintain a ledger and carry out transactions using a digital currency (mani). The main features of Loreco are a __guaranteed basic income__, a system of __demurrage__, a unique __cryptographic__ system and user __security__ all outlined below.
@@ -430,6 +437,98 @@ Each defined stack has/can have its own defined styling and behavior and refers 
 
 ### Src
 
-### Config
+#### cognito
 
-## Functions
+The `src/cognito` folder contains helper functions and logic related to AWS Cognito registration, login and authentication.
+
+The `userpool.js` file has functions setting up a new userpool on AWS Cognito (if one is not already present), as well as custom functionality.
+#### core
+
+The `src/core` folder initializes server (backend) functionality for Loreco.
+
+It initializes the 'Ledgers' dynamoDB table in `ledgers.js`.
+
+`util.js` contains frequently used functions for server-side functionality.
+
+`verification.js`, as its naming suggests, has verification functions for entries.
+
+`stripe.js` connects to the Stripe API, for users to purchase mani with their local official currency.
+
+##### statemachine.js, system.js and transactions.js
+
+These files do most of the heavy lifting for the Loreco application.
+LEF recommends you do not make any changes to these, especially the statemachine, unless absolutely necessary, since they contain the core logic of the SuMSy systems.
+
+The __statemachine__ is used for all possible actions and transactions with mani, and ensures this happens securely and in the correct order.
+
+__transactions__ both creates QR-codes holding a transactions challenge, as the confirmation/signing of a challenge.
+
+__system__ has various serverside functions, including but not limited to the creating of prepaid ledgers, sending challenges to the statemachine, system payments and exports of transaction- and user-data.
+#### dynamodb
+
+The dynamoDB folder has files setting up the ledger data to be saved, changed and fetched form the database.
+
+#### graphql
+
+This folder holds the type definitions and resolvers needed to use GraphQL to interact with DynamoDB. All these files follow the recommended design philosophies of GraphQL, read up on it [here](https://graphql.org/learn/) if needed.
+
+#### lambda
+
+GraphQL handlers are created here, as well as some useful logs when running the application through AWS Lambda. Stripe's handler also originates here.
+
+#### shared
+
+The `shared.js` files imports some useful frontend functions for server-side use.
+
+## Stripe
+### Setup
+
+#### 1 Create an API Key
+
+Populate the following fields:
+
+```YML
+STRIPE_PUBLIC_KEY=pk_123ABC # Publishable key
+STRIPE_PRIVATE_KEY=sk_123ABC # Secret key
+```
+
+You can find the API keys in your Stripe dashboard under _Developers › API keys_
+
+#### 2 Create a webhook
+
+In your Stripe Developers dashboard, select _Webhooks_. Create a new webhook with the following details:
+
+```YML
+Endpoint URL: {{HttpApiUrl}}/{{stage}}/stripe
+Description: Capture payments for Loreco ({{stage}})
+```
+
+And select the following events to listen to: `[√] Select all Checkout events`.
+
+After creating the webhook, add the _Signing Secret_ to the .env file:
+
+```YML
+STRIPE_WEBHOOK_SECRET=whsec_123ABC # webhook signing secret
+```
+
+#### 3 Create a product
+
+Go to _Products_ in your Stripe dashboard and click on _+ Add product_. Fill in the following details:
+
+```YML
+Name: Klaver
+Image: <logo>
+Description: explain the exchange rate (e.g. 1 Klaver = € 1)
+Pricing: standard pricing, one time
+Price: fill the price for 1 klaver, e.g. € 1
+```
+
+After saving, click on the product in the list to see the details. Copy the _Pricing API ID_ (e.g. price_123ABC) and fill this in your .env file:
+
+```YML
+STRIPE_PRICE_ID=price_123ABC # pricing API ID
+```
+
+#### 4 Deploy the app
+
+After deployment, the endpoint should be able to catch Stripe calls from the checkout page.
