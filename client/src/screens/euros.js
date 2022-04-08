@@ -50,7 +50,13 @@ export const Euros = ({ style }) => {
   return (
     <View>
       <View style={style}>
-        <IconButton iconName={'euro-symbol'} onPress={() => setOpen(!isOpen)} />
+        <Text
+          style={{ fontSize: '1rem', textDecoration: 'underline' }}
+          onPress={() => setOpen(!isOpen)}
+        >
+          {' '}
+          + Koop klavers{' '}
+        </Text>
       </View>
       <Container
         visible={!!isOpen}
