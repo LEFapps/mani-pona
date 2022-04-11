@@ -100,14 +100,18 @@ export default function AccountBalance ({ navigation }) {
           />
         </View>
         <View style={styles.part}>
-          {!!available.date && (
+          {/* Date from query "available" is always now (incremental parameter application)
+           * Last edit date hidden because one extra query ("current") for only the date is not useful
+           * . users should check their history to see the latest edit instead
+           */}
+          {/*!!available.date && (
             <Card>
               <Text style={globalStyles.property}>Laatste wijziging</Text>
               <Text style={globalStyles.price}>
                 {new Date(available.date).toLocaleString('nl-BE')}
               </Text>
             </Card>
-          )}
+          )*/}
           {!mani(income).zero() && (
             <Card>
               <Text>
