@@ -55,13 +55,11 @@
   - [Src](#src)
     - [cognito](#cognito)
     - [core](#core)
-      - []
       - [statemachine.js, system.js and transactions.js](#statemachinejs-systemjs-and-transactionsjs)
     - [dynamodb](#dynamodb)
     - [graphql](#graphql)
     - [lambda](#lambda)
     - [shared](#shared)
-  - [Config](#config)
 - [Stripe](#stripe)
 
 ## About
@@ -70,6 +68,7 @@ Loreco is an application supporting an alternative economic system. It allows us
 
 The application also has a dashboard for administrators to aid the various processes.
 
+___
 ## Key terms
 
 ### mani
@@ -86,6 +85,8 @@ A fixed amount of mani is created through a GI on all SuMSy accounts.
 
 Demurrage is expressed in percentages and is a (negative) interest charged on a financial account. The demurrage is calculated and subtracted from the account balance right before the GI is added to it. More precisely, demurrage is calculated on a weighted average of the account balance over time.
 Note that demurrage effectively reduces the default income (= GI - demurrage) for accounts which hold large balances. This eliminates the ["Matthew effect"](https://en.wikipedia.org/wiki/Matthew_effect) common in financial stimulation measures.
+
+___
 
 ## Principles
 
@@ -204,6 +205,8 @@ The initial transaction on a ledger always has sequence number `0`, uid `init` a
 
 The initial transaction on the system ledger is an __'oroborous' transaction__ that has the system ledger as both ledger and destination. This means that the signature and counter-signature are the same.
 
+___
+
 ## Getting Started
 
 ### Installation
@@ -264,6 +267,8 @@ If you want to deploy frontend changes that do not affect the back-end stack, th
   `cd /client`
   `npm run deploy:dev`
 
+___
+
 ## Stack and Infrastructure
 
 ### Serverless backend
@@ -286,6 +291,8 @@ Loreco's frontend makes use of the [React Native framework](https://reactnative.
 
 It uses [Apollo](https://www.apollographql.com/) for creating GraphQL queries.
 
+___
+
 ## Functionality
 
 The core functionality of this application:
@@ -303,20 +310,23 @@ The core functionality of this application:
 - The user can initialise a ledger (this happens in the final step of the registration process, a user can not have an account without also having a ledger)
 - The user can request that their ledger is blocked by an application admin
 - The user can see the balance of their ledger
+- The user can see predictions of their future balance, as it relates to demurrage and GI
 - The user can add mani to their ledger using a different form of currency (e.g. euros) using Stripe
 - The user can see ledger-related information, such as the timestamp of the latest change and the demurrage applicable to their ledger in percentage.
 - The ledger can receive a GI if applicable
 - The demurrage is automatically performed on a ledger at the correct time (see 'Key terms')
+
 
 ### Transactions
 - The user can initialise a transaction and sign it using the QR code system
 - The user can scan an initialized transaction and sign it using the QR code system
 - The user can add a message to a transaction before signing it
 - The user can see a history of all transactions on their ledger
+- The user and admin can export a ledger's transaction history
 - The user or an admin can cancel a pending transaction
 
 ### Admin
-- The admin can set the system's parameters
+- The admin can view the system's parameters
 - The admin can see relevant user information
 - The admin can block a user's access to their ledger
 - The admin can export a ledger's transaction history
@@ -336,6 +346,9 @@ The core functionality of this application:
 - The user can see extra information on the use of the application through tooltips in relevant places
 - A user can make use of a prepaid card system for transactions
 - The user can use an in-app camera to scan QR-codes related to the application (transactions, accounts)
+- The user can see the terms and conditions and the privacy statement before and after registering on the platform
+
+___
 
 ## Data structure
 
@@ -398,6 +411,8 @@ Users are stored in a user pool on AWS Cognito belonging to a specific instance 
 ```
 
 Note that the user's keys are saved at the ledger level, not in Cognito.
+
+___
 
 ## File structure
 
@@ -525,7 +540,6 @@ __system__ has various serverside functions, including but not limited to the cr
 #### dynamodb
 
 The dynamoDB folder has files setting up the ledger data to be saved, changed and fetched form the database.
-
 #### graphql
 
 This folder holds the type definitions and resolvers needed to use GraphQL to interact with DynamoDB. All these files follow the recommended design philosophies of GraphQL, read up on it [here](https://graphql.org/learn/) if needed.
@@ -538,6 +552,7 @@ GraphQL handlers are created here, as well as some useful logs when running the 
 
 The `shared.js` files imports some useful frontend functions for server-side use.
 
+___
 ## Stripe
 ### Setup
 
