@@ -1,7 +1,7 @@
 import log from 'loglevel'
 import { KeyGenerator, KeyWrapper } from '../../shared/crypto'
-// interface for keys
 
+// interface for keys
 const KeyManager = async (store, defaultSet) => {
   const storedKeys = await store.getKeys()
   let keys
@@ -33,7 +33,8 @@ const KeyManager = async (store, defaultSet) => {
           .split('-----BEGIN PGP PRIVATE KEY BLOCK-----')
           .pop()
           .split('-----END PGP PRIVATE KEY BLOCK-----')
-          .shift() +
+          .shift()
+          .replace(/ /g, '\n') +
         '-----END PGP PRIVATE KEY BLOCK-----'
       const publicKeyArmored =
         '-----BEGIN PGP PUBLIC KEY BLOCK-----' +
@@ -41,7 +42,8 @@ const KeyManager = async (store, defaultSet) => {
           .split('-----BEGIN PGP PUBLIC KEY BLOCK-----')
           .pop()
           .split('-----END PGP PUBLIC KEY BLOCK-----')
-          .shift() +
+          .shift()
+          .replace(/ /g, '\n') +
         '-----END PGP PUBLIC KEY BLOCK-----'
       keys = KeyWrapper({ privateKeyArmored, publicKeyArmored })
     }
