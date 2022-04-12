@@ -159,9 +159,7 @@ const ManiClient = async ({
       const available = await query(
         AVAILABLE,
         'ledger.transactions.available',
-        {
-          id
-        }
+        { id }
       )
       return fromDb(available)
     },
@@ -321,6 +319,12 @@ const ManiClient = async ({
         false
       )
       return fromDb(pending)
+    },
+    async cancel (challenge, ledger) {
+      return query(CANCEL, 'ledger.transactions.cancel', {
+        id: ledger,
+        challenge
+      })
     }
   }
   const stripe = {

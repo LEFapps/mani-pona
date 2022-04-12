@@ -105,8 +105,8 @@ const pending = ({ visible, user, onClose }) => {
   const [hasChallenge, setChallenge] = useState()
 
   useEffect(() => {
-    maniClient.transactions
-      .pending()
+    maniClient.admin
+      .pending(user.ledger)
       .then(pending => pending && setChallenge(pending.challenge))
   })
 
@@ -115,8 +115,8 @@ const pending = ({ visible, user, onClose }) => {
       'Weet u zeker dat u deze transactie wil afbreken?'
     )
     if (!confirmed) return
-    maniClient.transactions
-      .cancel(hasChallenge)
+    maniClient.admin
+      .cancel(hasChallenge, user.ledger)
       .then(() => {
         onClose(true)
         setChallenge(false)

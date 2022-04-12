@@ -1,8 +1,3 @@
-import { DynamoPlus } from 'dynamo-plus'
-import http from 'http'
-import Core from '../core/index'
-import { CognitoUserPool } from '../cognito/userpool'
-import { OfflineUserPool } from './offlineuserpool'
 import { getLogger } from 'server-log'
 import stripe from 'stripe'
 import mani from '../../client/shared/mani'

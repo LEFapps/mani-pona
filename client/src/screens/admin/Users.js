@@ -144,8 +144,16 @@ export const Users = ({ navigation, route }) => {
             renderItem={({ item }) => {
               const value = result[item]
               const Editor = editable[item]
+              const Wrapped = ({ children }) =>
+                !!Editor ? (
+                  <TouchableOpacity onPress={() => setEditor(item)}>
+                    {children}
+                  </TouchableOpacity>
+                ) : (
+                  <View>{children}</View>
+                )
               return (
-                <TouchableOpacity onPress={() => setEditor(item)}>
+                <Wrapped>
                   <Card>
                     <View style={{ flexDirection: 'column' }}>
                       <Text style={globalStyles.property}>{item}</Text>
@@ -172,7 +180,7 @@ export const Users = ({ navigation, route }) => {
                         : '-'}
                     </Text>
                   </Card>
-                </TouchableOpacity>
+                </Wrapped>
               )
             }}
           />
