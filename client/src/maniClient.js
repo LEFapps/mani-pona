@@ -108,7 +108,13 @@ const ManiClient = async ({
   regenerate = false
 }) => {
   const keyManager = await KeyManager(keyWarehouse.getKeyStore(storageKey))
-  let id = await keyManager.fingerprint(regenerate)
+  let id
+  try {
+    await keyManager.fingerprint(regenerate)
+  } catch (e) {
+    await keyManager.clear()
+    throw new Error(e)
+  }
   async function query (query, path, variables = {}, required = true) {
     const result = await graphqlClient.query({
       query,

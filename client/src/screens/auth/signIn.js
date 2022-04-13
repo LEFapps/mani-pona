@@ -99,12 +99,17 @@ export default function SignIn (props = {}) {
           })
         else {
           // init maniClient with ledger's keys
-          await resetClient({ storageKey })
+          try {
+            await resetClient({ storageKey })
+          } catch (e) {
+            props.onStateChange('signedOut')
+          }
           const { maniClient } = global
-          if (ledgerId === maniClient.id) props.onStateChange('signedIn')
+          if (maniClient && ledgerId === maniClient.id)
+            props.onStateChange('signedIn')
           else {
-            await Auth.signOut({ global: true })
-            props.onStateChange('signIn')
+            await Auth.signOut()
+            props.onStateChange('signedOut')
             notification.add({
               type: 'warning',
               title: 'Kies het juiste account',

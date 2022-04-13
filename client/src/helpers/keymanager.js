@@ -27,15 +27,6 @@ const KeyManager = async (store, defaultSet) => {
     let keys = {}
     if (!keyString) keys = await getKeys(username)
     else {
-      const privateKeyArmored =
-        '-----BEGIN PGP PRIVATE KEY BLOCK-----' +
-        keyString
-          .split('-----BEGIN PGP PRIVATE KEY BLOCK-----')
-          .pop()
-          .split('-----END PGP PRIVATE KEY BLOCK-----')
-          .shift()
-          .replace(/ /g, '\n') +
-        '-----END PGP PRIVATE KEY BLOCK-----'
       const publicKeyArmored =
         '-----BEGIN PGP PUBLIC KEY BLOCK-----' +
         keyString
@@ -45,9 +36,20 @@ const KeyManager = async (store, defaultSet) => {
           .shift()
           .replace(/ /g, '\n') +
         '-----END PGP PUBLIC KEY BLOCK-----'
+
+      const privateKeyArmored =
+        '-----BEGIN PGP PRIVATE KEY BLOCK-----' +
+        keyString
+          .split('-----BEGIN PGP PRIVATE KEY BLOCK-----')
+          .pop()
+          .split('-----END PGP PRIVATE KEY BLOCK-----')
+          .shift()
+          .replace(/ /g, '\n') +
+        '-----END PGP PRIVATE KEY BLOCK-----'
+
       keys = KeyWrapper({ privateKeyArmored, publicKeyArmored })
     }
-    store.saveKeys(keys, username)
+    if (keys) store.saveKeys(keys, username)
     return keys
   }
   async function clear () {
