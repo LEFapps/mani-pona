@@ -40,12 +40,16 @@ export default function Home () {
       await resetClient()
       await Auth.signOut({ global: true })
     } catch (e) {
-      console.error('signOut', e)
-      notification.add({
-        message: e && e.message,
-        title: 'Afmelden mislukt',
-        type: 'warning'
-      })
+      try {
+        Auth.signOut()
+      } catch (err) {
+        console.error('signOut', e)
+        notification.add({
+          message: e && e.message,
+          title: 'Afmelden mislukt',
+          type: 'warning'
+        })
+      }
     }
   }
 
