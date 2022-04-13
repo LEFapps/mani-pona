@@ -122,12 +122,12 @@ export default function SignIn (props = {}) {
         setBusy(false)
         console.error('signIn', message)
         let customMessage = null
-        if (code === 'NotAuthorizedException')
+        if (message === 'User is disabled.')
           customMessage =
             'Uw rekening is geblokkeerd, voor vragen en deblokkering gelieve contact op te nemen met jonas.van.lancker@howest.be'
         notification.add({
-          title: customMessage || 'Aanmelden mislukt',
-          message,
+          title: 'Aanmelden mislukt',
+          message: customMessage || message,
           type: 'danger'
         })
       }
