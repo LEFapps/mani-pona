@@ -263,12 +263,25 @@ async function signTransaction (transaction, ledger, keys) {
 async function autoSign (table, { sources, targets }, ledger, keys) {
   // autosigning targets with stored (or recently created) keys
   // happens during system init, UBI and creation of new ledger
+  let targetLedger, targetDestination
   log.info('Autosigning with %s', ledger)
-  assert(
-    targets.destination.ledger === ledger ||
+  if (targets.destination.destination === ledger) {
+    assert(
+      targets.ledger.ledger === ledger,
+      'Autosigning: corresponding ledger does not match destination ledger'
+    )
+    targetLedger = targets.destination
+    targetDestination = targets.ledger
+  } else if (targets.destination.ledger === ledger) {
+    assert(
       targets.ledger.destination === ledger,
-    'Autosigning ledger does not match target(s)'
-  )
+      'Autosigning: corresponding destination ledger does not match ledger'
+    )
+    targetLedger = targets.ledger
+    targetDestination = targets.destination
+  } else {
+    throw new Error('Autosigning ledger does not match target(s)')
+  }
   if (!keys) {
     keys = KeyWrapper(await table.keys(ledger, true))
     if (!keys.privateKey) {
@@ -276,8 +289,8 @@ async function autoSign (table, { sources, targets }, ledger, keys) {
     }
   }
   log.debug('Signing targets %j', targets)
-  targets.ledger = await signTransaction(targets.ledger, ledger, keys)
-  targets.destination = await signTransaction(targets.destination, ledger, keys)
+  targets.ledger = await signTransaction(targetLedger, ledger, keys)
+  targets.destination = await signTransaction(targetDestination, ledger, keys)
   return targets
 }
 /**
