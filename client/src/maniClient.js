@@ -110,7 +110,7 @@ const ManiClient = async ({
   const keyManager = await KeyManager(keyWarehouse.getKeyStore(storageKey))
   let id
   try {
-    await keyManager.fingerprint(regenerate)
+    id = await keyManager.fingerprint(regenerate)
   } catch (e) {
     await keyManager.clear()
     throw new Error(e)
