@@ -41,16 +41,15 @@ const navScreens = {
   LoREco: {
     component: ({ Nav }) => (
       <Nav.Screen
-        key='Help'
-        name='Help'
-        component={HelpStack}
+        key='Startscherm'
+        name='Startscherm'
+        component={QrStack}
         options={{
+          drawerIcon: props => (
+            <MaterialIcons name='home' color={props.color} {...iconProps} />
+          ),
           tabBarIcon: ({ focused, color = 'white' }) => (
-            <MaterialCommunityIcons
-              name='help-circle'
-              color={color}
-              {...iconProps}
-            />
+            <MaterialIcons name='home' color={color} {...iconProps} />
           )
         }}
       />
@@ -163,24 +162,24 @@ const navScreens = {
       />
     )
   },
-  // Help: {
-  //   component: ({ Nav }) => (
-  //     <Nav.Screen
-  //       key='Help'
-  //       name='Help'
-  //       component={HelpStack}
-  //       options={{
-  //         tabBarIcon: ({ focused, color = 'white' }) => (
-  //           <MaterialCommunityIcons
-  //             name='help-circle'
-  //             color={color}
-  //             {...iconProps}
-  //           />
-  //         )
-  //       }}
-  //     />
-  //   )
-  // },
+  Help: {
+    component: ({ Nav }) => (
+      <Nav.Screen
+        key='Help'
+        name='Help'
+        component={HelpStack}
+        options={{
+          tabBarIcon: ({ focused, color = 'white' }) => (
+            <MaterialCommunityIcons
+              name='help-circle'
+              color={color}
+              {...iconProps}
+            />
+          )
+        }}
+      />
+    )
+  },
   Admin: {
     onlyVisibleTo: ['administrator'],
     component: ({ Nav }) => (
