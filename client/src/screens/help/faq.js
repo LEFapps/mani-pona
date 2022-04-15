@@ -63,13 +63,13 @@ const Faq = () => {
           onPress={() => setToggle(toggle !== 1 ? 1 : null)}
         >
           <Icon open={toggle === 1} />
-          Hoe kan ik uitloggen?
+          Hoe kan ik afmelden?
         </Text>
       </View>
       {toggle === 1 && (
         <View>
           <Text style={globalStyles.paragraph}>
-            Om je uit te loggen klik je in de taakbalk onderaan de applicatie op
+            Om je af te melden klik je in de taakbalk onderaan de applicatie op
             de knop 'Account'
           </Text>
           <Image
@@ -200,6 +200,14 @@ const Faq = () => {
             - Klik op 'QR Scannen' in de taakbalk bovenaan, of op de knop 'Scan
             een QR-code' op het Startscherm
           </Text>
+          <Image
+            source={{
+              uri:
+                'https://loreco-assets.s3.eu-west-1.amazonaws.com/faq/QR-view.png'
+            }}
+            style={{ height: 200, width: 'auto' }}
+            resizeMode='contain'
+          />
           <Text style={globalStyles.paragraph}>
             - Scan de QR-code van de tegenpartij
           </Text>
@@ -210,22 +218,14 @@ const Faq = () => {
             betalen/ontvangen, of klik op het 'Kruis' icoon om de transactie te
             annuleren.
           </Text>
-          {/* TBC */}
-        </View>
-      )}
-      {/* _______________________ */}
-      <View style={globalStyles.main}>
-        <Text
-          style={globalStyles.cardPropertyText}
-          onPress={() => setToggle(toggle !== 3 ? 3 : null)}
-        >
-          <Icon open={toggle === 3} />
-          Hoe
-        </Text>
-      </View>
-      {toggle === 3 && (
-        <View>
-          <Text style={globalStyles.paragraph}></Text>
+          <Image
+            source={{
+              uri:
+                'https://loreco-assets.s3.eu-west-1.amazonaws.com/faq/transaction-final-2.png'
+            }}
+            style={{ height: 220, width: 'auto' }}
+            resizeMode='contain'
+          />
         </View>
       )}
       {/* _______________________ */}
@@ -235,12 +235,26 @@ const Faq = () => {
           onPress={() => setToggle(toggle !== 4 ? 4 : null)}
         >
           <Icon open={toggle === 4} />
-          Hoe
+          Hoe kan ik mijn rekeningstand raadplegen?
         </Text>
       </View>
       {toggle === 4 && (
         <View>
-          <Text style={globalStyles.paragraph}></Text>
+          <Text style={globalStyles.paragraph}>
+            Uw huidige rekeningstand staat bovenaan op het startscherm.
+          </Text>
+          <Text style={globalStyles.paragraph}>
+            Je kan het startscherm bekijken door te klikken op het
+            Startscherm-icoon in de taakbalk onderaan de applicatie.
+          </Text>
+          <Image
+            source={{
+              uri:
+                'https://loreco-assets.s3.eu-west-1.amazonaws.com/faq/Startscherm.png'
+            }}
+            style={{ height: 420, width: 'auto' }}
+            resizeMode='contain'
+          />
         </View>
       )}
       {/* _______________________ */}
@@ -250,12 +264,37 @@ const Faq = () => {
           onPress={() => setToggle(toggle !== 5 ? 5 : null)}
         >
           <Icon open={toggle === 5} />
-          Hoe
+          Hoe kan ik mijn transactiegeschiedenis raadplegen?
         </Text>
       </View>
       {toggle === 5 && (
         <View>
-          <Text style={globalStyles.paragraph}></Text>
+          <Text style={globalStyles.paragraph}>
+            Je kan je geschiedenis bekijken door te klikken op het
+            Transactiesicoon in de taakbalk onderaan de pagina.
+          </Text>
+          <Image
+            source={{
+              uri:
+                'https://loreco-assets.s3.eu-west-1.amazonaws.com/faq/transactie-geschiedenis.png'
+            }}
+            style={{ height: 420, width: 'auto' }}
+            resizeMode='contain'
+          />
+          <Text style={globalStyles.paragraph}>
+            Klik op een transactie om meer details te zien.
+          </Text>
+          <Text style={globalStyles.paragraph}>
+            Je kan je deze data ook downloaden onderaan op deze pagina.
+          </Text>
+          <Image
+            source={{
+              uri:
+                'https://loreco-assets.s3.eu-west-1.amazonaws.com/faq/transactie-geschiedenis-download.png'
+            }}
+            style={{ height: 120, width: 'auto' }}
+            resizeMode='contain'
+          />
         </View>
       )}
       {/* _______________________ */}
@@ -265,12 +304,31 @@ const Faq = () => {
           onPress={() => setToggle(toggle !== 6 ? 6 : null)}
         >
           <Icon open={toggle === 6} />
-          Hoe
+          Hoe kan ik de voorspellingen voor mijn rekening raadplegen?
         </Text>
       </View>
       {toggle === 6 && (
         <View>
-          <Text style={globalStyles.paragraph}></Text>
+          <Text style={globalStyles.paragraph}>
+            Je kan voorspellingen voor jouw rekeningstand raadplegen door te
+            klikken op de knop 'Bekijk voorspellingen' op het startscherm.
+          </Text>
+          <Image
+            source={{
+              uri:
+                'https://loreco-assets.s3.eu-west-1.amazonaws.com/faq/voorspellingen-1.png'
+            }}
+            style={{ height: 320, width: 'auto' }}
+            resizeMode='contain'
+          />
+          <Image
+            source={{
+              uri:
+                'https://loreco-assets.s3.eu-west-1.amazonaws.com/faq/voorspellingen-2.png'
+            }}
+            style={{ height: 320, width: 'auto' }}
+            resizeMode='contain'
+          />
         </View>
       )}
       {/* _______________________ */}
@@ -462,12 +520,53 @@ const Faq = () => {
           onPress={() => setToggle(toggle !== 10 ? 10 : null)}
         >
           <Icon open={toggle === 10} />
-          Hoe
+          Hoe kan ik extra Klavers aankopen?
         </Text>
       </View>
       {toggle === 10 && (
         <View>
-          <Text style={globalStyles.paragraph}></Text>
+          <Text style={globalStyles.paragraph}>
+            Je kan extra Klavers aankopen op het startscherm van de applicatie.
+          </Text>
+          <Text style={globalStyles.paragraph}>
+            - Klik op de knop 'Koop klavers'.
+          </Text>
+          <Image
+            source={{
+              uri:
+                'https://loreco-assets.s3.eu-west-1.amazonaws.com/faq/koop-klavers.png'
+            }}
+            style={{ height: 120, width: 'auto' }}
+            resizeMode='contain'
+          />
+          <Text style={globalStyles.paragraph}>
+            - Vul het gewenste aantal Klavers in en klik op Bevestigen.
+          </Text>
+          <Image
+            source={{
+              uri:
+                'https://loreco-assets.s3.eu-west-1.amazonaws.com/faq/koop-klavers-2.png'
+            }}
+            style={{ height: 200, width: 'auto' }}
+            resizeMode='contain'
+          />
+          <Text style={globalStyles.paragraph}>
+            - Je komt automatisch terecht op de betalingspagina. Vul je juiste
+            gegevens in en klik op betalen.
+          </Text>
+          <Text style={globalStyles.paragraph}>
+            - Wanneer je betaling gelukt is kom je terecht op de
+            bevestigingspagina. Klik op het 'Vink' icoon om je aankoop af te
+            ronden.
+          </Text>
+          <Image
+            source={{
+              uri:
+                'https://loreco-assets.s3.eu-west-1.amazonaws.com/faq/koop-klavers-3.png'
+            }}
+            style={{ height: 320, width: 'auto' }}
+            resizeMode='contain'
+          />
         </View>
       )}
       {/* _______________________ */}
