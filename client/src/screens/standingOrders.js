@@ -124,9 +124,6 @@ export default function StandingOrder ({ navigation }) {
                       Einddatum:
                     </Text>
                     <Text style={globalStyles.cardPropertyText}>
-                      Frequentie:
-                    </Text>
-                    <Text style={globalStyles.cardPropertyText}>
                       Mededeling:
                     </Text>
                   </View>
