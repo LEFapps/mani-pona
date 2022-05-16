@@ -112,7 +112,7 @@ export default function StandingOrder ({ navigation }) {
                 }
               >
                 <Text style={globalStyles.bigText}>
-                  Deze betaling wacht nog op goedkeuring van de andere partij
+                  Deze betaling wacht nog op goedkeuring.
                 </Text>
                 <View style={{ flexDirection: 'row' }}>
                   <View style={globalStyles.cardPropertys}>
