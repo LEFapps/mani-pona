@@ -65,7 +65,7 @@ export default function Home ({ navigation }) {
         console.error('transactions/challenge', e)
         notification.add({
           type: 'danger',
-          title: 'Transactie opbouwen mislukt',
+          title: 'Er ging iets mis. De transactie werd afgebroken',
           message: e && e.message
         })
       })
