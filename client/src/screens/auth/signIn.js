@@ -51,6 +51,12 @@ export default function SignIn (props = {}) {
     const sk = 'mani_client_key_' + hash()
     setValue(keys)
     setStorageKey(sk)
+    notification.add({
+      title: 'Apparaat gekoppeld',
+      type: 'info',
+      message:
+        'Je sleutels werden geaccepteerd en je browser is nu aan je account gekoppeld.'
+    })
   }
 
   const selectAccount = (email, key) => {
