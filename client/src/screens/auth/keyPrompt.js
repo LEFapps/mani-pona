@@ -79,7 +79,9 @@ export const ImportModal = ({ onValue, isOpen, setOpen }) => {
           flexDirection: 'column'
         }}
       >
-        <Text style={globalStyles.text}>Plak hieronder jouw sleutels.</Text>
+        <Text style={globalStyles.text}>
+          Plak hieronder jouw volledige sleutel.
+        </Text>
         {modalStep && (
           <CustomButton
             text={'Volgende stap ››'}
