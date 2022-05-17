@@ -368,7 +368,7 @@ const Faq = () => {
           </Text>
           <Text style={globalStyles.paragraph}>Op dit apparaat</Text>
           <Text style={globalStyles.paragraph}>
-            - Klik op de knop om naar jouw account te gaan
+            - Klik op de knop met het persoon-icoon om naar jouw account te gaan
           </Text>
           <Image
             source={{
@@ -447,7 +447,7 @@ const Faq = () => {
           </Text>
           <Text style={globalStyles.paragraph}>Op dit apparaat:</Text>
           <Text style={globalStyles.paragraph}>
-            - Klik op de knop om naar jouw account te gaan
+            - Klik op de knop met het persoon-icoon om naar jouw account te gaan
           </Text>
           <Image
             source={{
