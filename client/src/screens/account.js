@@ -83,13 +83,14 @@ export default function Home () {
             <Text style={globalStyles.cardValueText}>
               Om je rekening te blokkeren moet je contact opnemen met een{' '}
               {/* TODO: placeholder contact info */}
-              <a
+              {/* <a
                 href={`mailto:jonas.van.lancker@howest.be?subject=Account%20blokkeren&body=De%20gebruiker%20met%20username:%20${alias ||
                   '-'}%20en%20email:%20${email ||
                   '-'}%20wenst%20dit%20account%20te%20blokkeren.`}
               >
                 administrator
-              </a>
+              </a> */}
+              administrator
             </Text>
           </Card>
         </View>

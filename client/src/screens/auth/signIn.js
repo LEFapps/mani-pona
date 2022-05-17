@@ -128,8 +128,10 @@ export default function SignIn (props = {}) {
         console.error('signIn', message)
         let customMessage = null
         if (message === 'User is disabled.')
+          // customMessage =
+          //   'Uw rekening is geblokkeerd, voor vragen en deblokkering gelieve contact op te nemen met jonas.van.lancker@howest.be'
           customMessage =
-            'Uw rekening is geblokkeerd, voor vragen en deblokkering gelieve contact op te nemen met jonas.van.lancker@howest.be'
+            'Uw rekening is geblokkeerd, voor vragen en deblokkering gelieve contact op te nemen met een administrator.'
         notification.add({
           title: 'Aanmelden mislukt',
           message: customMessage || message,

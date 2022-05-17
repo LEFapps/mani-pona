@@ -20,7 +20,7 @@ export default function Help () {
             Adres: Digitale Klavers Lichtervelde, Statiestraat 10, 8810
             Lichtervelde{'\n'}
             Contactpersoon: Jonas Van Lancker{'\n'}
-            E-mail: jonas.van.lancker@howest.be {'\n'}
+            {/* E-mail: jonas.van.lancker@howest.be {'\n'} */}
             Tel: +32 56 286 837
             {'\n'}
             {'\n'}
@@ -40,9 +40,10 @@ export default function Help () {
           {/* TODO: placeholder contact info */}
           <Text style={globalStyles.cardValueText}>
             Voor vragen, opmerkingen en andere zaken kan je terecht bij{' '}
-            <a href='mailto:jonas.van.lancker@howest.be?subject=Ik%20heb%20een%20vraag'>
+            {/* <a href='mailto:jonas.van.lancker@howest.be?subject=Ik%20heb%20een%20vraag'>
               jonas.van.lancker@howest.be
-            </a>
+            </a> */}
+            een administrator
           </Text>
         </Card>
         {/* FAQ */}
