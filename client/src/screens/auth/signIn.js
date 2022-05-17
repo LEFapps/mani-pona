@@ -52,10 +52,9 @@ export default function SignIn (props = {}) {
     setValue(keys)
     setStorageKey(sk)
     notification.add({
-      title: 'Apparaat gekoppeld',
-      type: 'info',
-      message:
-        'Je sleutels werden geaccepteerd en je browser is nu aan je account gekoppeld.'
+      title: 'Sleutels bewaard',
+      type: 'warning',
+      message: 'Je sleutels werden bewaard. Meld je aan om ze te valideren.'
     })
   }
 
