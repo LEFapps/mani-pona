@@ -143,8 +143,8 @@ export default function verifyContact ({ authState, authData, onStateChange }) {
             Let op! Je account is gekoppeld aan dit apparaat.
           </Text>
           <Text style={globalStyles.paragraph}>
-            Als je dit account ook op een apparaat wilt gebruiken moet je jouw
-            geheime sleutels op dat apparaat activeren.
+            Als je dit account ook op een nieuw/ander apparaat wilt gebruiken
+            moet je jouw geheime sleutels op dat apparaat activeren.
           </Text>
           <Text style={globalStyles.paragraph}>
             Bekijk hieronder de twee mogelijke opties om een account te
