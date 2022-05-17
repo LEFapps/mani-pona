@@ -82,6 +82,18 @@ export const ImportModal = ({ onValue, isOpen, setOpen }) => {
         <Text style={globalStyles.text}>
           Plak hieronder jouw volledige sleutel.
         </Text>
+        <Text style={globalStyles.text}>
+          Je kan je sleutel vinden op je profiel-pagina. Kopieer de hele sleutel
+          en plak hem hier.{' '}
+        </Text>
+        <Text style={globalStyles.smallText}>
+          De sleutel begint met '-----BEGIN PGP PRIVATE KEY BLOCK-----', bestaat
+          uit twee alinea's, en eindigt met '-----END PGP PUBLIC KEY BLOCK-----'
+        </Text>
+        <Text style={globalStyles.smallText}>
+          Je krijgt een melding te zien als het koppelen gelukt is, en je kan
+          daarna gewoon aanmelden.
+        </Text>
         {modalStep && (
           <CustomButton
             text={'Volgende stap ››'}

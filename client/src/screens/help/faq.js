@@ -478,6 +478,11 @@ const Faq = () => {
             - Kopieer de sleutel zodat je deze gemakkelijk kunt ingeven op je
             nieuwe apparaat, bijvoorbeeld door deze naar jezelf te mailen.
           </Text>
+          <Text style={globalStyles.smallText}>
+            De sleutel begint met '-----BEGIN PGP PRIVATE KEY BLOCK-----',
+            bestaat uit twee alinea's, en eindigt met '-----END PGP PUBLIC KEY
+            BLOCK-----'
+          </Text>
           <Text style={globalStyles.paragraph}>Op het nieuwe apparaat:</Text>
           <Text style={globalStyles.paragraph}>
             - Klik op het startscherm op de optie 'Bestaand account toevoegen.'
@@ -501,8 +506,17 @@ const Faq = () => {
             Plak je geheime sleutel in het invulveld. Wanneer dit gelukt is zie
             je de knop 'Volgende stap'
           </Text>
+          <Text style={globalStyles.smallText}>
+            De sleutel begint met '-----BEGIN PGP PRIVATE KEY BLOCK-----',
+            bestaat uit twee alinea's, en eindigt met '-----END PGP PUBLIC KEY
+            BLOCK-----'
+          </Text>
           <Text style={globalStyles.paragraph}>
             Wanneer dit gelukt is kan je je op dit apparaat aanmelden.
+          </Text>
+          <Text style={globalStyles.smallText}>
+            Je krijgt een melding te zien als het koppelen gelukt is, en je kan
+            daarna gewoon aanmelden.
           </Text>
           <Image
             source={{

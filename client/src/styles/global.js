@@ -8,6 +8,11 @@ export const globalStyles = StyleSheet.create({
     color: 'black',
     textAlign: 'center'
   },
+  smallText: {
+    fontSize: 12,
+    color: 'black',
+    textAlign: 'center'
+  },
   titleText: {
     fontSize: 18,
     fontWeight: 'bold',
