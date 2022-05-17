@@ -127,8 +127,7 @@ export default function signUp (props) {
           props.onStateChange('confirmSignUp', { username: state.email })
           notification.add({
             type: 'success',
-            title:
-              'Welkom! Je registratie is gelukt, verifieer je e-mailadres nu met de code die je ontvangen hebt via e-mail.',
+            title: 'Welkom!',
             message:
               'Je registratie is gelukt, verifieer je e-mailadres nu met de code die je ontvangen hebt via e-mail.'
           })
