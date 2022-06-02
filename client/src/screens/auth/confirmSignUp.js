@@ -75,8 +75,8 @@ export default function confirmSignUp (props = {}) {
         })
         notification.add({
           type: 'success',
-          message: 'Je verificatie is gelukt, je kan je nu aanmelden.',
-          title: 'Je verificatie is gelukt, je kan je nu aanmelden.'
+          message: 'Je kan je nu aanmelden.',
+          title: 'Je verificatie is gelukt.'
         })
         setBusy(false)
       } catch (e) {
