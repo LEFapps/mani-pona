@@ -385,21 +385,20 @@ export default function signUp (props) {
             {/* TODO: link to pdf with privacy statement */}
             <Text style={globalStyles.label}>
               Ik accepteer de{' '}
-              <a
+              {/* <a
                 target='_blank'
                 rel='noopener noreferrer'
                 href='https://loreco-assets.s3.eu-west-1.amazonaws.com/Privacy_Klavers_Lichtervelde.docx.pdf'
-              >
-                Privacyvoorwaarden
-              </a>{' '}
+              > */}
+              Privacyvoorwaarden
+              {/* </a>{' '} */}
               en{' '}
-              <a
+              {/* <a
                 target='_blank'
                 rel='noopener noreferrer'
                 href='https://loreco-assets.s3.eu-west-1.amazonaws.com/Algemene_voorwaarden_Klavers_Lichtervelde.docx.pdf'
-              >
-                Algemene Voorwaarden *
-              </a>
+              > */}
+              Algemene Voorwaarden *{/* </a> */}
             </Text>
             <FlatButton options={privacies} />
 

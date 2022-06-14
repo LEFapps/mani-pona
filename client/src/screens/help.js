@@ -24,13 +24,13 @@ export default function Help () {
             Tel: +32 56 286 837
             {'\n'}
             {'\n'}
-            <a href='https://loreco-assets.s3.eu-west-1.amazonaws.com/Algemene_voorwaarden_Klavers_Lichtervelde.docx.pdf'>
+            {/* <a href='https://loreco-assets.s3.eu-west-1.amazonaws.com/Algemene_voorwaarden_Klavers_Lichtervelde.docx.pdf'>
               Algemene voorwaarden
             </a>
             {'\n'}
             <a href='https://loreco-assets.s3.eu-west-1.amazonaws.com/Privacy_Klavers_Lichtervelde.docx.pdf'>
               Privacy
-            </a>
+            </a> */}
           </Text>
         </Card>
         <Card>
