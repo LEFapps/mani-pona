@@ -123,7 +123,10 @@ export default function AccountBalance ({ navigation }) {
           )}
           {!mani(buffer).zero() && (
             <Card>
-              <Text style={globalStyles.property}>Vrije buffer</Text>
+              <Text>
+                <Text style={globalStyles.property}>Vrije buffer</Text>
+                <Tooltip content='Van uw totale rekeningstand is dit bedrag/deel vrijgesteld van (de) gemeenschapsbijdrage' />
+              </Text>
               <Text style={globalStyles.price}>{buffer.replace('ɱ', '₭')}</Text>
             </Card>
           )}
