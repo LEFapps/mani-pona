@@ -96,7 +96,10 @@ export default function Predictions () {
         </Text>
       </Card>
       <View style={{ marginTop: 16 }}>
-        <Text style={globalStyles.text}>Voorspelde rekeningstand voor …</Text>
+        <Text style={styles.title}>Voorspelde rekeningstand voor …</Text>
+        <Text style={globalStyles.text}>
+          (gemeenschapsbijdrage {params.demurrage || '0'} %)
+        </Text>
       </View>
       {isReady &&
         predictions.map(({ month, value, i }) => (
@@ -109,7 +112,6 @@ export default function Predictions () {
                 {!income.zero() &&
                   `inkomen: ${income.format().replace('ɱ', '₭')}`}
                 {!income.zero() && !!demurrage && '|'}
-                {!!demurrage && `gemeenschapsbijdrage ${demurrage} %`}
               </Text>
             </View>
             <Text style={globalStyles.price}>
