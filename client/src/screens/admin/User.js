@@ -47,7 +47,7 @@ const enabled = ({ visible, user, onClose }) => {
     )
       return
     maniClient.admin['deleteUser'](user.email)
-      .then(() => onClose(true))
+      .then(() => onClose('Gebruiker verwijderd'))
       .catch(e => onClose(e && e.message))
   }
   return (
