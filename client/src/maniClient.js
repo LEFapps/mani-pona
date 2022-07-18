@@ -272,6 +272,9 @@ const ManiClient = async ({
     async disableUser (username) {
       return query(DISABLE_USER, 'admin.disableAccount', { username })
     },
+    async deleteUser (username) {
+      return query(DELETE_USER, 'admin.deleteAccount', { username })
+    },
     async enableUser (username) {
       return query(ENABLE_USER, 'admin.enableAccount', { username })
     },

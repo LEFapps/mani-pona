@@ -45,6 +45,13 @@ const CognitoUserPool = UserPoolId => {
         Username
       })
     },
+    async deleteAccount (Username) {
+      provider.adminDeleteUser = promisify(provider.adminDeleteUser)
+      return provider.adminDeleteUser({
+        UserPoolId,
+        Username
+      })
+    },
     async enableAccount (Username) {
       provider.adminEnableUser = promisify(provider.adminEnableUser)
       return provider.adminEnableUser({

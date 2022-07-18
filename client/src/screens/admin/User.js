@@ -36,6 +36,20 @@ const enabled = ({ visible, user, onClose }) => {
     maniClient.admin[user.enabled ? 'disableUser' : 'enableUser'](user.email)
       .then(() => onClose(true))
       .catch(e => onClose(e && e.message))
+
+  const checkAction2 = () => !user.enabled
+  const action2 = () => {
+    if (!checkAction2()) return
+    if (
+      !confirm(
+        `Ben je zeker dat je ${user.email || ''} definitief wil verijderen?`
+      )
+    )
+      return
+    maniClient.admin['deleteUser'](user.email)
+      .then(() => onClose(true))
+      .catch(e => onClose(e && e.message))
+  }
   return (
     <Container
       visible={visible}
@@ -47,6 +61,13 @@ const enabled = ({ visible, user, onClose }) => {
         style={{ marginVertical: 12 }}
         title={user.enabled ? 'Blokkeren' : 'Activeren'}
       />
+      {!!checkAction2() && (
+        <CustomButton
+          onPress={action2}
+          style={{ marginVertical: 12 }}
+          title={'Gebruiker verwijderen'}
+        />
+      )}
     </Container>
   )
 }

@@ -61,6 +61,11 @@ export default {
       log.debug('Disabled account %s, result %j', username, result)
       return `Disabled account ${username}`
     },
+    async deleteAccount (system, { username }) {
+      const result = await system.deleteAccount(username)
+      log.debug('Account %s removed, result %j', username, result)
+      return `Removed account ${username}`
+    },
     async enableAccount (system, { username }) {
       const result = await system.enableAccount(username)
       log.debug('Enabled account %s, result %j', username, result)

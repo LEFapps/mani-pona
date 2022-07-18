@@ -37,6 +37,9 @@ export default function (ledgers, userpool) {
     async disableAccount (Username) {
       return userpool.disableAccount(Username)
     },
+    async deleteAccount (Username) {
+      return userpool.deleteAccount(Username)
+    },
     async enableAccount (Username) {
       return userpool.enableAccount(Username)
     },

@@ -229,6 +229,14 @@ const DISABLE_USER = gql`
   }
 `
 
+const DELETE_USER = gql`
+  mutation deleteuser($username: String!) {
+    admin {
+      deleteAccount(username: $username)
+    }
+  }
+`
+
 const ENABLE_USER = gql`
   mutation enableuser($username: String!) {
     admin {
@@ -236,6 +244,7 @@ const ENABLE_USER = gql`
     }
   }
 `
+
 const ACCOUNT_TYPES = gql`
   query accounttypes {
     system {
@@ -321,6 +330,7 @@ export {
   FIND_KEY,
   FIND_USER,
   DISABLE_USER,
+  DELETE_USER,
   ENABLE_USER,
   ACCOUNT_TYPES,
   CHANGE_ACCOUNT_TYPE,

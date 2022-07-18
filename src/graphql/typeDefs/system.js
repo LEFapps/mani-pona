@@ -94,6 +94,8 @@ const SystemSchema = gql`
     changeAccountType(username: String, type: String): String
     "Disable user account"
     disableAccount(username: String): String
+    "Permanently delete user account"
+    deleteAccount(username: String): String
     "Enable user account"
     enableAccount(username: String): String
     "Force a system payment"
