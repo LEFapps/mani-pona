@@ -23,7 +23,7 @@ const ModalContent = ({ data }) => {
   const dim = Dimensions.get('window')
 
   const QrData = index => () => (
-    <View
+    <ScrollView
       style={{
         backgroundColor: 'white',
         paddingVertical: 16,
@@ -45,11 +45,11 @@ const ModalContent = ({ data }) => {
           ecl={'L'}
         />
       </View>
-    </View>
+    </ScrollView>
   )
 
   const TextData = () => (
-    <View
+    <ScrollView
       style={{
         backgroundColor: 'white',
         paddingVertical: 16,
@@ -73,7 +73,7 @@ const ModalContent = ({ data }) => {
         multiline
         editable={false}
       />
-    </View>
+    </ScrollView>
   )
 
   return (
@@ -114,20 +114,22 @@ const ExportKeys = () => {
         onPress={getKeys}
       />
       {!!hasKeys && (
-        <Modal visible transparent ariaHideApp={false}>
-          <View style={styles.centeredView}>
-            <View style={styles.modalView}>
-              <Text style={globalStyles.bigText}>
-                Dit zijn jouw geheime sleutels!
-              </Text>
-              <ModalContent data={hasKeys} />
-              <Button
-                title={'Sluiten'}
-                style={{ marginTop: 10 }}
-                onPress={() => setKeys()}
-              />
+        <Modal visible ariaHideApp={true}>
+          <ScrollView>
+            <View style={styles.centeredView}>
+              <View style={styles.modalView}>
+                <Text style={globalStyles.bigText}>
+                  Dit zijn jouw geheime sleutels!
+                </Text>
+                <ModalContent data={hasKeys} />
+                <Button
+                  title={'Sluiten'}
+                  style={{ marginTop: 10 }}
+                  onPress={() => setKeys()}
+                />
+              </View>
             </View>
-          </View>
+          </ScrollView>
         </Modal>
       )}
     </ScrollView>
