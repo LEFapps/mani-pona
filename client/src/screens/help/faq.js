@@ -3,6 +3,7 @@ import { View, Text, Image } from 'react-native'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 
 import { globalStyles } from '../../styles/global'
+
 import Card from '../../shared/card'
 
 // Currently covered by the FAQ (in this order)
@@ -534,10 +535,41 @@ const Faq = () => {
           onPress={() => setToggle(toggle !== 10 ? 10 : null)}
         >
           <Icon open={toggle === 10} />
+          Hoe werkt de gemeenschapsbijdrage?
+        </Text>
+        {toggle === 10 && (
+          <View>
+            <Text style={globalStyles.paragraph}>
+              Indien van toepassing zie je op het startscherm van deze
+              applicatie de gemeenschapsbijdrage die van toepassing is op jouw
+              rekening (bv. 2.5%).
+            </Text>
+            <Text style={globalStyles.paragraph}>
+              Deze gemeenschapsbijdrage wordt automatisch toegepast op jouw
+              rekening wanneer er transacties plaatsvinden.
+            </Text>
+            <Text style={globalStyles.paragraph}>
+              Je kan in je transactiegeschiedenis zien op welke transacties deze
+              bijdrage van toepassing was wanneer er een naast de transactie een{' '}
+              <MaterialCommunityIcons name='crown' /> staat.
+            </Text>
+            <Text style={globalStyles.paragraph}>
+              Klik op de transactie om meer details te zien.
+            </Text>
+          </View>
+        )}
+      </View>
+      {/* _______________________ */}
+      <View style={globalStyles.main}>
+        <Text
+          style={globalStyles.cardPropertyText}
+          onPress={() => setToggle(toggle !== 11 ? 11 : null)}
+        >
+          <Icon open={toggle === 11} />
           Hoe kan ik extra Klavers aankopen?
         </Text>
       </View>
-      {toggle === 10 && (
+      {toggle === 11 && (
         <View>
           <Text style={globalStyles.paragraph}>
             Je kan extra Klavers aankopen op het startscherm van de applicatie.
