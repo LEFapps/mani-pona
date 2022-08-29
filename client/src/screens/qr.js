@@ -65,8 +65,8 @@ export default function Home ({ navigation }) {
         console.error('transactions/challenge', e)
         notification.add({
           type: 'danger',
-          title: 'Er ging iets mis. De transactie werd afgebroken',
-          message: e && e.message
+          title: 'Er ging iets mis.',
+          message: 'De transactie werd afgebroken'
         })
       })
       .then(create => {
@@ -81,8 +81,8 @@ export default function Home ({ navigation }) {
         console.error('transactions/create', e)
         notification.add({
           type: 'danger',
-          title: 'Transactie starten mislukt',
-          message: e && e.message
+          title: 'Er ging iets mis.',
+          message: 'Transactie starten mislukt'
         })
       })
     reset()

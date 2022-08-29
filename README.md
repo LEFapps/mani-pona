@@ -116,7 +116,7 @@ This implies a few things:
 
 Loreco uses trust-based logic extensibly, as it fits well with the socio-philosophical theory behind SuMSy.
 
-The mot important concept to understand (for the centralized implementation), is that users can and should be able to __"defer"__ to a Loreco server of their choice that will maintain "their" ledger. Even though this is - at the moment - mostyly a theoretical choice, the idea of being able to switch is central to the idea that trust is given to the organisation that runs the Loreco service, it is not demanded (or even hard-coded).
+The mot important concept to understand (for the centralized implementation), is that users can and should be able to __"defer"__ to a Loreco server of their choice that will maintain "their" ledger. Even though this is - at the moment - mostly a theoretical choice, the idea of being able to switch is central to the idea that trust is given to the organization that runs the Loreco service, it is not demanded (or even hard-coded).
 
 Note that, at the moment, centralized Loreco servers are not interoperable.
 So, they form their own __exclusionary monetary ecosystem__.
@@ -143,7 +143,7 @@ An __alias__ (e.g. user's name) may be provided within the transactions, but it 
 
 A fully signed Loreco transaction always contains the following elements:
 
-  - __ledger__: the ID of the owning ledger. This IDis a hash of the public key corresponging to that ledger, a 42-byte sequence provided by the OpenPGP library.
+  - __ledger__: the ID of the owning ledger. This IDis a hash of the public key corresponding to that ledger, a 42-byte sequence provided by the OpenPGP library.
 
   - __destination__: the ID of the destination ledger that will receive the funds.
 
@@ -281,7 +281,7 @@ The backend uses the following:
 - __GraphQL__: GraphQL is used as the communication protocol between Lambda and the database.
 - __Cognito__: for identity management (registration and login of users), the application uses AWS Cogito.
 
-The backend, and by extension the entire appliation, is fully __serverless__. Instead of having to run on a server (shared or not), it is composed entirely of services that operate "on demand", ensuring cost-effectiveness and responsiveness at any usage volume. The application scales automatically with the amount of users.
+The backend, and by extension the entire application, is fully __serverless__. Instead of having to run on a server (shared or not), it is composed entirely of services that operate "on demand", ensuring cost-effectiveness and responsiveness at any usage volume. The application scales automatically with the amount of users.
 
 The centralized implementation of SuMSy output is a __CloudStack Formation__ that can be deployed more than once.
 
@@ -307,7 +307,7 @@ The core functionality of this application:
 - The system differentiates between different types of ledger (e.g. professional, private) and automatically uses the relevant parameters for these different types
 
 ### Ledger
-- The user can initialise a ledger (this happens in the final step of the registration process, a user can not have an account without also having a ledger)
+- The user can initialize a ledger (this happens in the final step of the registration process, a user can not have an account without also having a ledger)
 - The user can request that their ledger is blocked by an application admin
 - The user can see the balance of their ledger
 - The user can see predictions of their future balance, as it relates to demurrage and GI
@@ -318,7 +318,7 @@ The core functionality of this application:
 
 
 ### Transactions
-- The user can initialise a transaction and sign it using the QR code system
+- The user can initialize a transaction and sign it using the QR code system
 - The user can scan an initialized transaction and sign it using the QR code system
 - The user can add a message to a transaction before signing it
 - The user can see a history of all transactions on their ledger
@@ -332,7 +332,7 @@ The core functionality of this application:
 - The admin can export a ledger's transaction history
 - The admin can export all ledgers' transaction history
 - The admin can export all relevant information of all the application's users
-- The admin can initialise a prepaid account
+- The admin can initialize a prepaid account
 - The admin can enable an account
 - The admin can intervene in a user's pending transactions
 - The admin can approve a request for a ledger's type
@@ -356,7 +356,7 @@ ___
 
 When opening a new account a 'pk' entry is added to the dynamoDB.
 
-Ledgers and transactions look similar in the DB since a ledger is initialised with an initial (self-signing) transaction.
+Ledgers and transactions look similar in the DB since a ledger is initialized with an initial (self-signing) transaction.
 
 Each ledger/transaction creates a new DynamoDB entry (optionally) containing the following:
 
