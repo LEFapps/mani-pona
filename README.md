@@ -2,6 +2,7 @@
 
 ## Table of contents
 - [About](#about)
+  - [Involved parties](#involved-parties)
 - [Key terms](#key-terms)
   - [mani](#mani)
   - [GI](#gi)
@@ -15,6 +16,7 @@
     - [Transaction confirmation](#transaction-confirmation)
     - [System transactions](#system-transactions)
     - [Initial transaction and oroborous signing](#initial-transaction-and-oroborous-signing)
+  - [A note on blockchains](#a-note-on-blockchains)
 - [Getting Started](#getting-started)
   - [Installation](#installation)
   - [Running the application](#running-the-application)
@@ -68,6 +70,11 @@ Loreco is an application supporting an alternative economic system. It allows us
 
 The application also has a dashboard for administrators to aid the various processes.
 
+### Involved parties
+
+Loreco, A centralised (AWS based) SuMSy implementation,  was created by LEF bvba (http://eenwereldmetlef.be/), commissioned by Howest Hogeschool.
+
+
 ___
 ## Key terms
 
@@ -77,9 +84,10 @@ The term for the currency used/created by the application. This currency can be 
 
 ### GI
 
-Guaranteed income. GI is a concept related to the Universal Basic Income (UBI). The most commonly used scholarly definition today defines UBI as a periodic cash payment (1), unconditionally delivered (2) to all (3) on an individual basis (4), without means-test (5) or work requirement (6).
-A guaranteed income differs from a UBI as the height of the amount must be sufficiently high to lead a minimally qualitative life, something which is not necessarily the case with a UBI. This means that the recipient must be able to cover all basic needs and be able to live a humane life.
-A fixed amount of mani is created through a GI on all SuMSy accounts.
+Guaranteed income. A guaranteed income is a concept related to a Universal Basic Income (UBI). The most commonly used scholarly definition today defines UBI as a periodic cash payment (1), unconditionally delivered (2) to all (3) on an individual basis (4), without means-test (5) or work requirement (6).
+
+The guaranteed income implemented in the "Sustainable Money System" differs from a UBI as the height of the amount must be sufficiently high to lead a minimally qualitative life, something which is not necessarily the case with a UBI. This means that the recipient must be able to cover all basic needs  (decent housing, food, clothing, energy, drinkable water, …) and be able to live a humane life (e.g. to buy basic hygiëne products, go to school, etc). (These definitions are taken from the May 2020 Project overview of the Sustainable Money System (SuMSy) by Happonomy)
+
 
 ### Demurrage
 
@@ -92,7 +100,11 @@ ___
 
 Loreco is an implementation of the "Sustainable Money System". This repository contains a centralized implementation, although the ledgers are designed with a potential decentralized implementation and migration in mind.
 
-Loreco is __not__ a blockchain-based currency. Although it uses cryptographic functions to ensure data integrity, its ledger design is completely different from the blockchain approach. The core concepts to understand this project are __forward signing__ and __trust validation__. So, an appropriate term would be __forward signing ledger__.
+Loreco is __not__ a blockchain-based currency. Although it uses cryptographic functions to ensure data integrity, its ledger design is completely different from the blockchain approach. Unlike blockchain-based currencies, Loreco is centralized, at least in its current iteration. Ledger data is saved in a database (DynamoDb), instead of an autonomous peer-to-peer network. The ledgers are not made public. Auditing/analysing of transactions can only be done by persons with access to the database.
+Loreco does not allow for forked paths, like some blockchain implementations. Each transaction takes place consecutively. For more on this see #a-note-on-blockchains later in this chapter.
+Loreco does not ensure pseudo-anonymity and therefore does not fully match Jan Lansky's description of cryptocurrencies. Therefore, SuMSy/mani can not be designated as a cryptocurrency.
+
+The core concepts to understand this project are __forward signing__ and __trust validation__. So, an appropriate term would be __forward signing ledger__.
 
 ### Forward Signing
 
@@ -205,9 +217,42 @@ The initial transaction on a ledger always has sequence number `0`, uid `init` a
 
 The initial transaction on the system ledger is an __'oroborous' transaction__ that has the system ledger as both ledger and destination. This means that the signature and counter-signature are the same.
 
+## A note on blockchains
+Various blockchain technologies were considered for the implementation of SuMSy, but ultimately rejected. Some of the biggest obstacles encountered were:
+
+- Anonymity and (full) decentralization are the primary driver for blockchain technology, so ultimately, it tries to solve a very different problem.
+
+- For instance, “__minting__” (the creation of currency) is typically implemented in blockchains in a way that makes a (stable and equal) guaranteed income impossible to provide, without moving the minting process entirely to an (irreversible) centralized service. At this point, a blockchain simply becomes a very inefficient distributed database.
+
+- Similarly, the anonymity of blockchains typically rests on one simple layer of security: the fact that “addresses” (accounts) are not tied to personal information. In fact, if an address can be attributed to a person or organization, all of their transactions are suddenly “readable” by everyone, as blockchains keep a full and public log of every transaction. Again, to allow a guaranteed income without massive fraud potential, it is absolutely required to tie accounts to (legal) identities.
+
+- In blockchains, if inconsistencies are detected, either the entire blockchain is considered “invalid” and needs a complicated rollback, or the blockchain network “splits” into two or more incompatible networks. In the proposed approach, only the inconsistent ledger needs to be rejected/invalidated.
+
+- Demurrage is incredibly complex to implement in blockchains, again mostly because the recurring destruction of “minted coins” is in no way a design feature or objective of any of the available blockchain technologies.
+
+For all these reasons (and more), blockchains are a poor technology choice for SuMSy, even in the decentralized case.
+
 ___
 
 ## Getting Started
+
+This application makes uses of several different tools, combining them as needed. To get started with the application you will need to make use of the following technologies:
+
+- __nodejs__: we strongly suggest installing nodejs globally on your system. Go to [nodejs' official website](https://nodejs.org/en/) for the most up to date instructions on how to do so. With node installed, you will be able to use its easy-to-use commandline install tool for many of the other technologies used. The rest of this chapter will assume you will use nodejs for this.
+
+- __aws serverless__: Loreco makes use of Serverless CLI. Install it globally on your system by running the following command (assuming you have installed nodejs): `npm install -g serverless`. You can find the most up-to-date instructions and documentations for serverless on its [official website](https://www.serverless.com/console/docs)
+
+- __DynamoDB__: This application's data is stored in DynamoDB. If you are only developing for the front-end, you can run this easily against the live backend by following the steps described under the chapter 'Running the frontend only'. If you wish to make changes to the application's backend and are not yet familiar with DynamoDB we __strongly__ recommend you take a look at the [official documentation](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Introduction.html).
+You can edit/create/manage databases on DynamoDB through either the [AWS Management Console](https://console.aws.amazon.com/dynamodb/) or the [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-welcome.html).
+
+- __GraphQL__: Loreco uses GraphQL to communicate with data. By following the installation steps below, you should be ready to start using GraphQL (`npm install` from the root folder). Alternatively, you can run `npm install graphql` on your system (assuming you have installed nodejs).
+
+GraphQL uses a specific pattern for its datatype definitions, methods, and subscriptions. If this is your first time working with GraphQL we __strongly__ recommend reading some of the clear documentation on its [official website](https://graphql.org/code/#javascript)
+
+- __React Native__: The frontend of Loreco is written in React Native, a version of React tooled for mobile devices. If you are already familiar with React, you might want to take note of its different workflow and components. If this is your first time using either framework, take note that they require a solid grasp of JavaScript's fundamentals. To learn more about React's component-based framework, you can take a look at their easy-to-follow [documentation](https://reactnative.dev/docs/getting-started).
+
+To make use of React Native in this project (and its entire frontend), make sure to run `npm install` from the root folder. By running `cd /client && npm run web`, you will automatically open Expo in your browser, React Native's [tool](https://expo.dev/client) for developing for mobile devices.
+
 
 ### Installation
 
@@ -240,8 +285,6 @@ To install the CLI tool globally on your system, run
   `npm install -g`
 
 After this step, you should be able to run the CLI `sumsy` on the command line if you have both a DynamoDB and the GraphQL server running locally.
-
-### Running the test suite
 
 ### Running the frontend only
 
