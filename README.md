@@ -2,6 +2,7 @@
 
 ## Table of contents
 - [About](#about)
+  - [License](#license)
   - [Involved parties](#involved-parties)
 - [Key terms](#key-terms)
   - [mani](#mani)
@@ -70,10 +71,21 @@ Loreco is an application supporting an alternative economic system. It allows us
 
 The application also has a dashboard for administrators to aid the various processes.
 
+### License
+Loreco is an open source software project. It is free to use under de conditions of the GNU AGPL3 framework.
+Visit their [page](https://choosealicense.com/licenses/agpl-3.0/) for more information.
+
 ### Involved parties
 
-Loreco, A centralised (AWS based) SuMSy implementation,  was created by LEF bvba (http://eenwereldmetlef.be/), commissioned by Howest Hogeschool.
+Loreco, A centralised (AWS based) SuMSy implementation,  was created by [LEF bvba](http://eenwereldmetlef.be/), commissioned by Howest Hogeschool.
 
+The involved parties are:
+
+a. Howest, Department of Netwerkeconomics. Sint-Martens-Latemlaan 1B, 8500 Kortrijk. [Bachelor Netwerkeconomie (Business Innovation) | Howest](https://www.howest.be/nl/opleidingen/bachelor/netwerkeconomie)
+
+b. Happonomy. Sluisstraat 79 - 3000 Leuven. [Happonomy](https://www.happonomy.org/nl/contact/)
+
+c. Muntuit. Kerkstraat 108, 9050 Gent. [Munt Uit](https://muntuit.be/#)
 
 ___
 ## Key terms
