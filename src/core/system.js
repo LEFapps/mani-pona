@@ -203,6 +203,7 @@ export default function (ledgers, userpool) {
       const atts = [
         'alias',
         'email',
+        'ledger',
         'phone',
         'address',
         'zip',
