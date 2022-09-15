@@ -16,14 +16,14 @@ const convertNotification = value => {
       message:
         'Er werd een betalingsverzoek gemaakt. Je kan dit terugvinden in de lijst met openstaande betalingen',
       type: 'info',
-      redirect: ['Openstaande betalingen']
+      override: ['Openstaande betalingen']
     },
     forceSystemPayment: {
       title: 'Betalingsverzoek:',
       message:
         'Er werd een betalingsverzoek gemaakt door het systeem. Je moet dit eerst accepteren voor je munten kan uitwisselen.',
       type: 'info',
-      redirect: ['Openstaande betalingen']
+      override: ['Openstaande betalingen']
     },
     confirm: {
       title: 'Betaling afgerond',
