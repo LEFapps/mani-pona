@@ -304,7 +304,7 @@ If you are only looking to make changes to the applications frontend, you might 
 To do this you will need up to date settings files.
 
 Then from the root folder run
-  `cd /client`
+  `cd client/`
   `npm run web`
 
 Webpack will open an instance of the application using Expo. You can access the application on
