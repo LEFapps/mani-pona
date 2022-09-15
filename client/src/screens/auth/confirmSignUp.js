@@ -47,6 +47,7 @@ export default function confirmSignUp (props = {}) {
       if (username === 'new') props.onStateChange('signUp')
       if (username === 'import') props.onStateChange('signIn', { prompt: true })
       if (username === 'verify') props.onStateChange('confirmSignUp')
+      if (username === 'reset') props.onStateChange('forgotPassword')
     }
   }
 

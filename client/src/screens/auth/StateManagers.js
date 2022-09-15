@@ -28,3 +28,12 @@ export const GotoConfirmSignUp = ({ onStateChange }) => {
     </Text>
   )
 }
+
+export const GotoResetPassword = ({ onStateChange }) => {
+  const goto = () => onStateChange('forgotPassword', {})
+  return (
+    <Text style={globalStyles.label} onPress={goto}>
+      Ik ben mijn wachtwoord vergeten.
+    </Text>
+  )
+}

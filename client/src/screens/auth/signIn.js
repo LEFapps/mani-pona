@@ -67,6 +67,7 @@ export default function SignIn (props = {}) {
       if (email === 'new') props.onStateChange('signUp')
       if (email === 'import') setPrompt(true)
       if (email === 'verify') props.onStateChange('confirmSignUp')
+      if (email === 'reset') props.onStateChange('forgotPassword')
     }
   }
 

@@ -8,6 +8,8 @@ import SignIn from './src/screens/auth/signIn'
 import SignUp from './src/screens/auth/signUp'
 import ConfirmSignUp from './src/screens/auth/confirmSignUp'
 import VerifyContact from './src/screens/auth/verifyContact'
+import ForgotPassword from './src/screens/auth/forgotPassword'
+import ConfirmForgotPassword from './src/screens/auth/confirmForgotPassword'
 import maniClient from './src/maniClient'
 import Loreco from './src/authenticator'
 import graphqlClient from './apollo/client'
@@ -56,6 +58,8 @@ const App = () => {
           <SignUp override={'SignUp'} />
           <ConfirmSignUp override={'confirmSignUp'} />
           <VerifyContact override={'verifyContact'} />
+          <ForgotPassword override={'forgotPassword'} />
+          <ConfirmForgotPassword override={'confirmForgotPassword'} />
           <Loreco />
         </Authenticator>
       </ApolloProvider>

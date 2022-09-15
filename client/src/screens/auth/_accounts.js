@@ -92,11 +92,17 @@ export const AccountsList = ({ onSelect }) => {
     icon: 'check-circle',
     title: 'Account verifiëren met code…'
   }
+  const resetPassword = {
+    username: 'reset',
+    icon: 'cloud-circle',
+    title: 'Een wachtwoord wijzigen…'
+  }
 
   const extAccounts = accounts.concat(
     createAccount,
     verifyAccount,
-    importAccount
+    importAccount,
+    resetPassword
   )
 
   return (
